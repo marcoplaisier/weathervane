@@ -11,3 +11,6 @@
 # Logs and logging folders
 /log/
 *.log
+
+# IDE specific files
+/.idea/

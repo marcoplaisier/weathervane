@@ -1,11 +1,15 @@
-from weathervane.interfaces.spi import spi
-
-__author__ = 'marco'
+from spi import spi
 
 class WeatherVaneInterface(object):
-    def __init__(self):
+    def __init__(self, channel=0, frequency=50000):
+        self.channel = channel
+        self.frequency = frequency
         self.spi = spi()
-        self.spi.send_data()
+        self.spi.setup(channel, frequency)
+
+    def __repr__(self):
+        return "Channel: %d, frequency: %d" % \
+               (self.channel, self.frequency)
 
     def send(self, data):
         self.spi.send_data(data)

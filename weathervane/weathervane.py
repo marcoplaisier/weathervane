@@ -1,6 +1,8 @@
 import argparse
 from time import sleep
+from urllib2 import urlopen
 from interfaces.weathervaneinterface import WeatherVaneInterface
+from parser.parser import BuienradarParser
 
 class WeatherVane(object):
     def test_mode(self):
@@ -17,7 +19,7 @@ class WeatherVane(object):
         counter = 0
 
         while True:
-            counter +=1
+            counter += 1
             if counter % 2:
                 test = 0x55
             else:
@@ -25,6 +27,27 @@ class WeatherVane(object):
 
             data = [counter, 255-counter, test]
             interface.send(data)
+            sleep(1)
+
+    def main(self, station_id=6323):
+        interface = WeatherVaneInterface()
+
+        counter = 0
+
+        while True:
+            if counter % 300 == 0:
+                response = urlopen("http://xml.buienradar.nl")
+                data = response.read()
+                parser = BuienradarParser(data)
+                wind = parser.get_station_windrichting(station_id)
+                wind_direction = parser.get_station_wind_direction(station_id)
+                air_pressure = parser.get_air_pressure(station_id)
+                del response
+                del parser
+                del data
+
+            interface.send([wind, wind_direction, air_pressure])
+            counter += 1
             sleep(1)
 
 if __name__ == "__main__":
@@ -36,3 +59,5 @@ if __name__ == "__main__":
     args = parser.parse_args()
     if args.test:
         wv.test_mode()
+    else:
+        wv.main()

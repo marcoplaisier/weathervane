@@ -32,6 +32,10 @@ class BuienradarParser(object):
         wind_speed = self.get_data_from_station(station_id, "windsnelheidms")
         return float(wind_speed)
 
+    def get_air_pressure(self, station_id):
+        air_pressure = self.get_data_from_station(station_id, "luchtdruk")
+        return float(air_pressure)
+
 if __name__ == "__main__":
     response = urlopen("http://xml.buienradar.nl")
     data = response.read()

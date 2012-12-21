@@ -26,7 +26,7 @@ class BuienradarParser(object):
 
     def get_station_wind_direction(self, station_id):
         wind_direction = self.get_data_from_station(station_id, "windrichtinggr")
-        return int(wind_direction)
+        return float(wind_direction)
 
     def get_wind_speed(self, station_id):
         wind_speed = self.get_data_from_station(station_id, "windsnelheidms")

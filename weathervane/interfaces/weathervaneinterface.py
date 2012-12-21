@@ -8,7 +8,7 @@ class WeatherVaneInterface(object):
         self.spi.setup(channel, frequency)
 
     def __repr__(self):
-        return "Channel: %d, frequency: %d" % \
+        return "Channel(%d, frequency: %d)" % \
                (self.channel, self.frequency)
 
     def send(self, data):

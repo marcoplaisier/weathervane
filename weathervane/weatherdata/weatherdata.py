@@ -1,7 +1,5 @@
 from BeautifulSoup import BeautifulSoup
-from urllib2 import urlopen
 import datetime
-import re
 
 class BuienradarParser(object):
     def __init__(self, data):
@@ -35,13 +33,3 @@ class BuienradarParser(object):
     def get_air_pressure(self, station_id):
         air_pressure = self.get_data_from_station(station_id, "luchtdruk")
         return float(air_pressure)
-
-if __name__ == "__main__":
-    response = urlopen("http://xml.buienradar.nl")
-    data = response.read()
-    wb = BuienradarParser(data)
-    codes = wb.get_station_codes()
-    print codes
-    name = wb.get_station_name_by_id(id)
-    wind = wb.get_station_windrichting(id)
-    print name.string, wind.string

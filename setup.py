@@ -5,7 +5,7 @@ def readme():
         return f.read()
 
 setup(name='weathervane',
-      version='0.1',
+      version='0.2',
       description='Collect weatherdata from public source(s) and display on 32-LED weathervane',
       url='http://github.com/marcofinalist/weathervane',
       author='Marco Plaisier',
@@ -19,6 +19,7 @@ setup(name='weathervane',
         'Operating System :: Linux',
         'Programming Language :: Python :: 2.7',
         'Topic :: Home Automation',
-        ]
+        ],
+      requires=['BeautifulSoup']
       )
 

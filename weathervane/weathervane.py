@@ -3,8 +3,8 @@ import argparse
 from time import sleep
 from urllib2 import urlopen
 from interfaces.weathervaneinterface import WeatherVaneInterface
-from parser.parser import BuienradarParser
-import gc 
+from weatherdata.weatherdata import BuienradarParser
+import gc
 
 class WeatherVane(object):
     def test_mode(self):

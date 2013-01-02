@@ -9,6 +9,18 @@ class SPIDataTransmissionError(Exception):
 class spi(object):
 
     def setup(self, library='wiringPi', channel=0, frequency=500000):
+        """Setup loads the WiringPi library and sets the important parameters
+
+         Keyword arguments:
+         library -- the name of the library to use. Default: wiringPi. This library must be installed and available.
+         channel -- the Pi can only drive 2 SPI channels, either 0 or 1
+         frequency -- the amount of bits per second that are sent over the channel. See also:
+         http://raspberrypi.stackexchange.com/questions/699/what-spi-frequencies-does-raspberry-pi-support
+
+        """
+        if (channel != 0) or (channel != 1):
+            raise ValueError('Channel must be 0 or 1; %d is not available' % channel)
+
         lib_name = util.find_library(library)
         self.handle = cdll.LoadLibrary(lib_name)
         return_code = self.handle.wiringPiSPISetup(channel, frequency)

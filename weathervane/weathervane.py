@@ -27,9 +27,9 @@ class WeatherVane(object):
             else:
                 test = 0xAA
 
-            data = [counter%255, (255-counter)%255, test, 0]
+            data = [counter%255, (255-counter)%255, test]
             interface.send(data)
-            sleep(0.1)
+            sleep(1)
 
     def main(self, station_id=6323):
         interface = WeatherVaneInterface(0, 250000)
@@ -49,15 +49,18 @@ class WeatherVane(object):
                 del parser
                 del data
 
-            interface.send([int(wind), int(wind_direction), int(air_pressure), 0])
+            interface.send([int(wind), int(wind_direction), int(air_pressure)])
             counter += 1
-            sleep(0.5)
+            sleep(1)
 
 if __name__ == "__main__":
     gc.set_debug(gc.DEBUG_STATS)
+
     parser = argparse.ArgumentParser(description="TBD")
-    parser.add_argument('-t', '--test', action='store_true',
-    default=False, help="run the program in test mode")
+    parser.add_argument('-t', '--test',
+                        action='store_true',
+                        default=False,
+                        help="run the program in test mode")
     wv = WeatherVane()
 
     args = parser.parse_args()

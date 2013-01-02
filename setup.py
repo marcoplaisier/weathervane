@@ -20,6 +20,6 @@ setup(name='weathervane',
         'Programming Language :: Python :: 2.7',
         'Topic :: Home Automation',
         ],
-      requires=['BeautifulSoup']
+      requires=['BeautifulSoup', 'mock']
       )
 

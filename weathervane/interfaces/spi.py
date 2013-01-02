@@ -7,11 +7,10 @@ class SPIDataTransmissionError(Exception):
     pass
 
 class spi(object):
-    def __init__(self, library='wiringPi'):
-        lib_name = util.find_library('wiringPi')
-        self.handle = cdll.LoadLibrary(lib_name)
 
-    def setup(self, channel=0, frequency=500000):
+    def setup(self, library='wiringPi', channel=0, frequency=500000):
+        lib_name = util.find_library(library)
+        self.handle = cdll.LoadLibrary(lib_name)
         return_code = self.handle.wiringPiSPISetup(channel, frequency)
         if return_code < -1:
             raise SPISetupException('Could not setup SPI protocol.')
@@ -20,13 +19,12 @@ class spi(object):
 
     def send_data(self, data):
         data_list = c_ubyte*len(data)
-        data_list = data_list(*data)
+        send_data = data_list(*data)
 
-        return_code = self.handle.wiringPiSPIDataRW(0, data_list, len(data))
+        return_code = self.handle.wiringPiSPIDataRW(0, send_data, len(send_data))
         if return_code < -1:
             raise SPIDataTransmissionError('Problem with transmission')
-        print return_code, data
-        self.data_list = data_list
+        self.data = send_data
 
     def get_data(self):
-        return self.data_list
+        return self.data

@@ -17,7 +17,7 @@ class WeatherVane(object):
         - Byte 3: switches between 0x55 and 0xAA
 
         """
-        interface = WeatherVaneInterface(0, 250000)
+        interface = WeatherVaneInterface(channel=0, frequency=25000)
         counter = 0
 
         while True:
@@ -32,7 +32,7 @@ class WeatherVane(object):
             sleep(1)
 
     def main(self, station_id=6323):
-        interface = WeatherVaneInterface(0, 250000)
+        interface = WeatherVaneInterface(channel=0, frequency=250000)
 
         counter = 0
 

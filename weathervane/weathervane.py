@@ -54,7 +54,7 @@ class WeatherVane(object):
             sleep(1)
 
 if __name__ == "__main__":
-    gc.set_debug(gc.DEBUG_STATS)
+    #gc.set_debug(gc.DEBUG_STATS)
 
     parser = argparse.ArgumentParser(description="TBD")
     parser.add_argument('-t', '--test',

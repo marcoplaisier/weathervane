@@ -9,7 +9,7 @@ class WeatherVaneInterface(object):
         self.channel = channel
         self.frequency = frequency
         self.spi = spi()
-        self.spi.setup(channel, frequency)
+        self.spi.setup(channel=channel, frequency=frequency)
         self.data_changed = None
         self.data = []
 

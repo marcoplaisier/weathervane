@@ -30,10 +30,10 @@ class WeatherVaneInterface(object):
         data = list(data) #convert to a list, so the toggle bit can be appended even if it was an immutable
 
         if s1.difference(s2):
-            data = data.append(self.DATA_CHANGED)
+            data.append(self.DATA_CHANGED)
             self.data_changed = True
         else:
-            data = data.append(self.DATA_UNCHANGED)
+            data.append(self.DATA_UNCHANGED)
             self.data_changed = False
 
         self.spi.send_data(data)

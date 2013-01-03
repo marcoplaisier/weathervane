@@ -18,7 +18,7 @@ class spi(object):
          http://raspberrypi.stackexchange.com/questions/699/what-spi-frequencies-does-raspberry-pi-support
 
         """
-        if (channel != 0) or (channel != 1):
+        if channel not in (0, 1):
             raise ValueError('Channel must be 0 or 1; %d is not available' % channel)
 
         lib_name = util.find_library(library)

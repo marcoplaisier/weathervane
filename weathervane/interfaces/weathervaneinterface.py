@@ -2,8 +2,8 @@ import collections
 from spi import spi
 
 class WeatherVaneInterface(object):
-    DATA_CHANGED = hex(0b10000000)
-    DATA_UNCHANGED = hex(0b00000000)
+    DATA_CHANGED = int(0b10000000)
+    DATA_UNCHANGED = int(0b00000000)
 
     def __init__(self, channel=0, frequency=50000):
         self.channel = channel

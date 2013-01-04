@@ -1,7 +1,6 @@
 __author__ = 'Marco'
 
 import unittest
-import mock
 
 class MyTestCase(unittest.TestCase):
     def test_something(self):

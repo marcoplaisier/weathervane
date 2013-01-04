@@ -30,7 +30,9 @@ class spi(object):
             print 'Setup succeeded'
 
     def send_data(self, data):
+        #noinspection PyTypeChecker
         data_list = c_ubyte*len(data)
+        #noinspection PyCallingNonCallable
         send_data = data_list(*data)
 
         return_code = self.handle.wiringPiSPIDataRW(0, send_data, len(send_data))

@@ -2,6 +2,7 @@ from mock import patch
 from interfaces.weathervaneinterface import WeatherVaneInterface
 import unittest
 
+#noinspection PyUnusedLocal,PyUnusedLocal,PyUnusedLocal,PyUnusedLocal,PyUnusedLocal,PyUnusedLocal
 @patch('interfaces.weathervaneinterface.spi', autospec=True)
 class WeatherVaneTest(unittest.TestCase):
 

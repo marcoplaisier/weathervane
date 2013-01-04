@@ -22,13 +22,18 @@ class BuienradarParser(object):
         station_name = self.get_data_from_station(station_id, "stationnaam")
         return station_name
 
-    def get_station_wind_direction(self, station_id):
+    def get_wind_direction_degrees(self, station_id):
         wind_direction = self.get_data_from_station(station_id, "windrichtinggr")
         return float(wind_direction)
 
     def get_wind_speed(self, station_id):
         wind_speed = self.get_data_from_station(station_id, "windsnelheidms")
         return float(wind_speed)
+
+    def get_wind_direction(self, station_id):
+        wind_direction = self.get_data_from_station(station_id, "windrichting")
+        assert isinstance(wind_direction, basestring)
+        return wind_direction
 
     def get_air_pressure(self, station_id):
         air_pressure = self.get_data_from_station(station_id, "luchtdruk")

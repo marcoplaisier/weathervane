@@ -1,4 +1,3 @@
-import collections
 from spi import spi
 
 class WeatherVaneInterface(object):
@@ -35,8 +34,8 @@ class WeatherVaneInterface(object):
         else:
             data.append(self.DATA_UNCHANGED)
             self.data_changed = False
-
         self.spi.send_data(data)
+
 
     def get_data(self):
         """Return the data sent by the spi device.

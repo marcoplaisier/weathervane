@@ -14,7 +14,7 @@ setup(name='weathervane',
       packages=['weathervane'],
       zip_safe=False,
       classifiers=[
-        'Development Status :: 1 - Planning',
+        'Development Status :: 2 - Pre-Alpha',
         'Natural Language :: English',
         'Operating System :: Linux',
         'Programming Language :: Python :: 2.7',

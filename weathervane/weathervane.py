@@ -47,7 +47,7 @@ class WeatherVane(object):
 
                 wind_speed = parser.get_wind_speed(station_id)
                 wind_direction = parser.get_wind_direction(station_id)
-                air_pressure = parser.get_air_pressure(station_id) - self.AIR_PRESSURE_OFFSET
+                air_pressure = parser.get_air_pressure(station_id)
 
                 del response
                 del parser

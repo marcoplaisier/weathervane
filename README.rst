@@ -3,8 +3,8 @@ Weathervane for the Raspberry Pi
 
 Requirements
 -----------
-BeautifulSoup 3.2.1
-Mock 1.0.1
+* BeautifulSoup 3.2.1
+* Mock 1.0.1
 
 Installation
 ------------

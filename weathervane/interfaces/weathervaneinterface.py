@@ -66,8 +66,8 @@ class WeatherVaneInterface(object):
         data = []
 
         data.append(int(self.__get_wind_direction_byte(weather_data)))
-        data.append(int(weather_data.get('wind_speed', self.DUMMY_BYTE) & self.WIND_SPEED_SELECTOR))
-        data.append(int(weather_data.get('air_pressure', self.DUMMY_BYTE) - self.AIR_PRESSURE_OFFSET))
+        data.append(int(weather_data.get('wind_speed', self.DUMMY_BYTE)) & self.WIND_SPEED_SELECTOR)
+        data.append(int(weather_data.get('air_pressure', self.DUMMY_BYTE)) - self.AIR_PRESSURE_OFFSET)
         data.append(self.__get_service_byte(weather_data))
         data.append(self.DUMMY_BYTE)
 

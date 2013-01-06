@@ -23,8 +23,7 @@ class WeatherVaneInterface(object):
         self.weather_data = {}
 
     def __repr__(self):
-        return "WeatherVaneInterface(channel=%d, frequency=%d)" % \
-               (self.channel, self.frequency)
+        return "WeatherVaneInterface(channel=%d, frequency=%d)" % (self.channel, self.frequency)
 
     def __get_wind_direction_byte(self, weather_data):
         wind_direction_code = weather_data.get('wind_direction', 'N')
@@ -50,6 +49,7 @@ class WeatherVaneInterface(object):
             self.data_changed = True
 
         self.weather_data = copy.copy(weather_data)
+        #TODO: Rethink if this is the right place
 
         return result
 

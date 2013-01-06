@@ -2,6 +2,7 @@ from __future__ import division
 import argparse
 from time import sleep
 from urllib2 import urlopen
+from interfaces.testinterface import TestInterface
 from interfaces.weathervaneinterface import WeatherVaneInterface
 from weatherdata.weatherdata import BuienradarParser
 
@@ -17,7 +18,7 @@ class WeatherVane(object):
         - Byte 3: switches between 0x55 and 0xAA
 
         """
-        interface = WeatherVaneInterface(channel=0, frequency=25000)
+        interface = TestInterface(channel=0, frequency=25000)
         counter = 0
 
         while True:

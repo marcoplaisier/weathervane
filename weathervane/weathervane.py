@@ -6,12 +6,6 @@ from interfaces.weathervaneinterface import WeatherVaneInterface
 from weatherdata.weatherdata import BuienradarParser
 
 class WeatherVane(object):
-    wind_directions = {'N': 0x00, 'NNO': 0x01, 'NO': 0x02, 'ONO': 0x03,
-                       'O': 0x04, 'OZO': 0x05, 'ZO': 0x06, 'ZZO': 0x07,
-                       'Z': 0x08, 'ZZW': 0x09, 'ZW': 0x0A, 'WZW': 0x0B,
-                       'W': 0x0C, 'WNW': 0x0D, 'NW': 0x0E, 'NNW': 0x0F}
-    AIR_PRESSURE_OFFSET = 900
-    WIND_SPEED_SELECTOR = 127
 
     def test_mode(self):
         """
@@ -50,16 +44,17 @@ class WeatherVane(object):
                 response = urlopen("http://xml.buienradar.nl")
                 data = response.read()
                 parser = BuienradarParser(data)
-                wind = parser.get_wind_speed(station_id) & self.WIND_SPEED_SELECTOR
-                wind_direction_code = parser.get_wind_direction(station_id)
-                wind_direction = self.wind_directions[wind_direction_code]
+
+                wind_speed = parser.get_wind_speed(station_id)
+                wind_direction = parser.get_wind_direction(station_id)
                 air_pressure = parser.get_air_pressure(station_id) - self.AIR_PRESSURE_OFFSET
 
                 del response
                 del parser
                 del data
 
-            interface.send([int(wind_direction), int(wind), int(air_pressure)])
+            weather_data = {'wind_direction': wind_direction, 'wind_speed': wind_speed, 'air_pressure': air_pressure}
+            interface.send(weather_data)
             counter += 1
             sleep(1)
 

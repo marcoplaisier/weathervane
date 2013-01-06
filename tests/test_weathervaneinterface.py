@@ -14,26 +14,26 @@ class WeatherVaneTest(unittest.TestCase):
 
     def test_send_data(self, mock_class):
         interface = WeatherVaneInterface()
-        interface.send([1])
+        interface.send({'wind_direction': 'NNO', 'wind_speed': 0, 'air_pressure': 900})
 
     def test_toggle_bit_empty_data(self, mock_class):
         interface = WeatherVaneInterface()
-        self.assertIsNone(interface.data_changed)
-        interface.send([])
+        self.assertFalse(interface.data_changed)
+        interface.send({})
         self.assertFalse(interface.data_changed)
 
     def test_toggle_bit_toggled(self, mock_class):
         interface = WeatherVaneInterface()
-        interface.send([1])
+        interface.send({'wind_direction': 'NNO', 'wind_speed': 0, 'air_pressure': 900})
         self.assertTrue(interface.data_changed)
-        interface.send([2])
+        interface.send({'wind_direction': 'N', 'wind_speed': 0, 'air_pressure': 900})
         self.assertTrue(interface.data_changed)
 
     def test_toggle_bit_non_toggled(self, mock_class):
         interface = WeatherVaneInterface()
-        interface.send([1])
+        interface.send({'wind_direction': 'NNO', 'wind_speed': 0, 'air_pressure': 900})
         self.assertTrue(interface.data_changed)
-        interface.send([1])
+        interface.send({'wind_direction': 'NNO', 'wind_speed': 0, 'air_pressure': 900})
         self.assertFalse(interface.data_changed)
 
     def test_integer(self, mock_class):
@@ -43,13 +43,6 @@ class WeatherVaneTest(unittest.TestCase):
     def test_non_iterable(self, mock_class):
         interface =  WeatherVaneInterface()
         self.assertRaises(TypeError, interface.send, None)
-
-    def test_immutable(self, mock_class):
-        interface =  WeatherVaneInterface()
-        try:
-            interface.send((3, 4))
-        except TypeError:
-            self.fail("send() raised an exception on an immutable sequence")
 
 if __name__ == '__main__':
     unittest.main()

@@ -8,10 +8,12 @@ Requirements
 
 Installation
 ------------
-1. Update and upgrade the Raspberry Pi ::
+1. Update and upgrade the Raspberry Pi
 
-   sudo apt-get update
-   sudo apt-get upgrade
+   ::
+
+      sudo apt-get update
+      sudo apt-get upgrade
 
 2. Install and run rpi-update
 
@@ -25,13 +27,15 @@ Installation
 
       sudo rpi-update
 
-   Source: https://github.com/Hexxeh/rpi-update
+   `More information`_:
 
-3. Install WiringPi
+.. _`More information`: https://github.com/Hexxeh/rpi-update
 
-   https://projects.drogon.net/raspberry-pi/wiringpi/download-and-install/
+3. Install WiringPi_
 
-   Note: the Python wrapper for WiringPi doesn't work for the SPI protocol. The function 'wiringPiSPIDataRW()' throws an exception, no matter what kind of input is supplied. So, we use ctypes.
+.. _WiringPi: https://projects.drogon.net/raspberry-pi/wiringpi/download-and-install/
+
+   Note: the Python wrapper for WiringPi doesn't work for the SPI protocol. The function 'wiringPiSPIDataRW()' throws an exception, no matter what kind of input is supplied. So, ctypes are used.
 
 4. Install the program
 
@@ -53,8 +57,8 @@ Running
 
       python weathervane.py
 
-Running the program after boot
-------------------------------
+Running the program automatically after boot
+--------------------------------------------
 #TODO
 
 Testing

@@ -29,6 +29,7 @@ class WeatherVane(object):
                 test = 0xAA
 
             data = [counter%255, (255-counter)%255, test]
+            print data
             interface.send(data)
             sleep(1)
 
@@ -58,6 +59,7 @@ class WeatherVane(object):
             weather_data = {'wind_direction': wind_direction, 'wind_speed': wind_speed,
                             'wind_speed_max': wind_speed_max, 'air_pressure': air_pressure}
             interface.send(weather_data)
+            print weather_data
             counter += 1
             sleep(1)
 

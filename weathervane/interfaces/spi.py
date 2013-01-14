@@ -20,9 +20,12 @@ class spi(object):
         """
         if channel not in (0, 1):
             raise ValueError('Channel must be 0 or 1; %d is not available' % channel)
+        try:
+            lib_name = util.find_library(library)
+            self.handle = cdll.LoadLibrary(lib_name)
+        except:
+            raise SPISetupException('Could not setup SPI protocol. Please run gpio load spi or install the drivers first')
 
-        lib_name = util.find_library(library)
-        self.handle = cdll.LoadLibrary(lib_name)
         return_code = self.handle.wiringPiSPISetup(channel, frequency)
         if return_code < -1:
             raise SPISetupException('Could not setup SPI protocol.')

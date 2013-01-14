@@ -7,8 +7,6 @@ class TestInterface(object):
         self.frequency = frequency
         self.spi = spi()
         self.spi.setup(channel=channel, frequency=frequency)
-        self.data_changed = False
-        self.weather_data = {}
 
     def __repr__(self):
         return "TestInterface(channel=%d, frequency=%d)" % (self.channel, self.frequency)

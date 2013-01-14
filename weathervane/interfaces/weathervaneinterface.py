@@ -6,13 +6,16 @@ class WeatherVaneInterface(object):
                        'O': 0x04, 'OZO': 0x05, 'ZO': 0x06, 'ZZO': 0x07,
                        'Z': 0x08, 'ZZW': 0x09, 'ZW': 0x0A, 'WZW': 0x0B,
                        'W': 0x0C, 'WNW': 0x0D, 'NW': 0x0E, 'NNW': 0x0F}
-    AIR_PRESSURE_OFFSET = 900
-    WIND_SPEED_SELECTOR = 127
-    DATA_CHANGED = int(0b10000000)
-    DATA_UNCHANGED = int(0b00000000)
-    DUMMY_BYTE = int(0x00)
-    SERVICE_BITS = {'wind_direction': int(0b00000001),'wind_speed':int(0b00000010),
-                    'air_pressure': int(0b00000100), }
+    DATA_CHANGED = 0b10000000
+    DATA_UNCHANGED = 0b00000000
+    DUMMY_BYTE = 0x00
+    WIND_SPEED_ERROR = 0b00000010
+    AIR_PRESSURE_ERROR = 0b00000100
+    WIND_DIRECTION_ERROR = 0b00000001
+    WIND_SPEED_MINIMUM = 0
+    WIND_SPEED_MAXIMUM = 63
+    AIR_PRESSURE_MINIMUM = 900
+    AIR_PRESSURE_MAXIMUM = 1155
 
     def __init__(self, channel=0, frequency=50000):
         self.channel = channel
@@ -25,20 +28,49 @@ class WeatherVaneInterface(object):
     def __repr__(self):
         return "WeatherVaneInterface(channel=%d, frequency=%d)" % (self.channel, self.frequency)
 
-    def __get_wind_direction_byte(self, weather_data):
-        wind_direction_code = weather_data.get('wind_direction', 'N')
-        wind_direction_byte = self.WIND_DIRECTIONS.get(wind_direction_code, self.DUMMY_BYTE)
+    def __cast_wind_direction_to_byte(self, weather_data, errors):
+        try:
+            wind_direction_code = weather_data['wind_direction']
+            wind_direction_byte = self.WIND_DIRECTIONS[wind_direction_code]
+        except KeyError:
+            wind_direction_byte = 0x00
+            errors |= self.WIND_DIRECTION_ERROR
 
-        return wind_direction_byte
+        return wind_direction_byte, errors
 
-    def __get_errors(self, weather_data):
-        result = 0x00
+    def __cast_air_pressure_to_byte(self, weather_data, errors):
+        try:
+            air_pressure = weather_data['air_pressure']
+        except KeyError:
+            air_pressure = 0x00
+            errors |= self.AIR_PRESSURE_ERROR
 
-        for k in weather_data.keys():
-            if weather_data.get(k) is None:
-                result |= self.SERVICE_BITS.get(k, self.DUMMY_BYTE)
+        if air_pressure < self.AIR_PRESSURE_MINIMUM:
+            air_pressure = 0x00
+            errors |= self.AIR_PRESSURE_ERROR
+        elif self.AIR_PRESSURE_MAXIMUM < air_pressure:
+            air_pressure = 0xFF
+            errors |= self.AIR_PRESSURE_ERROR
+        else:
+            air_pressure -= self.AIR_PRESSURE_MINIMUM
 
-        return result
+        return air_pressure, errors
+
+    def __cast_wind_speed_to_byte(self, weather_data, errors):
+        try:
+            wind_speed = weather_data['wind_speed']
+        except KeyError:
+            wind_speed = 0x00
+            errors |= self.WIND_SPEED_ERROR
+
+        if wind_speed < self.WIND_SPEED_MINIMUM:
+            wind_speed = 0x00
+            errors |= self.WIND_SPEED_ERROR
+        elif self.WIND_SPEED_MAXIMUM < wind_speed:
+            wind_speed = 63
+            errors |= self.WIND_SPEED_ERROR
+
+        return wind_speed, errors
 
     def __get_data_changed(self, weather_data):
         if weather_data == self.weather_data:
@@ -49,27 +81,18 @@ class WeatherVaneInterface(object):
             self.data_changed = True
 
         self.weather_data = copy.copy(weather_data)
-        #TODO: Rethink if this is the right place
 
         return result
 
-    def __get_service_byte(self, weather_data):
-        service_byte = 0x00
-
-        toggle_bit = self.__get_data_changed(weather_data)
-        error_bits = self.__get_errors(weather_data)
-        service_byte = service_byte | error_bits | toggle_bit
-
-        return service_byte
-
     def __convert_data(self, weather_data):
-        data = []
+        errors = 0x00
 
-        data.append(int(self.__get_wind_direction_byte(weather_data)))
-        data.append(int(weather_data.get('wind_speed', self.DUMMY_BYTE)) & self.WIND_SPEED_SELECTOR)
-        data.append(int(weather_data.get('air_pressure', self.DUMMY_BYTE)) - self.AIR_PRESSURE_OFFSET)
-        data.append(self.__get_service_byte(weather_data))
-        data.append(self.DUMMY_BYTE)
+        wind_direction, errors = self.__cast_wind_direction_to_byte(weather_data, errors)
+        wind_speed, errors = self.__cast_wind_speed_to_byte(weather_data, errors)
+        air_pressure, errors = self.__cast_air_pressure_to_byte(weather_data, errors)
+        service_byte = errors | self.__get_data_changed(weather_data)
+
+        data = [wind_direction, wind_speed, air_pressure, service_byte, self.DUMMY_BYTE]
 
         return data
 
@@ -91,6 +114,9 @@ class WeatherVaneInterface(object):
 
         This function returns the data that was sent by the connected SPI device. To get the data that was originally
         sent to that device, use get_sent_data.
+
+        Returns:
+        array of bytes
                 """
         return self.spi.get_data()
 
@@ -102,5 +128,9 @@ class WeatherVaneInterface(object):
 
         Note that the data that actually reached the connected SPI device may have been altered due to all kinds of
         transmission errors. This function does not actually return the data that reached the device.
+
+        Returns:
+        array of bytes
         """
+
         return self.weather_data

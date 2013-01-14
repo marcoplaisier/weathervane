@@ -4,7 +4,7 @@ from time import sleep
 from urllib2 import urlopen
 from interfaces.testinterface import TestInterface
 from interfaces.weathervaneinterface import WeatherVaneInterface
-from weatherdata.weatherdata import BuienradarParser
+from weatherdata.parser import BuienradarParser
 
 class WeatherVane(object):
 

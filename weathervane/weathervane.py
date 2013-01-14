@@ -2,6 +2,7 @@ from __future__ import division
 import argparse
 from time import sleep
 from urllib2 import urlopen
+import os
 from interfaces.testinterface import TestInterface
 from interfaces.weathervaneinterface import WeatherVaneInterface
 from weatherdata.parser import BuienradarParser
@@ -65,7 +66,7 @@ class WeatherVane(object):
 
 if __name__ == "__main__":
     #gc.set_debug(gc.DEBUG_STATS)
-
+    os.system("gpio load spi")
     parser = argparse.ArgumentParser(description="TBD")
     parser.add_argument('-t', '--test',
                         action='store_true',

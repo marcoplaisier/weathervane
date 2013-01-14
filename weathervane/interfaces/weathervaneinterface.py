@@ -9,9 +9,10 @@ class WeatherVaneInterface(object):
     DATA_CHANGED = 0b10000000
     DATA_UNCHANGED = 0b00000000
     DUMMY_BYTE = 0x00
+    WIND_DIRECTION_ERROR = 0b00000001
     WIND_SPEED_ERROR = 0b00000010
     AIR_PRESSURE_ERROR = 0b00000100
-    WIND_DIRECTION_ERROR = 0b00000001
+    WIND_SPEED_MAX_ERROR = 0b00001000
     WIND_SPEED_MINIMUM = 0
     WIND_SPEED_MAXIMUM = 63
     AIR_PRESSURE_MINIMUM = 900
@@ -72,6 +73,22 @@ class WeatherVaneInterface(object):
 
         return wind_speed, errors
 
+    def __cast_wind_speed_max_to_byte(self, weather_data, errors):
+        try:
+            wind_speed_max = weather_data['wind_speed_max']
+        except KeyError:
+            wind_speed_max = 0x00
+            errors |= self.WIND_SPEED_MAX_ERROR
+
+        if wind_speed_max < self.WIND_SPEED_MINIMUM:
+            wind_speed_max = 0x00
+            errors |= self.WIND_SPEED_MAX_ERROR
+        elif self.WIND_SPEED_MAXIMUM < wind_speed_max:
+            wind_speed_max = 63
+            errors |= self.WIND_SPEED_MAX_ERROR
+
+        return wind_speed_max, errors
+
     def __get_data_changed(self, weather_data):
         if weather_data == self.weather_data:
             result = self.DATA_UNCHANGED
@@ -89,6 +106,7 @@ class WeatherVaneInterface(object):
 
         wind_direction, errors = self.__cast_wind_direction_to_byte(weather_data, errors)
         wind_speed, errors = self.__cast_wind_speed_to_byte(weather_data, errors)
+        wind_speed_max, errors = self.__cast_wind_speed_max_to_byte(weather_data, errors)
         air_pressure, errors = self.__cast_air_pressure_to_byte(weather_data, errors)
         service_byte = errors | self.__get_data_changed(weather_data)
 
@@ -134,3 +152,4 @@ class WeatherVaneInterface(object):
         """
 
         return self.weather_data
+

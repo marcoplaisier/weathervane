@@ -38,3 +38,7 @@ class BuienradarParser(object):
     def get_air_pressure(self, station_id):
         air_pressure = self.get_data_from_station(station_id, "luchtdruk")
         return float(air_pressure)
+
+    def get_wind_maximum(self, station_id):
+        wind_speed_max = self.get_data_from_station(station_id, "windstotenMS")
+        return float(wind_speed_max)

@@ -49,12 +49,14 @@ class WeatherVane(object):
                 wind_speed = parser.get_wind_speed(station_id)
                 wind_direction = parser.get_wind_direction(station_id)
                 air_pressure = parser.get_air_pressure(station_id)
+                wind_speed_max = parser.get_wind_maximum(station_id)
 
                 del response
                 del parser
                 del data
 
-            weather_data = {'wind_direction': wind_direction, 'wind_speed': wind_speed, 'air_pressure': air_pressure}
+            weather_data = {'wind_direction': wind_direction, 'wind_speed': wind_speed,
+                            'wind_speed_max': wind_speed_max, 'air_pressure': air_pressure}
             interface.send(weather_data)
             counter += 1
             sleep(1)

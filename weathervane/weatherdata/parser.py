@@ -24,11 +24,11 @@ class BuienradarParser(object):
 
     def get_wind_direction_degrees(self, station_id):
         wind_direction = self.get_data_from_station(station_id, "windrichtinggr")
-        return float(wind_direction)
+        return wind_direction
 
     def get_wind_speed(self, station_id):
         wind_speed = self.get_data_from_station(station_id, "windsnelheidms")
-        return float(wind_speed)
+        return wind_speed
 
     def get_wind_direction(self, station_id):
         wind_direction = self.get_data_from_station(station_id, "windrichting")
@@ -37,8 +37,8 @@ class BuienradarParser(object):
 
     def get_air_pressure(self, station_id):
         air_pressure = self.get_data_from_station(station_id, "luchtdruk")
-        return float(air_pressure)
+        return air_pressure
 
     def get_wind_maximum(self, station_id):
         wind_speed_max = self.get_data_from_station(station_id, "windstotenMS")
-        return float(wind_speed_max)
+        return wind_speed_max

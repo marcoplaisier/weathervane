@@ -35,7 +35,6 @@ class BuienradarParser(object):
 
     def get_wind_direction(self, station_id):
         wind_direction = self.get_data_from_station(station_id, "windrichting")
-        assert isinstance(wind_direction, basestring)
         return wind_direction
 
     def get_air_pressure(self, station_id):
@@ -43,5 +42,5 @@ class BuienradarParser(object):
         return air_pressure
 
     def get_wind_maximum(self, station_id):
-        wind_speed_max = self.get_data_from_station(station_id, "windstotenMS")
+        wind_speed_max = self.get_data_from_station(station_id, "windstotenms")
         return wind_speed_max

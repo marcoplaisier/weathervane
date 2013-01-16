@@ -11,7 +11,10 @@ class BuienradarParser(object):
 
     def get_data_from_station(self, station_id, fieldname):
         station_data = self.soup.find("weerstation", id=station_id).find(fieldname)
-        return station_data.string
+        if station_data is None:
+            return station_data
+        else:
+            return station_data.string
 
     def get_station_codes(self):
         code_tags = self.soup("stationcode")

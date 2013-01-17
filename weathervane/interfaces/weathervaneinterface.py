@@ -110,9 +110,7 @@ class WeatherVaneInterface(object):
         air_pressure, errors = self.__cast_air_pressure_to_byte(weather_data, errors)
         service_byte = errors | self.__get_data_changed(weather_data)
 
-        data = [wind_direction, wind_speed, air_pressure, service_byte, self.DUMMY_BYTE]
-
-        return data
+        return [wind_direction, wind_speed, wind_speed_max, air_pressure, service_byte, self.DUMMY_BYTE]
 
     def send(self, weather_data):
         """Send data to the connected SPI device.

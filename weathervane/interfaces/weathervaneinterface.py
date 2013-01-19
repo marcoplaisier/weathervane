@@ -108,7 +108,7 @@ class WeatherVaneInterface(object):
         wind_speed, errors = self.__cast_wind_speed_to_byte(weather_data, errors)
         wind_speed_max, errors = self.__cast_wind_speed_max_to_byte(weather_data, errors)
         air_pressure, errors = self.__cast_air_pressure_to_byte(weather_data, errors)
-        service_byte = errors | self.__get_data_changed(weather_data)
+        service_byte = errors | self.__get_data_changed(weather_data) | 0b01010000
 
         return [wind_direction, wind_speed, wind_speed_max, air_pressure, service_byte, self.DUMMY_BYTE]
 

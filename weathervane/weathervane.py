@@ -1,11 +1,11 @@
 from __future__ import division
 import argparse
+from multiprocessing import Lock, Process, Pipe
 from time import sleep
-from urllib2 import urlopen
 import os
 from interfaces.testinterface import TestInterface
 from interfaces.weathervaneinterface import WeatherVaneInterface
-from weatherdata.parser import BuienradarParser
+from weathervane.datasources import BuienradarSource
 
 class WeatherVane(object):
 
@@ -36,31 +36,25 @@ class WeatherVane(object):
 
     def main(self, station_id=6323):
         interface = WeatherVaneInterface(channel=0, frequency=250000)
-
+        weather_data = {'wind_direction': None, 'wind_speed': None, 'wind_speed_max': None, 'air_pressure': None}
+        data_source = BuienradarSource()
+        pipe_end_1, pipe_end_2 = Pipe()
+        l = Lock()
         counter = 0
 
         while True:
             if counter % 300 == 0:
                 counter = 0
-                print 'fetching data'
+                p = Process(target=data_source.get_data, args=(pipe_end_1, station_id))
+                p.start()
 
-                response = urlopen("http://xml.buienradar.nl")
-                data = response.read()
-                parser = BuienradarParser(data)
+            if pipe_end_2.poll():
+                weather_data = pipe_end_2.recv()
+                p.join()
 
-                wind_speed = parser.get_wind_speed(station_id)
-                wind_direction = parser.get_wind_direction(station_id)
-                air_pressure = parser.get_air_pressure(station_id)
-                wind_speed_max = parser.get_wind_maximum(station_id)
-
-                del response
-                del parser
-                del data
-
-            weather_data = {'wind_direction': wind_direction, 'wind_speed': wind_speed,
-                            'wind_speed_max': wind_speed_max, 'air_pressure': air_pressure}
             interface.send(weather_data)
             print weather_data
+
             counter += 1
             sleep(1)
 

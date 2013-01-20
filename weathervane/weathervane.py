@@ -2,7 +2,7 @@ import argparse
 from multiprocessing import Process, Pipe
 from time import sleep
 import os
-from datasources.datasources import BuienradarSource
+from weatherdata.datasources import BuienradarSource
 from interfaces.testinterface import TestInterface
 from interfaces.weathervaneinterface import WeatherVaneInterface
 

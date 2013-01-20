@@ -1,6 +1,5 @@
-from __future__ import division
 import argparse
-from multiprocessing import Lock, Process, Pipe
+from multiprocessing import Process, Pipe
 from time import sleep
 import os
 from datasources.datasources import BuienradarSource

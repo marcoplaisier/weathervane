@@ -6,7 +6,7 @@ def readme():
 
 setup(name='weathervane',
       version='0.2',
-      description='Collect weatherdata from public source(s) and display on 32-LED weathervane',
+      description='Collect weather data from public source(s) and display on 32-LED weathervane',
       url='http://github.com/marcofinalist/weathervane',
       author='Marco Plaisier',
       author_email='m.plaisier@gmail.com',

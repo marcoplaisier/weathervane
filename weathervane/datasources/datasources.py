@@ -1,5 +1,5 @@
 from urllib2 import urlopen
-from weathervane.weatherdata.parser import BuienradarParser
+from .weatherdata.parser import BuienradarParser
 
 class BuienradarSource(object):
     def get_data(self, conn, station_id):

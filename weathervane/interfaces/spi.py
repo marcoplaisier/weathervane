@@ -41,6 +41,7 @@ class spi(object):
         return_code = self.handle.wiringPiSPIDataRW(0, send_data, len(send_data))
         if return_code < -1:
             raise SPIDataTransmissionError('Problem with transmission')
+        print data
         self.data = send_data
 
     def get_data(self):

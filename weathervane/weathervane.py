@@ -3,7 +3,7 @@ import argparse
 from multiprocessing import Lock, Process, Pipe
 from time import sleep
 import os
-from weathervane.datasources.datasources import BuienradarSource
+from datasources.datasources import BuienradarSource
 from interfaces.testinterface import TestInterface
 from interfaces.weathervaneinterface import WeatherVaneInterface
 

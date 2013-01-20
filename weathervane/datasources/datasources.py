@@ -1,9 +1,7 @@
-from multiprocessing import Lock
 from urllib2 import urlopen
 from weathervane.weatherdata.parser import BuienradarParser
 
 class BuienradarSource(object):
-
     def get_data(self, conn, station_id):
         response = urlopen("http://xml.buienradar.nl")
         data = response.read()

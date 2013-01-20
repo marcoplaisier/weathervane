@@ -34,42 +34,39 @@ class WeatherVane(object):
             interface.send(data)
             sleep(1)
 
-    def main(self, station_id=6323):
+    def main(self, interval, station_id=6323):
         interface = WeatherVaneInterface(channel=0, frequency=250000)
         weather_data = {'wind_direction': None, 'wind_speed': None, 'wind_speed_max': None, 'air_pressure': None}
         data_source = BuienradarSource()
         pipe_end_1, pipe_end_2 = Pipe()
-        l = Lock()
         counter = 0
 
         while True:
-            if counter % 300 == 0:
+            if (counter % interval) == 0:
                 counter = 0
                 p = Process(target=data_source.get_data, args=(pipe_end_1, station_id))
                 p.start()
 
-            if pipe_end_2.poll():
+            if pipe_end_2.poll(0):
                 weather_data = pipe_end_2.recv()
-                p.join()
 
-            interface.send(weather_data)
             print weather_data
+            interface.send(weather_data)
 
             counter += 1
             sleep(1)
 
 if __name__ == "__main__":
-    #gc.set_debug(gc.DEBUG_STATS)
     os.system("gpio load spi")
     parser = argparse.ArgumentParser(description="TBD")
-    parser.add_argument('-t', '--test',
-                        action='store_true',
-                        default=False,
-                        help="run the program in test mode")
+    parser.add_argument('-t', '--test', action='store_true', default=False, help="run the program in test mode")
+    parser.add_argument('-i', action='store_const', type=int, default=300,
+        help="specify the amount of seconds between each time the weather data is collected")
     wv = WeatherVane()
 
     args = parser.parse_args()
+    print args.i
     if args.test:
         wv.test_mode()
     else:
-        wv.main()
+        wv.main(interval=args.i)

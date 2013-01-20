@@ -59,13 +59,13 @@ if __name__ == "__main__":
     os.system("gpio load spi")
     parser = argparse.ArgumentParser(description="TBD")
     parser.add_argument('-t', '--test', action='store_true', default=False, help="run the program in test mode")
-    parser.add_argument('-i', action='store_const', type=int, default=300,
+    parser.add_argument('-i', '--interval', action='store', type=int, default=300,
         help="specify the amount of seconds between each time the weather data is collected")
     wv = WeatherVane()
 
     args = parser.parse_args()
-    print args.i
+    print args.interval
     if args.test:
         wv.test_mode()
     else:
-        wv.main(interval=args.i)
+        wv.main(interval=args.interval)

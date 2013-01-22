@@ -24,7 +24,7 @@ class spi(object):
             lib_name = util.find_library(library)
             self.handle = cdll.LoadLibrary(lib_name)
         except:
-            raise SPISetupException('Could not setup SPI protocol. Please run gpio load spi or install the drivers first')
+            raise SPISetupException('Could not setup SPI protocol. Please run "gpio load spi" or install the drivers first')
 
         return_code = self.handle.wiringPiSPISetup(channel, frequency)
         if return_code < -1:
@@ -40,7 +40,7 @@ class spi(object):
 
         return_code = self.handle.wiringPiSPIDataRW(0, send_data, len(send_data))
         if return_code < -1:
-            raise SPIDataTransmissionError('Problem with transmission')
+            raise SPIDataTransmissionError('Transmission failed and resulted in an error. Data: %s' % send_data)
         print data
         self.data = send_data
 

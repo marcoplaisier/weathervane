@@ -56,7 +56,6 @@ class WeatherVane(object):
             sleep(1)
 
 if __name__ == "__main__":
-    os.system("gpio load spi")
     parser = argparse.ArgumentParser(description="TBD")
     parser.add_argument('-t', '--test', action='store_true', default=False, help="run the program in test mode")
     parser.add_argument('-i', '--interval', action='store', type=int, default=300,
@@ -65,6 +64,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     print args.interval
+    os.system("gpio load spi")
     if args.test:
         wv.test_mode()
     else:

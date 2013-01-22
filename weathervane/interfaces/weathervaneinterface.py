@@ -41,7 +41,7 @@ class WeatherVaneInterface(object):
 
     def __cast_air_pressure_to_byte(self, weather_data, errors):
         try:
-            air_pressure = float(weather_data['air_pressure'])
+            air_pressure = round(float(weather_data['air_pressure']), 0)
         except (KeyError, ValueError, TypeError):
             air_pressure = 0x00
             errors |= self.AIR_PRESSURE_ERROR
@@ -59,7 +59,7 @@ class WeatherVaneInterface(object):
 
     def __cast_wind_speed_to_byte(self, weather_data, errors):
         try:
-            wind_speed = float(weather_data['wind_speed'])
+            wind_speed = round(float(weather_data['wind_speed']), 0)
         except (KeyError, ValueError, TypeError):
             wind_speed = 0x00
             errors |= self.WIND_SPEED_ERROR
@@ -75,7 +75,7 @@ class WeatherVaneInterface(object):
 
     def __cast_wind_speed_max_to_byte(self, weather_data, errors):
         try:
-            wind_speed_max = float(weather_data['wind_speed_max'])
+            wind_speed_max = round(float(weather_data['wind_speed_max']), 0)
         except (KeyError, ValueError, TypeError):
             wind_speed_max = 0x00
             errors |= self.WIND_SPEED_MAX_ERROR

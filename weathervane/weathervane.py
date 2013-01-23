@@ -71,7 +71,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     print args.interval
-    os.system("gpio load spi")
+
     if args.test:
         wv.test_mode()
     else:

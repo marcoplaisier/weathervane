@@ -1,6 +1,8 @@
 import argparse
+import logging
 from multiprocessing import Process, Pipe
 from time import sleep
+from datetime import datetime
 import os
 from weatherdata.datasources import BuienradarSource
 from interfaces.testinterface import TestInterface
@@ -18,6 +20,7 @@ class WeatherVane(object):
         - Byte 3: switches between 0x55 and 0xAA
 
         """
+        logging.info(str(datetime.now()) + ":Starting testmode")
         interface = TestInterface(channel=0, frequency=25000)
         counter = 0
 
@@ -34,12 +37,15 @@ class WeatherVane(object):
             sleep(1)
 
     def main(self, interval, station_id=6323):
+        logging.info(str(datetime.now() + ":Starting normal operation"))
         interface = WeatherVaneInterface(channel=0, frequency=250000)
+        logging.debug(str(interface))
         weather_data = {'wind_direction': None, 'wind_speed': None, 'wind_speed_max': None, 'air_pressure': None}
         data_source = BuienradarSource()
         pipe_end_1, pipe_end_2 = Pipe()
         counter = 0
 
+        logging.debug(str(datetime.now()) + ":starting main loop")
         while True:
             if (counter % interval) == 0:
                 counter = 0
@@ -50,6 +56,7 @@ class WeatherVane(object):
                 weather_data = pipe_end_2.recv()
 
             print weather_data
+
             interface.send(weather_data)
 
             counter += 1

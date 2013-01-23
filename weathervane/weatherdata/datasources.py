@@ -1,11 +1,18 @@
 from urllib2 import urlopen
 from parser import BuienradarParser
 
-class BuienradarSource(object):
+class DataSource():
     def get_data(self, conn, station_id):
-        response = urlopen("http://xml.buienradar.nl")
-        data = response.read()
+        raise NotImplementedError("Do not use this interface directly, but subclass it and add your own functionality")
 
+    def fetch_weather_data(self, url):
+        response = urlopen(url)
+        data = response.read()
+        return data
+
+class BuienradarSource(DataSource):
+    def get_data(self, conn, station_id):
+        data = self.fetch_weather_data("http://xml.buienradar.nl")
         parser = BuienradarParser(data)
 
         wind_speed = parser.get_wind_speed(station_id)
@@ -18,3 +25,9 @@ class BuienradarSource(object):
 
         conn.send(weather_data)
         conn.close()
+
+class KNMISource(object):
+    pass
+
+class RijkswaterstaatSource(object):
+    pass

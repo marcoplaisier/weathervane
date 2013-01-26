@@ -34,7 +34,7 @@ class WeatherVane(object):
             data = [counter%255, (255-counter)%255, test]
             print data
             interface.send(data)
-            sleep(2.5)
+            sleep(1)
 
     def main(self, interval, station_id=6323):
         logging.info(str(datetime.now() + ":Starting normal operation"))

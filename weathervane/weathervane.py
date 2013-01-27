@@ -3,8 +3,6 @@ import logging
 import logging.handlers
 from multiprocessing import Process, Pipe
 from time import sleep
-from datetime import datetime
-import os
 from weatherdata.datasources import BuienradarSource
 from interfaces.testinterface import TestInterface
 from interfaces.weathervaneinterface import WeatherVaneInterface
@@ -21,7 +19,7 @@ class WeatherVane(object):
         - Byte 3: switches between 0x55 and 0xAA
 
         """
-        logging.info(str(datetime.now()) + ":Starting testmode")
+        logging.info("Starting testmode")
         interface = TestInterface(channel=0, frequency=25000)
         counter = 0
 
@@ -38,15 +36,15 @@ class WeatherVane(object):
             sleep(1)
 
     def main(self, interval, station_id=6323):
-        logging.info(str(datetime.now()) + ":Starting normal operation")
+        logging.info("Starting normal operation")
         interface = WeatherVaneInterface(channel=0, frequency=250000)
-        logging.debug(str(interface))
+        logging.debug("Using " + interface)
         weather_data = {'wind_direction': None, 'wind_speed': None, 'wind_speed_max': None, 'air_pressure': None}
         data_source = BuienradarSource()
         pipe_end_1, pipe_end_2 = Pipe()
         counter = 0
 
-        logging.debug(str(datetime.now()) + ":starting main loop")
+        logging.debug("starting main loop")
         while True:
             if (counter % interval) == 0:
                 counter = 0
@@ -55,6 +53,7 @@ class WeatherVane(object):
 
             if pipe_end_2.poll(0):
                 weather_data = pipe_end_2.recv()
+                logging.info("Received data:" + weather_data)
 
             interface.send(weather_data)
 
@@ -71,11 +70,11 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     logging.basicConfig(format="%(asctime)s:%(levelname)s:%(module)s:%(message)s")
-    weathervane_logger = logging.getLogger('Weathervane Logger')
+    weathervane_logger = logging.getLogger('')
     weathervane_logger.setLevel(logging.DEBUG)
     handler = logging.handlers.TimedRotatingFileHandler(filename="/temp/weathervane.log",
-                                                        when="D",
-                                                        interval="midnight",
+                                                        when="midnight",
+                                                        interval=1,
                                                         backupCount=7)
     weathervane_logger.addHandler(handler)
 

@@ -52,7 +52,7 @@ class WeatherVane(object):
 
             if pipe_end_2.poll(0):
                 weather_data = pipe_end_2.recv()
-                logging.info("Received data:" + weather_data)
+                logging.info("Received data:" , str(weather_data))
 
             interface.send(weather_data)
 

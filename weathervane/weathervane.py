@@ -1,5 +1,6 @@
 import argparse
 import logging
+import logging.handlers
 from multiprocessing import Process, Pipe
 from time import sleep
 from datetime import datetime
@@ -32,7 +33,7 @@ class WeatherVane(object):
                 test = 0xAA
 
             data = [counter%255, (255-counter)%255, test]
-            print data
+
             interface.send(data)
             sleep(1)
 
@@ -55,8 +56,6 @@ class WeatherVane(object):
             if pipe_end_2.poll(0):
                 weather_data = pipe_end_2.recv()
 
-            print weather_data
-
             interface.send(weather_data)
 
             counter += 1
@@ -70,7 +69,15 @@ if __name__ == "__main__":
     wv = WeatherVane()
 
     args = parser.parse_args()
-    print args.interval
+
+    logging.basicConfig(format="%(asctime)s:%(levelname)s:%(module)s:%(message)s")
+    weathervane_logger = logging.getLogger('Weathervane Logger')
+    weathervane_logger.setLevel(logging.DEBUG)
+    handler = logging.handlers.TimedRotatingFileHandler(filename="/temp/weathervane.log",
+                                                        when="D",
+                                                        interval="midnight",
+                                                        backupCount=7)
+    weathervane_logger.addHandler(handler)
 
     if args.test:
         wv.test_mode()

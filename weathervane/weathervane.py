@@ -37,7 +37,7 @@ class WeatherVane(object):
             sleep(1)
 
     def main(self, interval, station_id=6323):
-        logging.info(str(datetime.now() + ":Starting normal operation"))
+        logging.info(str(datetime.now()) + ":Starting normal operation")
         interface = WeatherVaneInterface(channel=0, frequency=250000)
         logging.debug(str(interface))
         weather_data = {'wind_direction': None, 'wind_speed': None, 'wind_speed_max': None, 'air_pressure': None}

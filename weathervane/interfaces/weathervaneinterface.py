@@ -123,7 +123,7 @@ class WeatherVaneInterface(object):
             raise TypeError("unsupported type %s " %type(weather_data))
 
         data_array = self.__convert_data(weather_data)
-        logging.debug("Sending data:" + data_array)
+        logging.debug("Sending data:", data_array)
 
         self.spi.send_data(data_array)
 

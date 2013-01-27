@@ -44,7 +44,6 @@ class WeatherVane(object):
         pipe_end_1, pipe_end_2 = Pipe()
         counter = 0
 
-        logging.debug("starting main loop")
         while True:
             if (counter % interval) == 0:
                 counter = 0
@@ -69,13 +68,16 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    logging.basicConfig(format="%(asctime)s:%(levelname)s:%(module)s:%(message)s")
+
     weathervane_logger = logging.getLogger('')
+    weathervane_logger.makeRecord()
     weathervane_logger.setLevel(logging.DEBUG)
-    handler = logging.handlers.TimedRotatingFileHandler(filename="/temp/weathervane.log",
+    handler = logging.handlers.TimedRotatingFileHandler(filename="weathervane.log",
                                                         when="midnight",
                                                         interval=1,
                                                         backupCount=7)
+    formatter = logging.Formatter(format="%(asctime)s:%(levelname)s:%(module)s:%(message)s")
+    handler.setFormatter(formatter)
     weathervane_logger.addHandler(handler)
 
     if args.test:

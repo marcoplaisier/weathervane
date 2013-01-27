@@ -38,7 +38,7 @@ class WeatherVane(object):
     def main(self, interval, station_id=6323):
         logging.info("Starting normal operation")
         interface = WeatherVaneInterface(channel=0, frequency=250000)
-        logging.debug("Using " + interface)
+        logging.debug("Using " + str(interface))
         weather_data = {'wind_direction': None, 'wind_speed': None, 'wind_speed_max': None, 'air_pressure': None}
         data_source = BuienradarSource()
         pipe_end_1, pipe_end_2 = Pipe()
@@ -70,13 +70,12 @@ if __name__ == "__main__":
 
 
     weathervane_logger = logging.getLogger('')
-    weathervane_logger.makeRecord()
     weathervane_logger.setLevel(logging.DEBUG)
     handler = logging.handlers.TimedRotatingFileHandler(filename="weathervane.log",
                                                         when="midnight",
                                                         interval=1,
                                                         backupCount=7)
-    formatter = logging.Formatter(format="%(asctime)s:%(levelname)s:%(module)s:%(message)s")
+    formatter = logging.Formatter("%(asctime)s:%(levelname)s:%(module)s:%(message)s")
     handler.setFormatter(formatter)
     weathervane_logger.addHandler(handler)
 

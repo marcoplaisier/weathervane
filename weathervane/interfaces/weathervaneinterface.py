@@ -2,6 +2,7 @@ import copy
 import logging
 from spi import spi
 
+
 class WeatherVaneInterface(object):
     WIND_DIRECTIONS = {'N': 0x00, 'NNO': 0x01, 'NO': 0x02, 'ONO': 0x03,
                        'O': 0x04, 'OZO': 0x05, 'ZO': 0x06, 'ZZO': 0x07,
@@ -18,8 +19,9 @@ class WeatherVaneInterface(object):
     WIND_SPEED_MAXIMUM = 63
     AIR_PRESSURE_MINIMUM = 900
     AIR_PRESSURE_MAXIMUM = 1155
+    FIXED_PATTERN = 0b01010000
 
-    def __init__(self, channel=0, frequency=50000):
+    def __init__(self, channel=0, frequency=250000):
         self.channel = channel
         self.frequency = frequency
         self.spi = spi()
@@ -30,7 +32,9 @@ class WeatherVaneInterface(object):
     def __repr__(self):
         return "WeatherVaneInterface(channel=%d, frequency=%d)" % (self.channel, self.frequency)
 
-    def __cast_wind_direction_to_byte(self, weather_data, errors):
+    def __cast_wind_direction_to_byte(self, weather_data):
+        errors = 0
+
         try:
             wind_direction_code = weather_data['wind_direction']
             wind_direction_byte = self.WIND_DIRECTIONS[wind_direction_code]
@@ -40,7 +44,9 @@ class WeatherVaneInterface(object):
 
         return int(wind_direction_byte), errors
 
-    def __cast_air_pressure_to_byte(self, weather_data, errors):
+    def __cast_air_pressure_to_byte(self, weather_data):
+        errors = 0
+
         try:
             air_pressure = round(float(weather_data['air_pressure']), 0)
         except (KeyError, ValueError, TypeError):
@@ -58,7 +64,9 @@ class WeatherVaneInterface(object):
 
         return int(air_pressure), errors
 
-    def __cast_wind_speed_to_byte(self, weather_data, errors):
+    def __cast_wind_speed_to_byte(self, weather_data):
+        errors = 0
+
         try:
             wind_speed = round(float(weather_data['wind_speed']), 0)
         except (KeyError, ValueError, TypeError):
@@ -74,7 +82,9 @@ class WeatherVaneInterface(object):
 
         return int(wind_speed), errors
 
-    def __cast_wind_speed_max_to_byte(self, weather_data, errors):
+    def __cast_wind_speed_max_to_byte(self, weather_data):
+        errors = 0
+
         try:
             wind_speed_max = round(float(weather_data['wind_speed_max']), 0)
         except (KeyError, ValueError, TypeError):
@@ -103,13 +113,12 @@ class WeatherVaneInterface(object):
         return result
 
     def __convert_data(self, weather_data):
-        errors = 0x00
-
-        wind_direction, errors = self.__cast_wind_direction_to_byte(weather_data, errors)
-        wind_speed, errors = self.__cast_wind_speed_to_byte(weather_data, errors)
-        wind_speed_max, errors = self.__cast_wind_speed_max_to_byte(weather_data, errors)
-        air_pressure, errors = self.__cast_air_pressure_to_byte(weather_data, errors)
-        service_byte = errors | self.__get_data_changed(weather_data) | 0b01010000
+        wind_direction, wind_direction_error = self.__cast_wind_direction_to_byte(weather_data)
+        wind_speed, wind_speed_error = self.__cast_wind_speed_to_byte(weather_data)
+        wind_speed_max, wind_speed_max_error = self.__cast_wind_speed_max_to_byte(weather_data)
+        air_pressure, air_pressure_error = self.__cast_air_pressure_to_byte(weather_data)
+        error_byte = wind_direction_error | wind_speed_error | wind_speed_max_error | air_pressure_error
+        service_byte = error_byte | self.__get_data_changed(weather_data) | self.FIXED_PATTERN
 
         return [wind_direction, wind_speed, wind_speed_max, air_pressure, service_byte, self.DUMMY_BYTE]
 
@@ -120,7 +129,7 @@ class WeatherVaneInterface(object):
         weather_data -- a dictionary with the data
         """
         if not isinstance(weather_data, dict):
-            raise TypeError("unsupported type %s " %type(weather_data))
+            raise TypeError("unsupported type %s " % type(weather_data))
 
         data_array = self.__convert_data(weather_data)
         logging.debug("Sending data:" + ", ".join(str(x) for x in data_array))

@@ -7,8 +7,8 @@ from weatherdata.datasources import BuienradarSource
 from interfaces.testinterface import TestInterface
 from interfaces.weathervaneinterface import WeatherVaneInterface
 
-class WeatherVane(object):
 
+class WeatherVane(object):
     def test_mode(self):
         """
         Test mode is used to output a predicable sequence of bytes to
@@ -30,7 +30,7 @@ class WeatherVane(object):
             else:
                 test = 0xAA
 
-            data = [counter%255, (255-counter)%255, test]
+            data = [counter % 255, (255 - counter) % 255, test]
 
             interface.send(data)
             sleep(1)
@@ -59,15 +59,15 @@ class WeatherVane(object):
             counter += 1
             sleep(1)
 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="TBD")
     parser.add_argument('-t', '--test', action='store_true', default=False, help="run the program in test mode")
     parser.add_argument('-i', '--interval', action='store', type=int, default=300,
-        help="specify the amount of seconds between each time the weather data is collected")
+                        help="specify the amount of seconds between each time the weather data is collected")
     wv = WeatherVane()
 
     args = parser.parse_args()
-
 
     weathervane_logger = logging.getLogger('')
     weathervane_logger.setLevel(logging.DEBUG)

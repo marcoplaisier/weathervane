@@ -2,14 +2,14 @@ from mock import patch
 import unittest
 from weathervane.interfaces.weathervaneinterface import WeatherVaneInterface
 
+
 @patch('weathervane.interfaces.weathervaneinterface.spi', autospec=True)
 class WeatherVaneTest(unittest.TestCase):
-
     def test_init(self, mock_class):
         result = WeatherVaneInterface()
         expected = 'WeatherVaneInterface(channel=0, frequency=50000)'
         self.assertEqual(expected, str(result), 'Weather Vane Interface failed to be setup correctly - %s, %s'
-                                                 %(expected, result))
+                                                % (expected, result))
 
     def test_toggle_bit_empty_data(self, mock_class):
         interface = WeatherVaneInterface()
@@ -34,7 +34,7 @@ class WeatherVaneTest(unittest.TestCase):
         self.assertEqual(result, expected)
 
     def test_integer(self, mock_class):
-        interface =  WeatherVaneInterface()
+        interface = WeatherVaneInterface()
         self.assertRaises(TypeError, interface.send, 3)
 
     def test_non_iterable(self, mock_class):
@@ -162,9 +162,10 @@ class WeatherVaneTest(unittest.TestCase):
     def test_wind_speed_not_present(self, mock_class):
         interface = WeatherVaneInterface()
         expected = [0x00, 0x00, 0x00, 0x00, 0b11010010, 0x00]
-        result = interface._WeatherVaneInterface__convert_data({'wind_direction': 'N','wind_speed_max': 0,
+        result = interface._WeatherVaneInterface__convert_data({'wind_direction': 'N', 'wind_speed_max': 0,
                                                                 'air_pressure': 900})
         self.assertEqual(expected, result)
+
 
 if __name__ == '__main__':
     unittest.main()

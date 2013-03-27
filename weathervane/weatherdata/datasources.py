@@ -1,3 +1,4 @@
+from unittest.test.test_result import __init__
 from urllib2 import urlopen
 from weathervane.weatherdata.parser import KNMIParser, BuienradarParser
 
@@ -10,6 +11,35 @@ class DataSource():
         response = urlopen(url)
         data = response.read()
         return data
+
+
+class TestSource(DataSource):
+    def __init__(self):
+        self.counter = 0
+
+    def get_data(self, conn, station_id):
+        """
+        Test mode is used to output a predicable sequence of bytes to
+        the output pins.
+        The program will send 3 bytes every second to the pins.
+        - Byte 1: an increasing counter (modulo 255)
+        - Byte 2: a decreasing counter (idem)
+        - Byte 3: switches between 0x55 and 0xAA
+
+        """
+        self.counter += 1
+
+        if self.counter > 255:
+            self.counter = 0
+
+        if self.counter % 2:
+            test = 0x55
+        else:
+            test = 0xAA
+
+        conn.send({'wind_direction': self.counter % 255, 'wind_speed': (255 - self.counter) % 255,
+                   'wind_speed_max': test, 'air_pressure': None})
+        conn.close()
 
 
 class BuienradarSource(DataSource):
@@ -55,7 +85,9 @@ class KNMISource(DataSource):
 
 
 class RijkswaterstaatSource(object):
-    pass
+    def __init__(self):
+        return NotImplementedError("Rijkswaterstaat is not yet ready")
+        # http://www.rijkswaterstaat.nl/apps/geoservices/rwsnl/awd.php?mode=html
 
 if __name__ == '__main__':
     import doctest

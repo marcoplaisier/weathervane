@@ -7,7 +7,7 @@ from weathervane.interfaces.weathervaneinterface import WeatherVaneInterface
 class WeatherVaneTest(unittest.TestCase):
     def test_init(self, mock_class):
         result = WeatherVaneInterface()
-        expected = 'WeatherVaneInterface(channel=0, frequency=50000)'
+        expected = 'WeatherVaneInterface(channel=0, frequency=250000)'
         self.assertEqual(expected, str(result), 'Weather Vane Interface failed to be setup correctly - %s, %s'
                                                 % (expected, result))
 
@@ -50,98 +50,98 @@ class WeatherVaneTest(unittest.TestCase):
     def test_error_wind_direction(self, mock_class):
         interface = WeatherVaneInterface()
         expected = 0
-        result, errors = interface._WeatherVaneInterface__cast_wind_direction_to_byte({'wind_direction': 'A'}, 0)
+        result, errors = interface._WeatherVaneInterface__cast_wind_direction_to_byte({'wind_direction': 'A'})
         self.assertEqual(expected, result)
         self.assertEqual(0b00000001, errors)
 
     def test_air_pressure(self, mock_class):
         interface = WeatherVaneInterface()
         expected = 1
-        result, errors = interface._WeatherVaneInterface__cast_air_pressure_to_byte({'air_pressure': 901}, 0)
+        result, errors = interface._WeatherVaneInterface__cast_air_pressure_to_byte({'air_pressure': 901})
         self.assertEqual(expected, result)
         self.assertEqual(0b00000000, errors)
 
     def test_air_pressure_too_low(self, mock_class):
         interface = WeatherVaneInterface()
         expected = 0
-        result, errors = interface._WeatherVaneInterface__cast_air_pressure_to_byte({'air_pressure': 899}, 0)
+        result, errors = interface._WeatherVaneInterface__cast_air_pressure_to_byte({'air_pressure': 899})
         self.assertEqual(expected, result)
         self.assertEqual(0b00000100, errors)
 
     def test_air_pressure_too_high(self, mock_class):
         interface = WeatherVaneInterface()
         expected = 1155 - 900
-        result, errors = interface._WeatherVaneInterface__cast_air_pressure_to_byte({'air_pressure': 1156}, 0)
+        result, errors = interface._WeatherVaneInterface__cast_air_pressure_to_byte({'air_pressure': 1156})
         self.assertEqual(expected, result)
         self.assertEqual(0b00000100, errors)
 
     def test_air_pressure_rounded(self, mock_class):
         interface = WeatherVaneInterface()
         expected = 100
-        result, errors = interface._WeatherVaneInterface__cast_air_pressure_to_byte({'air_pressure': 1000.495}, 0)
+        result, errors = interface._WeatherVaneInterface__cast_air_pressure_to_byte({'air_pressure': 1000.495})
         self.assertEqual(expected, result)
         self.assertEqual(0b00000000, errors)
 
     def test_wind_speed_too_high(self, mock_class):
         interface = WeatherVaneInterface()
         expected = 63
-        result, errors = interface._WeatherVaneInterface__cast_wind_speed_to_byte({'wind_speed': 64}, 0)
+        result, errors = interface._WeatherVaneInterface__cast_wind_speed_to_byte({'wind_speed': 64})
         self.assertEqual(expected, result)
         self.assertEqual(0b00000010, errors)
 
     def test_wind_speed(self, mock_class):
         interface = WeatherVaneInterface()
         expected = 10
-        result, errors = interface._WeatherVaneInterface__cast_wind_speed_to_byte({'wind_speed': 10}, 0)
+        result, errors = interface._WeatherVaneInterface__cast_wind_speed_to_byte({'wind_speed': 10})
         self.assertEqual(expected, result)
         self.assertEqual(0b00000000, errors)
 
     def test_wind_speed_rounded(self, mock_class):
         interface = WeatherVaneInterface()
         expected = 10
-        result, errors = interface._WeatherVaneInterface__cast_wind_speed_to_byte({'wind_speed': 9.99}, 0)
+        result, errors = interface._WeatherVaneInterface__cast_wind_speed_to_byte({'wind_speed': 9.99})
         self.assertEqual(expected, result)
         self.assertEqual(0b00000000, errors)
 
     def test_wind_speed_too_low(self, mock_class):
         interface = WeatherVaneInterface()
         expected = 0x00
-        result, errors = interface._WeatherVaneInterface__cast_wind_speed_to_byte({'wind_speed': -1}, 0)
+        result, errors = interface._WeatherVaneInterface__cast_wind_speed_to_byte({'wind_speed': -1})
         self.assertEqual(expected, result)
         self.assertEqual(0b00000010, errors)
 
     def test_wind_speed_max(self, mock_class):
         interface = WeatherVaneInterface()
         expected = 0x01
-        result, errors = interface._WeatherVaneInterface__cast_wind_speed_max_to_byte({'wind_speed_max': 1}, 0)
+        result, errors = interface._WeatherVaneInterface__cast_wind_speed_max_to_byte({'wind_speed_max': 1})
         self.assertEqual(expected, result)
         self.assertEqual(0b00000000, errors)
 
     def test_wind_speed_max_too_low(self, mock_class):
         interface = WeatherVaneInterface()
         expected = 0x00
-        result, errors = interface._WeatherVaneInterface__cast_wind_speed_max_to_byte({'wind_speed_max': -1}, 0)
+        result, errors = interface._WeatherVaneInterface__cast_wind_speed_max_to_byte({'wind_speed_max': -1})
         self.assertEqual(expected, result)
         self.assertEqual(0b00001000, errors)
 
     def test_wind_speed_max_too_high(self, mock_class):
         interface = WeatherVaneInterface()
         expected = 63
-        result, errors = interface._WeatherVaneInterface__cast_wind_speed_max_to_byte({'wind_speed_max': 64}, 0)
+        result, errors = interface._WeatherVaneInterface__cast_wind_speed_max_to_byte({'wind_speed_max': 64})
         self.assertEqual(expected, result)
         self.assertEqual(0b00001000, errors)
 
     def test_wind_speed_rounded(self, mock_class):
         interface = WeatherVaneInterface()
         expected = 50
-        result, errors = interface._WeatherVaneInterface__cast_wind_speed_max_to_byte({'wind_speed_max': 50.394}, 0)
+        result, errors = interface._WeatherVaneInterface__cast_wind_speed_max_to_byte({'wind_speed_max': 50.394})
         self.assertEqual(expected, result)
         self.assertEqual(0b00000000, errors)
 
     def test_wind_direction(self, mock_class):
         interface = WeatherVaneInterface()
         expected = 0x0D
-        result, errors = interface._WeatherVaneInterface__cast_wind_direction_to_byte({'wind_direction': 'WNW'}, 0)
+        result, errors = interface._WeatherVaneInterface__cast_wind_direction_to_byte({'wind_direction': 'WNW'})
         self.assertEqual(expected, result)
         self.assertEqual(0b00000000, errors)
 

@@ -33,7 +33,7 @@ class WeatherVaneInterface(object):
         return "WeatherVaneInterface(channel=%d, frequency=%d)" % (self.channel, self.frequency)
 
     def __cast_wind_direction_to_byte(self, weather_data):
-        errors = 0
+        errors = 0x00
 
         try:
             wind_direction_code = weather_data['wind_direction']
@@ -45,7 +45,7 @@ class WeatherVaneInterface(object):
         return int(wind_direction_byte), errors
 
     def __cast_air_pressure_to_byte(self, weather_data):
-        errors = 0
+        errors = 0x00
 
         try:
             air_pressure = round(float(weather_data['air_pressure']), 0)
@@ -65,7 +65,7 @@ class WeatherVaneInterface(object):
         return int(air_pressure), errors
 
     def __cast_wind_speed_to_byte(self, weather_data):
-        errors = 0
+        errors = 0x00
 
         try:
             wind_speed = round(float(weather_data['wind_speed']), 0)
@@ -83,7 +83,7 @@ class WeatherVaneInterface(object):
         return int(wind_speed), errors
 
     def __cast_wind_speed_max_to_byte(self, weather_data):
-        errors = 0
+        errors = 0x00
 
         try:
             wind_speed_max = round(float(weather_data['wind_speed_max']), 0)

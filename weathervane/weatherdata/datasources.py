@@ -1,4 +1,3 @@
-from unittest.test.test_result import __init__
 from urllib2 import urlopen
 from weathervane.weatherdata.parser import KNMIParser, BuienradarParser
 

@@ -59,7 +59,8 @@ Running
 
 Running the program automatically after boot
 --------------------------------------------
-#TODO
+edit /etc/rc.local
+add line 'python /home/pi/weathervane/weathervane.py &'
 
 Testing
 -------

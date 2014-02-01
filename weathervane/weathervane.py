@@ -3,19 +3,22 @@ import logging
 import logging.handlers
 from multiprocessing import Process, Pipe
 from time import sleep
-from weatherdata.datasources import BuienradarSource, KNMISource, RijkswaterstaatSource, TestSource
 from interfaces.weathervaneinterface import WeatherVaneInterface
 
 
 class WeatherVane(object):
     def get_source(self, source):
         if source == 'buienradar':
+            from weatherdata.datasources import BuienradarSource
             return BuienradarSource()
         elif source == 'knmi':
+            from weatherdata.datasources import KNMISource
             return KNMISource()
         elif source == 'rijkswaterstaat':
+            from weatherdata.datasources import RijkswaterstaatSource
             return RijkswaterstaatSource()
         elif source == 'test':
+            from weatherdata.datasources import TestSource
             return TestSource()
         else:
             raise NameError('Data provider not found')
@@ -67,7 +70,7 @@ if __name__ == "__main__":
                         help="the id of the the weather station from which the weather data is retrieved")
     parser.add_argument('list', help="return all known weather stations from the given provider")
     parser.add_argument('-p', '--provider', choices=['buienradar', 'knmi', 'rijkswaterstaat'],
-                        help='select the provider')
+                        help='select the provider', default='buienradar')
     args = parser.parse_args()
 
     wv = WeatherVane()

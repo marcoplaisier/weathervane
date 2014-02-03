@@ -6,7 +6,8 @@ class SPISetupException(Exception):
 class SPIDataTransmissionError(Exception):
     pass
 
-class spi(object):
+
+class SPI(object):
 
     def setup(self, library='wiringPi', channel=0, frequency=500000):
         """Setup loads the WiringPi library and sets the important parameters

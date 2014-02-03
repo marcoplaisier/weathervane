@@ -1,6 +1,6 @@
 import copy
 import logging
-from spi import spi
+from SPI import SPI
 
 
 class WeatherVaneInterface(object):
@@ -24,7 +24,7 @@ class WeatherVaneInterface(object):
     def __init__(self, channel=0, frequency=250000):
         self.channel = channel
         self.frequency = frequency
-        self.spi = spi()
+        self.spi = SPI()
         self.spi.setup(channel=channel, frequency=frequency)
         self.data_changed = False
         self.weather_data = {}

@@ -1,6 +1,8 @@
 Weathervane for the Raspberry Pi
 ================================
 
+.. image:: https://travis-ci.org/marcofinalist/weathervane.png?branch=tests-fixing   :target: https://travis-ci.org/marcofinalist/weathervane
+
 Requirements
 -----------
 * BeautifulSoup 3.2.1

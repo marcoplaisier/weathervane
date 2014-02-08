@@ -1,5 +1,4 @@
-from mock import patch
-from weathervane.interfaces.SPI import SPI, SPISetupException
+from weathervane.interfaces.spi import SPI, SPISetupException
 
 __author__ = 'Marco'
 

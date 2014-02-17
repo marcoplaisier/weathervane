@@ -11,6 +11,36 @@ class SPIDataTransmissionError(Exception):
 
 
 class SPI(object):
+    ERROR_CODE = -1
+    AVAILABLE_CHANNELS = (0, 1)
+
+    def __init__(self, library='wiringPi', channel=0, frequency=500000):
+        """
+        Setup loads the WiringPi library and sets the important parameters
+
+        @param library: the name of the library to use. Default: wiringPi. This library must be installed and available.
+        @param channel: the Pi can only drive 2 SPI channels, either 0 or 1
+        @param frequency: the amount of bits per second that are sent over the channel. See also:
+        http://raspberrypi.stackexchange.com/questions/699/what-spi-frequencies-does-raspberry-pi-support
+        @raise SPISetupException: when setup cannot proceed, it will raise a setup exception
+        """
+
+        if channel not in self.AVAILABLE_CHANNELS:
+            # If the channel is not 0 or 1, the rest of the program may fail silently or give weird errors. So, we
+            # raise an exception.
+            error_message = 'Channel must be 0 or 1. Channel {} is not available'.format(channel)
+            logging.exception(error_message)
+            raise SPISetupException(error_message)
+
+        try:
+            self.handle = self.load_library_by_name(library)
+            self._setup(channel, frequency)
+            self.data = None
+        except SPISetupException:
+            logging.exception('Could not setup SPI protocol. Library: {}, channel: {}, frequency: {}'.
+                              format(library, channel, frequency))
+            raise
+
     @staticmethod
     def load_library_by_name(library):
         """
@@ -27,40 +57,15 @@ class SPI(object):
             raise SPISetupException(
                 'Could not find library. Please run "gpio load spi" or install the drivers first')
 
-    def setup(self, channel, frequency):
+    def _setup(self, channel, frequency):
         status_code = self.handle.wiringPiSPISetup(channel, frequency)
-        if status_code < -1:
+
+        if status_code == self.ERROR_CODE:
             error_message = 'Could not setup SPI protocol. Status code: {}'.format(status_code)
             logging.exception(error_message)
             raise SPISetupException(error_message)
         else:
-            logging.critical('SPI protocol setup succeeded at channel {} with frequency {}'.format(channel, frequency))
-
-    def __init__(self, library='wiringPi', channel=0, frequency=500000):
-        """
-        Setup loads the WiringPi library and sets the important parameters
-
-        @param library: the name of the library to use. Default: wiringPi. This library must be installed and available.
-        @param channel: the Pi can only drive 2 SPI channels, either 0 or 1
-        @param frequency: the amount of bits per second that are sent over the channel. See also:
-        http://raspberrypi.stackexchange.com/questions/699/what-spi-frequencies-does-raspberry-pi-support
-        @raise SPISetupException: when setup cannot proceed, it will raise a setup exception
-        """
-
-        if channel not in (0, 1):
-            # If the channel is not 0 or 1, the rest of the program may fail silently or give weird errors.
-            error_message = 'Channel must be 0 or 1. Channel {} is not available'.format(channel)
-            logging.exception(error_message)
-            raise SPISetupException(error_message)
-
-        try:
-            self.handle = self.load_library_by_name(library)
-            self.setup(channel, frequency)
-            self.data = None
-        except SPISetupException:
-            logging.exception('Could not setup SPI protocol. Library: {}, channel: {}, frequency: {}'.
-            format(library, channel, frequency))
-            raise
+            logging.info('SPI protocol setup succeeded at channel {} with frequency {}'.format(channel, frequency))
 
     def pack(self, data):
         """
@@ -87,9 +92,9 @@ class SPI(object):
         data_packet, data_length = self.pack(data)
 
         return_code = self.handle.wiringPiSPIDataRW(0, data_packet, data_length)
-        if return_code < -1:
+        if return_code == self.ERROR_CODE:
             raise SPIDataTransmissionError(
-                'Transmission failed and resulted in an error. Data: {}, data length: {}'.format(data_packet,
+                'Transmission failed and resulted in an error. Data: {}, data length: {}'.format(list(data_packet),
                                                                                                  data_length))
         logging.info("Sent {} as {}".format(data, data_packet))
 

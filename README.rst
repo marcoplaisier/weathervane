@@ -60,7 +60,10 @@ Running
 Running the program automatically after boot
 --------------------------------------------
 edit /etc/rc.local
-add line 'python /home/pi/weathervane/weathervane.py &'
+
+   ::
+   
+      add line 'python /home/pi/weathervane/weathervane.py &'
 
 Testing
 -------

@@ -59,11 +59,17 @@ Running
 
 Running the program automatically after boot
 --------------------------------------------
-edit /etc/rc.local
+Edit /etc/rc.local
+
+   ::
+         
+         sudo nano /etc/rc.local
+         
+Add the following line at the bottom (include the ampersand)
 
    ::
    
-      add line 'python /home/pi/weathervane/weathervane.py &'
+      python /home/pi/weathervane/weathervane.py &
 
 Testing
 -------

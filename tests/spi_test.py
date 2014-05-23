@@ -54,6 +54,21 @@ class MyTestCase(unittest.TestCase):
     @patch('interfaces.spi.SPI.load_library_by_name')
     def test_pack_with_iterable(self, mock_class):
         spi = SPI()
+        it = range(0, 10)
+        data_packet, length = spi.pack(data=it)
+        self.assertEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], list(data_packet))
+        self.assertEqual(len(it), length)
+
+    @patch('interfaces.spi.SPI.load_library_by_name')
+    def test_pack_with_large_bytes(self, mock_class):
+        spi = SPI()
+        data = [-10, -1, 0, 255, 256, 266]
+        data_packet, length = spi.pack(data=data)
+        self.assertEqual([246, 255, 0, 255, 0, 10], list(data_packet))
+
+    @patch('interfaces.spi.SPI.load_library_by_name')
+    def test_pack_with_iterable(self, mock_class):
+        spi = SPI()
         data = range(0, 4)
         data_packet, length = spi.pack(data)
         self.assertEqual([0, 1, 2, 3], list(data_packet))

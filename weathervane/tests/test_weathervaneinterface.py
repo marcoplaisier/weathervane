@@ -1,9 +1,9 @@
 from mock import patch
 import unittest
-from interfaces.weathervaneinterface import WeatherVaneInterface
+from weathervane.weathervaneinterface import WeatherVaneInterface
 
 
-@patch('interfaces.weathervaneinterface.SPI', autospec=True)
+@patch('weathervane.weathervaneinterface.SPI', autospec=True)
 class WeatherVaneTest(unittest.TestCase):
     def test_init(self, mock_class):
         result = WeatherVaneInterface()

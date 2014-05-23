@@ -1,12 +1,15 @@
-from mock import MagicMock, patch
 import unittest
 import logging
-from interfaces.spi import SPI, SPISetupException, SPIDataTransmissionError
+
+from mock import MagicMock, patch
+
+from weathervane.spi import SPI, SPISetupException, SPIDataTransmissionError
+
 
 __author__ = 'Marco'
 
 
-class MyTestCase(unittest.TestCase):
+class SpiTests(unittest.TestCase):
     def setUp(self):
         logger = logging.getLogger()
         logger.setLevel(logging.CRITICAL)
@@ -17,11 +20,11 @@ class MyTestCase(unittest.TestCase):
     def test_initialization_non_existing_lib(self):
         self.assertRaises(SPISetupException, SPI, library='not-existing-here')
 
-    @patch('interfaces.spi.SPI.load_library_by_name')
+    @patch('weathervane.spi.SPI.load_library_by_name')
     def test_initialization(self, mock_class):
         spi = SPI()
 
-    @patch('interfaces.spi.SPI.load_library_by_name')
+    @patch('weathervane.spi.SPI.load_library_by_name')
     def test_pack_with_empty_list(self, mock_class):
         spi = SPI()
         data = []
@@ -29,7 +32,7 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual([], list(data_packet))
         self.assertEqual(0, length)
 
-    @patch('interfaces.spi.SPI.load_library_by_name')
+    @patch('weathervane.spi.SPI.load_library_by_name')
     def test_pack_with_one_element(self, mock_class):
         spi = SPI()
         data = [1]
@@ -37,7 +40,7 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual([1], list(data_packet))
         self.assertEqual(1, length)
 
-    @patch('interfaces.spi.SPI.load_library_by_name')
+    @patch('weathervane.spi.SPI.load_library_by_name')
     def test_pack_with_two_elements(self, mock_class):
         spi = SPI()
         data = [1, 2]
@@ -45,13 +48,13 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual([1, 2], list(data_packet))
         self.assertEqual(2, length)
 
-    @patch('interfaces.spi.SPI.load_library_by_name')
+    @patch('weathervane.spi.SPI.load_library_by_name')
     def test_pack_with_string(self, mock_class):
         spi = SPI()
         data = 'test'
         self.assertRaises(TypeError, spi.pack, data)
 
-    @patch('interfaces.spi.SPI.load_library_by_name')
+    @patch('weathervane.spi.SPI.load_library_by_name')
     def test_pack_with_iterable(self, mock_class):
         spi = SPI()
         it = range(0, 10)
@@ -59,14 +62,14 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], list(data_packet))
         self.assertEqual(len(it), length)
 
-    @patch('interfaces.spi.SPI.load_library_by_name')
+    @patch('weathervane.spi.SPI.load_library_by_name')
     def test_pack_with_large_bytes(self, mock_class):
         spi = SPI()
         data = [-10, -1, 0, 255, 256, 266]
         data_packet, length = spi.pack(data=data)
         self.assertEqual([246, 255, 0, 255, 0, 10], list(data_packet))
 
-    @patch('interfaces.spi.SPI.load_library_by_name')
+    @patch('weathervane.spi.SPI.load_library_by_name')
     def test_pack_with_iterable(self, mock_class):
         spi = SPI()
         data = range(0, 4)
@@ -74,7 +77,7 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual([0, 1, 2, 3], list(data_packet))
         self.assertEqual(4, length)
 
-    @patch('interfaces.spi.SPI.load_library_by_name')
+    @patch('weathervane.spi.SPI.load_library_by_name')
     def test_transmission(self, mock_class):
         spi = SPI()
         spi.handle.wiringPiSPIDataRW = MagicMock()
@@ -83,7 +86,7 @@ class MyTestCase(unittest.TestCase):
         spi.send_data(data)
         spi.handle.wiringPiSPIDataRW.assert_called_once()
 
-    @patch('interfaces.spi.SPI.load_library_by_name')
+    @patch('weathervane.spi.SPI.load_library_by_name')
     def test_incorrect_return_code(self, mock_class):
         spi = SPI()
         spi.handle.wiringPiSPIDataRW = MagicMock()

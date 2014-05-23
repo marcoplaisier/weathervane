@@ -3,22 +3,23 @@ import logging
 import logging.handlers
 from multiprocessing import Process, Pipe
 from time import sleep
-from interfaces.weathervaneinterface import WeatherVaneInterface
+
+from weathervane.weathervaneinterface import WeatherVaneInterface
 
 
 class WeatherVane(object):
     def get_source(self, source):
         if source == 'buienradar':
-            from weatherdata.datasources import BuienradarSource
+            from weathervane.datasources import BuienradarSource
             return BuienradarSource()
         elif source == 'knmi':
-            from weatherdata.datasources import KNMISource
+            from weathervane.datasources import KNMISource
             return KNMISource()
         elif source == 'rijkswaterstaat':
-            from weatherdata.datasources import RijkswaterstaatSource
+            from weathervane.datasources import RijkswaterstaatSource
             return RijkswaterstaatSource()
         elif source == 'test':
-            from weatherdata.datasources import TestSource
+            from weathervane.datasources import TestSource
             return TestSource()
         else:
             raise NameError('Data provider not found')

@@ -1,6 +1,9 @@
 Weathervane for the Raspberry Pi
 ================================
-
+daf
+=======
+Status
+-----------
 .. image:: https://travis-ci.org/marcofinalist/weathervane.png?branch=tests-fixing   :target: https://travis-ci.org/marcofinalist/weathervane
 
 Requirements

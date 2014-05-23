@@ -1,6 +1,6 @@
 Weathervane for the Raspberry Pi
 ================================
-daf
+
 =======
 Status
 -----------

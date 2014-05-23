@@ -1,5 +1,5 @@
 from urllib2 import urlopen
-from weatherdata.parser import KNMIParser, BuienradarParser
+from parser import KNMIParser, BuienradarParser
 
 
 class DataSource():

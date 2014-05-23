@@ -1,7 +1,7 @@
 import copy
 import logging
 
-from weathervane.spi import SPI
+from spi import SPI
 
 
 class WeatherVaneInterface(object):

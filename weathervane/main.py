@@ -4,22 +4,22 @@ import logging.handlers
 from multiprocessing import Process, Pipe
 from time import sleep
 
-from weathervane.weathervaneinterface import WeatherVaneInterface
+from weathervaneinterface import WeatherVaneInterface
 
 
 class WeatherVane(object):
     def get_source(self, source):
         if source == 'buienradar':
-            from weathervane.datasources import BuienradarSource
+            from datasources import BuienradarSource
             return BuienradarSource()
         elif source == 'knmi':
-            from weathervane.datasources import KNMISource
+            from datasources import KNMISource
             return KNMISource()
         elif source == 'rijkswaterstaat':
-            from weathervane.datasources import RijkswaterstaatSource
+            from datasources import RijkswaterstaatSource
             return RijkswaterstaatSource()
         elif source == 'test':
-            from weathervane.datasources import TestSource
+            from datasources import TestSource
             return TestSource()
         else:
             raise NameError('Data provider not found')
@@ -54,9 +54,9 @@ class WeatherVane(object):
         weathervane_logger = logging.getLogger('')
         weathervane_logger.setLevel(logging.DEBUG)
         handler = logging.handlers.TimedRotatingFileHandler(filename="weathervane.log",
-                                                        when="midnight",
-                                                        interval=1,
-                                                        backupCount=7)
+                                                            when="midnight",
+                                                            interval=1,
+                                                            backupCount=7)
         formatter = logging.Formatter("%(asctime)s:%(levelname)s:%(module)s:%(message)s")
         handler.setFormatter(formatter)
         weathervane_logger.addHandler(handler)

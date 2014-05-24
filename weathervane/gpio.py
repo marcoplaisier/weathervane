@@ -10,9 +10,13 @@ class SPIDataTransmissionError(Exception):
     pass
 
 
-class SPI(object):
+class GPIO(object):
     ERROR_CODE = -1
     AVAILABLE_CHANNELS = (0, 1)
+    INPUT = 0
+    OUTPUT = 1
+    PWM_OUTPUT = 2
+    GPIO_CLOCK = 3
 
     def __init__(self, library='wiringPi', channel=0, frequency=500000):
         """
@@ -84,6 +88,9 @@ class SPI(object):
         else:
             logging.info('SPI protocol setup succeeded at channel {} with frequency {}'.format(channel, frequency))
 
+        status_code = self.handle.wiringPiSetup()
+
+
     def pack(self, data):
         """
         Pack the data in an array of bytes, ready for transmission
@@ -118,20 +125,8 @@ class SPI(object):
 
     def get_data(self):
         return self.data
-
-
-class Pin(object):
-    INPUT = 0
-    OUTPUT = 1
-    PWM_OUTPUT = 2
-    GPIO_CLOCK = 3
-
-    def __init__(self, pin_number, type):
-        self.pin_number = pin_number
-        self.type = type
-        self.spi = SPI()
-        self.spi.handle.wiringPiSetup()
-
-    def read(self):
-        self.spi.handle.pinMode(self.pin_number, type)
-        self.spi.handle.digitalRead(self.pin_number)
+    
+    def read_pin(self, pin_numbers):
+        for pin_number in pin_numbers:
+            self.handle.pinMode(pin_number, self.INPUT)
+        return [self.handle.digitalRead(pin_number) for pin_number in pin_numbers]

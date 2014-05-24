@@ -1,9 +1,9 @@
-from mock import patch
+from mock import Mock, patch
 import unittest
 from weathervane.weathervaneinterface import WeatherVaneInterface
 
 
-@patch('weathervane.weathervaneinterface.SPI', autospec=True)
+@patch('weathervane.weathervaneinterface.GPIO', autospec=True)
 class WeatherVaneTest(unittest.TestCase):
     def test_init(self, mock_class):
         result = WeatherVaneInterface()
@@ -166,6 +166,16 @@ class WeatherVaneTest(unittest.TestCase):
                                                                 'air_pressure': 900})
         self.assertEqual(expected, result)
 
+    def test_get_station(self, mock_class):
+        interface = WeatherVaneInterface()
+        station_id = interface.get_selected_station()
+        self.assertEqual(station_id, 6320)
+
+    def test_get_other_station(self, mock_class):
+        interface = WeatherVaneInterface()
+        interface.gpio.read_pin = Mock(return_value=[1, 1, 0])
+        station_id = interface.get_selected_station()
+        self.assertEqual(station_id, 6312)  # remember, byte ordering
 
 if __name__ == '__main__':
     unittest.main()

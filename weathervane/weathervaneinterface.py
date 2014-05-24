@@ -169,6 +169,6 @@ class WeatherVaneInterface(object):
         bits = self.spi.read_pin(self.station_bits)
         result = 0
         for index, value in enumerate(bits):
-            result = value * 2**index
+            result += value * 2**index
 
         return self.STATIONS[result]

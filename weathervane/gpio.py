@@ -118,3 +118,20 @@ class SPI(object):
 
     def get_data(self):
         return self.data
+
+
+class Pin(object):
+    INPUT = 0
+    OUTPUT = 1
+    PWM_OUTPUT = 2
+    GPIO_CLOCK = 3
+
+    def __init__(self, pin_number, type):
+        self.pin_number = pin_number
+        self.type = type
+        self.spi = SPI()
+        self.spi.handle.wiringPiSetup()
+
+    def read(self):
+        self.spi.handle.pinMode(self.pin_number, type)
+        self.spi.handle.digitalRead(self.pin_number)

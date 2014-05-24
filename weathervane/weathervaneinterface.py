@@ -1,7 +1,7 @@
 import copy
 import logging
 
-from spi import SPI
+from gpio import SPI
 
 
 class WeatherVaneInterface(object):

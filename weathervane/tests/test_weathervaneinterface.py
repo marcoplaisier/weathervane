@@ -166,6 +166,10 @@ class WeatherVaneTest(unittest.TestCase):
                                                                 'air_pressure': 900})
         self.assertEqual(expected, result)
 
+    def test_get_station(self, mock_class):
+        interface = WeatherVaneInterface()
+        station_id = interface.get_selected_station()
+        self.assertEqual(station_id, 6320)
 
 if __name__ == '__main__':
     unittest.main()

@@ -24,9 +24,13 @@ class WeatherVane(object):
         else:
             raise NameError('Data provider not found')
 
-    def main(self, interval, source='buienradar', station_id=6323):
+    def main(self, interval, station_id, source='buienradar'):
         logging.info("Starting operation")
         interface = WeatherVaneInterface(channel=0, frequency=250000)
+
+        if station_id is None:
+            station_id = interface.get_selected_station()
+
         logging.debug("Using " + str(interface))
         weather_data = {'wind_direction': None, 'wind_speed': None, 'wind_speed_max': None, 'air_pressure': None}
 
@@ -50,6 +54,7 @@ class WeatherVane(object):
             counter += 1
             sleep(1)
 
+    @staticmethod
     def set_logger(self):
         weathervane_logger = logging.getLogger('')
         weathervane_logger.setLevel(logging.DEBUG)
@@ -67,7 +72,7 @@ if __name__ == "__main__":
     parser.add_argument('-t', '--test', action='store_true', default=False, help="run the program in test mode")
     parser.add_argument('-i', '--interval', action='store', type=int, default=300,
                         help="specify the interval (in seconds) when the weather data is retrieved")
-    parser.add_argument('-s', '--station', action='store', type=int, default=6323,
+    parser.add_argument('-s', '--station', action='store', type=int, default=None,
                         help="the id of the the weather station from which the weather data is retrieved")
     parser.add_argument('list', help="return all known weather stations from the given provider")
     parser.add_argument('-p', '--provider', choices=['buienradar', 'knmi', 'rijkswaterstaat'],
@@ -76,4 +81,5 @@ if __name__ == "__main__":
 
     wv = WeatherVane()
     wv.set_logger()
+    logging.info(args)
     wv.main(interval=args.interval, source=args.provider, station_id=args.station)

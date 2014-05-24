@@ -21,6 +21,7 @@ class WeatherVaneInterface(object):
     AIR_PRESSURE_MINIMUM = 900
     AIR_PRESSURE_MAXIMUM = 1155
     FIXED_PATTERN = 0b01010000
+    STATIONS = {0: 6320, 1: 6321, 2: 6310, 3: 6312, 4: 6308, 5: 6311, 6: 6331, 7: 6316}
 
     def __init__(self, channel=0, frequency=250000):
         self.channel = channel
@@ -29,6 +30,7 @@ class WeatherVaneInterface(object):
         self.spi.__init__(channel=channel, frequency=frequency)
         self.data_changed = False
         self.weather_data = {}
+        self.station_bits = [5, 4, 3]
 
     def __repr__(self):
         return "WeatherVaneInterface(channel=%d, frequency=%d)" % (self.channel, self.frequency)
@@ -163,3 +165,10 @@ class WeatherVaneInterface(object):
 
         return self.weather_data
 
+    def get_selected_station(self):
+        bits = self.spi.read_pin(self.station_bits)
+        result = 0
+        for index, value in enumerate(bits):
+            result = value * 2**index
+
+        return self.STATIONS[result]

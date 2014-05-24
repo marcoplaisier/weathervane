@@ -26,8 +26,8 @@ class WeatherVaneInterface(object):
     def __init__(self, channel=0, frequency=250000):
         self.channel = channel
         self.frequency = frequency
-        self.spi = GPIO()
-        self.spi.__init__(channel=channel, frequency=frequency)
+        self.gpio = GPIO()
+        self.gpio.__init__(channel=channel, frequency=frequency)
         self.data_changed = False
         self.weather_data = {}
         self.station_bits = [5, 4, 3]
@@ -137,7 +137,7 @@ class WeatherVaneInterface(object):
         data_array = self.__convert_data(weather_data)
         logging.debug("Sending data:" + ", ".join(str(x) for x in data_array))
 
-        self.spi.send_data(data_array)
+        self.gpio.send_data(data_array)
 
     def get_data(self):
         """Return the data sent by the spi device.
@@ -148,7 +148,7 @@ class WeatherVaneInterface(object):
         Returns:
         array of bytes
                 """
-        return self.spi.get_data()
+        return self.gpio.get_data()
 
     def get_sent_data(self):
         """Return the original data sent to the spi device.
@@ -166,7 +166,7 @@ class WeatherVaneInterface(object):
         return self.weather_data
 
     def get_selected_station(self):
-        bits = self.spi.read_pin(self.station_bits)
+        bits = self.gpio.read_pin(self.station_bits)
         result = 0
         for index, value in enumerate(bits):
             result += value * 2**index

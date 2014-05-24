@@ -30,9 +30,6 @@ class WeatherVane(object):
         logging.info("Starting operation")
         interface = WeatherVaneInterface(channel=0, frequency=250000)
 
-        if station_id is None:
-            station_id = interface.get_selected_station()
-
         logging.debug("Using " + str(interface))
         weather_data = {'wind_direction': None, 'wind_speed': None, 'wind_speed_max': None, 'air_pressure': None}
 
@@ -44,6 +41,8 @@ class WeatherVane(object):
         while True:
             if (counter % interval) == 0:
                 counter = 0
+                station_id = interface.get_selected_station()
+                logging.info("Getting info from station: {}".format(station_id))
                 p = Process(target=data_source.get_data, args=(pipe_end_1, station_id))
                 p.start()
 

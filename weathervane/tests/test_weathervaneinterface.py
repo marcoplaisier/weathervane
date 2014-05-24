@@ -3,7 +3,7 @@ import unittest
 from weathervane.weathervaneinterface import WeatherVaneInterface
 
 
-@patch('weathervane.weathervaneinterface.SPI', autospec=True)
+@patch('weathervane.weathervaneinterface.GPIO', autospec=True)
 class WeatherVaneTest(unittest.TestCase):
     def test_init(self, mock_class):
         result = WeatherVaneInterface()

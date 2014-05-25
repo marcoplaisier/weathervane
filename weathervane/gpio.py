@@ -137,7 +137,7 @@ class TestInterface(object):
         self.channel = channel
         self.frequency = frequency
         self.gpio = GPIO()
-        self.spi.setup(channel=channel, frequency=frequency)
+        self.gpio.setup(channel=channel, frequency=frequency)
 
     def __repr__(self):
         return "TestInterface(channel=%d, frequency=%d)" % (self.channel, self.frequency)
@@ -151,10 +151,10 @@ class TestInterface(object):
         data = list(data)
         self.gpio.send_data(data)
 
-        def get_data(self):
-            """Return the data sent by the spi device.
+    def get_data(self):
+        """Return the data sent by the spi device.
 
-            This function returns the data that was sent by the connected SPI device. To get the data that was originally
-            sent to that device, use get_sent_data.
-                    """
+        This function returns the data that was sent by the connected SPI device. To get the data that was originally
+        sent to that device, use get_sent_data.
+                """
         return self.gpio.get_data()

@@ -89,7 +89,6 @@ class WeatherVane(object):
             counter += 1
             sleep(1)
 
-    @staticmethod
     def set_logger(self):
         weathervane_logger = logging.getLogger('')
         weathervane_logger.setLevel(logging.DEBUG)

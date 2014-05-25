@@ -130,3 +130,31 @@ class GPIO(object):
         for pin_number in pin_numbers:
             self.handle.pinMode(pin_number, self.INPUT)
         return [self.handle.digitalRead(pin_number) for pin_number in pin_numbers]
+
+
+class TestInterface(object):
+    def __init__(self, channel=0, frequency=50000):
+        self.channel = channel
+        self.frequency = frequency
+        self.gpio = GPIO()
+        self.spi.setup(channel=channel, frequency=frequency)
+
+    def __repr__(self):
+        return "TestInterface(channel=%d, frequency=%d)" % (self.channel, self.frequency)
+
+    def send(self, data):
+        """Send data to the connected SPI device.
+
+        Keyword arguments:
+        data -- an enumerable
+        """
+        data = list(data)
+        self.gpio.send_data(data)
+
+        def get_data(self):
+            """Return the data sent by the spi device.
+
+            This function returns the data that was sent by the connected SPI device. To get the data that was originally
+            sent to that device, use get_sent_data.
+                    """
+        return self.gpio.get_data()

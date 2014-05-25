@@ -5,11 +5,38 @@ import logging
 import logging.handlers
 from multiprocessing import Process, Pipe
 from time import sleep
+from gpio import TestInterface
 
 from weathervaneinterface import WeatherVaneInterface
 
 
 class WeatherVane(object):
+    def test_mode(self):
+        """
+        Test mode is used to output a predicable sequence of bytes to
+        the output pins.
+        The program will send 3 bytes every second to the pins.
+        - Byte 1: an increasing counter (modulo 255)
+        - Byte 2: a decreasing counter (idem)
+        - Byte 3: switches between 0x55 and 0xAA
+
+        """
+        logging.info("Starting test mode")
+        interface = TestInterface(channel=0, frequency=25000)
+        counter = 0
+
+        while True:
+            counter += 1
+            if counter % 2:
+                test = 0x55
+            else:
+                test = 0xAA
+
+            data = [counter % 255, (255-counter) % 255, test]
+
+            interface.send(data)
+            sleep(1)
+
     def get_source(self, source):
         if source == 'buienradar':
             from datasources import BuienradarSource
@@ -82,7 +109,6 @@ if __name__ == "__main__":
                         help="specify the interval (in seconds) when the weather data is retrieved")
     parser.add_argument('-s', '--station', action='store', type=int, default=None,
                         help="the id of the the weather station from which the weather data is retrieved")
-    parser.add_argument('list', help="return all known weather stations from the given provider")
     parser.add_argument('-p', '--provider', choices=['buienradar', 'knmi', 'rijkswaterstaat'],
                         help='select the provider', default='buienradar')
     args = parser.parse_args()
@@ -90,4 +116,8 @@ if __name__ == "__main__":
     wv = WeatherVane()
     wv.set_logger()
     logging.info(args)
-    wv.main(interval=args.interval, source=args.provider, station_id=args.station)
+
+    if args.test:
+        wv.test_mode()
+    else:
+        wv.main(interval=args.interval, source=args.provider, station_id=args.station)

@@ -38,11 +38,18 @@ class WeatherVane(object):
         pipe_end_1, pipe_end_2 = Pipe()
         counter = 0
 
+        selected_station = interface.get_selected_station()
+
         while True:
+            if (counter % 3) == 0:  # check the station selection every three seconds
+                station_id = interface.get_selected_station()
+                if station_id != selected_station:  # reset if a new station is selected
+                    counter = 0
+                    selected_station = station_id
+                    logging.info("New station selected: {}".format(station_id))
+
             if (counter % interval) == 0:
                 counter = 0
-                station_id = interface.get_selected_station()
-                logging.info("Getting info from station: {}".format(station_id))
                 p = Process(target=data_source.get_data, args=(pipe_end_1, station_id))
                 p.start()
 

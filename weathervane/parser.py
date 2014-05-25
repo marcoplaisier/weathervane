@@ -3,6 +3,8 @@ import datetime
 
 
 class BuienradarParser(object):
+    INVALID_DATA = ['0', 0, '-', '', None]
+
     def __init__(self, data):
         self.soup = BeautifulSoup(data)
 
@@ -12,6 +14,7 @@ class BuienradarParser(object):
 
     def get_data_from_station(self, station_id, field_name):
         station_data = self.soup.find("weerstation", id=station_id).find(field_name)
+
         if station_data is None:
             return station_data
         else:
@@ -26,19 +29,34 @@ class BuienradarParser(object):
         return self.get_data_from_station(station_id, "stationnaam")
 
     def get_wind_direction_degrees(self, station_id):
-        return self.get_data_from_station(station_id, "windrichtinggr")
+        data = self.get_data_from_station(station_id, "windrichtinggr")
+        if data in self.INVALID_DATA:
+            data = self.get_data_from_station(6310, "windrichtinggr")
+        return data
 
     def get_wind_speed(self, station_id):
-        return self.get_data_from_station(station_id, "windsnelheidms")
+        data = self.get_data_from_station(station_id, "windsnelheidms")
+        if data in self.INVALID_DATA:
+            data = self.get_data_from_station(6310, "windsnelheidms")
+        return data
 
     def get_wind_direction(self, station_id):
-        return self.get_data_from_station(station_id, "windrichting")
+        data = self.get_data_from_station(station_id, "windrichting")
+        if data in self.INVALID_DATA:
+            data = self.get_data_from_station(6310, "windrichting")
+        return data
 
     def get_air_pressure(self, station_id):
-        return self.get_data_from_station(station_id, "luchtdruk")
+        data = self.get_data_from_station(station_id, "luchtdruk")
+        if data in self.INVALID_DATA:
+            data = self.get_data_from_station(6310, "luchtdruk")
+        return data
 
     def get_wind_maximum(self, station_id):
-        return self.get_data_from_station(station_id, "windstotenms")
+        data = self.get_data_from_station(station_id, "windstotenms")
+        if data in self.INVALID_DATA:
+            data = self.get_data_from_station(6310, "windstotenms")
+        return data
 
 
 class KNMIParser(object):

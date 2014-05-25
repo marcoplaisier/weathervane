@@ -136,8 +136,7 @@ class TestInterface(object):
     def __init__(self, channel=0, frequency=50000):
         self.channel = channel
         self.frequency = frequency
-        self.gpio = GPIO()
-        self.gpio.setup(channel=channel, frequency=frequency)
+        self.gpio = GPIO(channel=channel, frequency=frequency)
 
     def __repr__(self):
         return "TestInterface(channel=%d, frequency=%d)" % (self.channel, self.frequency)

@@ -101,6 +101,13 @@ class WeatherVaneInterface(object):
             wind_speed_max = 63
             errors |= self.WIND_SPEED_MAX_ERROR
 
+        try:
+            wind_speed = round(float(weather_data['wind_speed']), 0)
+        except (KeyError, ValueError, TypeError):
+            wind_speed = 0
+        if wind_speed_max < wind_speed:
+            wind_speed_max = wind_speed
+
         return int(wind_speed_max), errors
 
     def __get_data_changed(self, weather_data):

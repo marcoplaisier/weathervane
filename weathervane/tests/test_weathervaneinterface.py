@@ -166,6 +166,18 @@ class WeatherVaneTest(unittest.TestCase):
                                                                 'air_pressure': 900})
         self.assertEqual(expected, result)
 
+    def test_wind_speed_may_not_exceed_wind_speed_max(self, mock_class):
+        interface = WeatherVaneInterface()
+        expected = [0x00, 0x01, 0x01, 0x00, 0b11010101, 0x00]
+        result = interface._WeatherVaneInterface__convert_data({'wind_speed_max': 0, 'wind_speed': 1})
+        self.assertEqual(expected, result)
+
+    def test_wind_speed_must_be_equal_or_lower_than_wind_speed_max(self, mock_class):
+        interface = WeatherVaneInterface()
+        expected = [0x00, 0x01, 0x02, 0x00, 0b11010101, 0x00]
+        result = interface._WeatherVaneInterface__convert_data({'wind_speed_max': 2, 'wind_speed': 1})
+        self.assertEqual(expected, result)
+
     def test_get_station(self, mock_class):
         interface = WeatherVaneInterface()
         station_id = interface.get_selected_station()

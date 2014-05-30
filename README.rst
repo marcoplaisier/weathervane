@@ -3,7 +3,8 @@ Weathervane for the Raspberry Pi
 
 Status
 -----------
-.. image:: https://travis-ci.org/marcofinalist/weathervane.png?branch=tests-fixing   :target: https://travis-ci.org/marcofinalist/weathervane
+.. image:: https://travis-ci.org/marcofinalist/weathervane.svg?branch=master
+    :target: https://travis-ci.org/marcofinalist/weathervane
 
 Requirements
 -----------

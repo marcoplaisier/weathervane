@@ -30,7 +30,7 @@ class WeatherVaneInterface(object):
         self.gpio.__init__(channel=channel, frequency=frequency)
         self.data_changed = False
         self.weather_data = {}
-        self.station_bits = [5, 4, 3]
+        self.station_bits = [3, 4, 5]
 
     def __repr__(self):
         return "WeatherVaneInterface(channel=%d, frequency=%d)" % (self.channel, self.frequency)

@@ -7,6 +7,7 @@ from multiprocessing import Process, Pipe
 from time import sleep
 from gpio import TestInterface
 
+from weathervane.datasources import weather_data
 from weathervaneinterface import WeatherVaneInterface
 
 
@@ -58,7 +59,7 @@ class WeatherVane(object):
         interface = WeatherVaneInterface(channel=0, frequency=250000)
 
         logging.debug("Using " + str(interface))
-        weather_data = {'wind_direction': None, 'wind_speed': None, 'wind_speed_max': None, 'air_pressure': None}
+        wd = weather_data(wind_direction=None, wind_speed=None, wind_speed_max=None, air_pressure=None)
 
         data_source = self.get_source(source)
 
@@ -81,10 +82,10 @@ class WeatherVane(object):
                 p.start()
 
             if pipe_end_2.poll(0):
-                weather_data = pipe_end_2.recv()
-                logging.info("Received data:" + str(weather_data))
+                wd = pipe_end_2.recv()
+                logging.info("Received data:" + str(wd))
 
-            interface.send(weather_data)
+            interface.send(wd)
 
             counter += 1
             sleep(1)

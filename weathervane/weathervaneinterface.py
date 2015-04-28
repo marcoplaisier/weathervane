@@ -4,6 +4,7 @@ import logging
 
 from gpio import GPIO
 
+
 class WeatherVaneInterface(object):
     WIND_DIRECTIONS = {'N': 0x00, 'NNO': 0x01, 'NO': 0x02, 'ONO': 0x03,
                        'O': 0x04, 'OZO': 0x05, 'ZO': 0x06, 'ZZO': 0x07,
@@ -172,6 +173,6 @@ class WeatherVaneInterface(object):
         bits = self.gpio.read_pin(self.station_bits)
         result = 0
         for index, value in enumerate(bits):
-            result += value * 2**index
+            result += value * 2 ** index
 
         return self.STATIONS[result]

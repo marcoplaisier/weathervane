@@ -1,3 +1,4 @@
+from collections import namedtuple
 import copy
 import logging
 
@@ -39,9 +40,9 @@ class WeatherVaneInterface(object):
         errors = 0x00
 
         try:
-            wind_direction_code = weather_data['wind_direction']
+            wind_direction_code = weather_data.wind_direction
             wind_direction_byte = self.WIND_DIRECTIONS[wind_direction_code]
-        except (KeyError, TypeError):
+        except (KeyError, TypeError, AttributeError):
             wind_direction_byte = 0x00
             errors |= self.WIND_DIRECTION_ERROR
 
@@ -51,8 +52,8 @@ class WeatherVaneInterface(object):
         errors = 0x00
 
         try:
-            air_pressure = round(float(weather_data['air_pressure']), 0)
-        except (KeyError, ValueError, TypeError):
+            air_pressure = round(float(weather_data.air_pressure), 0)
+        except (KeyError, ValueError, TypeError, AttributeError):
             air_pressure = 0x00
             errors |= self.AIR_PRESSURE_ERROR
 
@@ -71,8 +72,8 @@ class WeatherVaneInterface(object):
         errors = 0x00
 
         try:
-            wind_speed = round(float(weather_data['wind_speed']), 0)
-        except (KeyError, ValueError, TypeError):
+            wind_speed = round(float(weather_data.wind_speed), 0)
+        except (KeyError, ValueError, TypeError, AttributeError):
             wind_speed = 0x00
             errors |= self.WIND_SPEED_ERROR
 
@@ -89,8 +90,8 @@ class WeatherVaneInterface(object):
         errors = 0x00
 
         try:
-            wind_speed_max = round(float(weather_data['wind_speed_max']), 0)
-        except (KeyError, ValueError, TypeError):
+            wind_speed_max = round(float(weather_data.wind_speed_max), 0)
+        except (KeyError, ValueError, TypeError, AttributeError):
             wind_speed_max = 0x00
             errors |= self.WIND_SPEED_MAX_ERROR
 
@@ -102,8 +103,8 @@ class WeatherVaneInterface(object):
             errors |= self.WIND_SPEED_MAX_ERROR
 
         try:
-            wind_speed = round(float(weather_data['wind_speed']), 0)
-        except (KeyError, ValueError, TypeError):
+            wind_speed = round(float(weather_data.wind_speed), 0)
+        except (KeyError, ValueError, TypeError, AttributeError):
             wind_speed = 0
         if wind_speed_max < wind_speed:
             wind_speed_max = wind_speed
@@ -136,14 +137,10 @@ class WeatherVaneInterface(object):
         """Send data to the connected SPI device.
 
         Keyword arguments:
-        weather_data -- a dictionary with the data
+        weather_data -- a named_tuple with the data
         """
-        if not isinstance(weather_data, dict):
-            raise TypeError("unsupported type %s " % type(weather_data))
-
         data_array = self.__convert_data(weather_data)
         logging.debug("Sending data:" + ", ".join(str(x) for x in data_array))
-
         self.gpio.send_data(data_array)
 
     def get_data(self):
@@ -176,6 +173,6 @@ class WeatherVaneInterface(object):
         bits = self.gpio.read_pin(self.station_bits)
         result = 0
         for index, value in enumerate(bits):
-            result += value * 2**index
+            result += value * 2 ** index
 
         return self.STATIONS[result]

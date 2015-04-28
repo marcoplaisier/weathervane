@@ -1,5 +1,8 @@
+from collections import namedtuple
 from urllib2 import urlopen
 from parser import KNMIParser, BuienradarParser
+
+weather_data = namedtuple('weather_data', ['wind_direction', 'wind_speed', 'wind_speed_max', 'air_pressure'])
 
 
 class DataSource():
@@ -36,8 +39,12 @@ class TestSource(DataSource):
         else:
             test = 0xAA
 
-        conn.send({'wind_direction': self.counter % 255, 'wind_speed': (255 - self.counter) % 255,
-                   'wind_speed_max': test, 'air_pressure': None})
+        wd = weather_data(wind_direction=self.counter % 255,
+                          wind_speed=(255 - self.counter) % 255,
+                          wind_speed_max=test,
+                          air_pressure=None)
+
+        conn.send(wd)
         conn.close()
 
 
@@ -46,20 +53,17 @@ class BuienradarSource(DataSource):
         data = self.fetch_weather_data("http://xml.buienradar.nl")
         parser = BuienradarParser(data)
 
-        wind_speed = parser.get_wind_speed(station_id)
-        wind_direction = parser.get_wind_direction(station_id)
-        air_pressure = parser.get_air_pressure(station_id)
-        wind_speed_max = parser.get_wind_maximum(station_id)
+        wd = weather_data(wind_direction=parser.get_wind_direction(station_id),
+                          wind_speed=parser.get_wind_speed(station_id),
+                          wind_speed_max=parser.get_wind_maximum(station_id),
+                          air_pressure=parser.get_air_pressure(station_id))
 
-        weather_data = {'wind_direction': wind_direction, 'wind_speed': wind_speed,
-                        'wind_speed_max': wind_speed_max, 'air_pressure': air_pressure}
-
-        conn.send(weather_data)
+        conn.send(wd)
         conn.close()
 
 
 class KNMISource(DataSource):
-    def get_data(self, conn, station):
+    def get_data(self, conn, station_id):
         """
         >>> from multiprocessing import Pipe
         >>> knmi = KNMISource()
@@ -71,15 +75,12 @@ class KNMISource(DataSource):
         data = self.fetch_weather_data("http://www.knmi.nl/actueel/")
         parser = KNMIParser(data)
 
-        wind_speed = parser.get_wind_speed(station)
-        wind_direction = parser.get_wind_direction(station)
-        air_pressure = parser.get_air_pressure(station)
-        wind_speed_max = parser.get_wind_maximum(station)
+        wd = weather_data(wind_direction=parser.get_wind_direction(station_id),
+                          wind_speed=parser.get_wind_speed(station_id),
+                          wind_speed_max=parser.get_wind_maximum(station_id),
+                          air_pressure=parser.get_air_pressure(station_id))
 
-        weather_data = {'wind_direction': wind_direction, 'wind_speed': wind_speed,
-                        'wind_speed_max': wind_speed_max, 'air_pressure': air_pressure}
-
-        conn.send(weather_data)
+        conn.send(wd)
         conn.close()
 
 

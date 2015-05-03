@@ -138,6 +138,7 @@ def parse_config(cp):
     configuration = {
         'channel': cp.getint('SPI', 'channel'),
         'frequency': cp.getint('SPI', 'frequency'),
+        'library': cp.get('SPI', 'library'),
         'interval': cp.getint('General', 'interval'),
         'source': cp.get('General', 'source'),
         'stations': {

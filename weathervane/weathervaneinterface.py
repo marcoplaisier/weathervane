@@ -1,4 +1,3 @@
-from collections import namedtuple
 import copy
 import logging
 from pprint import pprint

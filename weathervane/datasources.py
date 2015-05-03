@@ -5,7 +5,7 @@ from parser import KNMIParser, BuienradarParser
 weather_data = namedtuple('weather_data', ['wind_direction', 'wind_speed', 'wind_speed_max', 'air_pressure'])
 
 
-class DataSource():
+class DataSource(object):
     def get_data(self, conn, station_id):
         raise NotImplementedError("Do not use this interface directly, but subclass it and add your own functionality")
 

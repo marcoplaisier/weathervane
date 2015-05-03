@@ -1,6 +1,7 @@
 from collections import namedtuple
 import copy
 import logging
+from pprint import pprint
 
 from gpio import GPIO
 
@@ -30,6 +31,7 @@ class WeatherVaneInterface(object):
         self.gpio.__init__(channel=self.channel, frequency=self.frequency)
         self.data_changed = False
         self.weather_data = {}
+        pprint(kwargs)
         self.station_bits = kwargs['stations']['pins']
         self.stations = kwargs['stations']['config']
 

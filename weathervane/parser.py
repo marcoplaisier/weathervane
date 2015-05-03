@@ -13,7 +13,7 @@ class BuienradarParser(object):
         return datetime.datetime.strptime(date, '%d/%m/%Y %H:%M:%S')
 
     def get_data_from_station(self, station_id, field_name):
-        station_data = self.soup.find("weerstation", id=station_id).find(field_name)
+        station_data = self.soup.find("weerstation", id=station_id).find(field_name.lower())
 
         if station_data is None:
             return station_data
@@ -22,7 +22,7 @@ class BuienradarParser(object):
 
     def get_station_codes(self):
         code_tags = self.soup("stationcode")
-        codes = [tag.string for tag in code_tags]
+        codes = [int(tag.string) for tag in code_tags]
         return codes
 
     def get_station_name_by_id(self, station_id):
@@ -31,14 +31,15 @@ class BuienradarParser(object):
     def get_wind_direction_degrees(self, station_id):
         data = self.get_data_from_station(station_id, "windrichtinggr")
         if data in self.INVALID_DATA:
+            # TODO: move magic number 6310 to parameter or config-file
             data = self.get_data_from_station(6310, "windrichtinggr")
-        return data
+        return float(data)
 
     def get_wind_speed(self, station_id):
         data = self.get_data_from_station(station_id, "windsnelheidms")
         if data in self.INVALID_DATA:
             data = self.get_data_from_station(6310, "windsnelheidms")
-        return data
+        return float(data)
 
     def get_wind_direction(self, station_id):
         data = self.get_data_from_station(station_id, "windrichting")
@@ -50,13 +51,24 @@ class BuienradarParser(object):
         data = self.get_data_from_station(station_id, "luchtdruk")
         if data in self.INVALID_DATA:
             data = self.get_data_from_station(6310, "luchtdruk")
-        return data
+        return float(data)
 
     def get_wind_maximum(self, station_id):
         data = self.get_data_from_station(station_id, "windstotenms")
         if data in self.INVALID_DATA:
             data = self.get_data_from_station(6310, "windstotenms")
-        return data
+        return float(data)
+
+    def get_temperature(self, station_id):
+        data = self.get_data_from_station(station_id, "temperatuurGC")
+        if data in self.INVALID_DATA:
+            data = self.get_data_from_station(6310, "temperatuurGC")
+        return float(data)
+
+    def get_wind_chill(self, station_id):
+        wind_speed = self.get_wind_speed(station_id)
+        temperature = self.get_temperature(station_id)
+        return get_wind_chill(wind_speed, temperature)
 
 
 class KNMIParser(object):
@@ -130,3 +142,7 @@ class KNMIParser(object):
 
     def get_wind_maximum(self, station_id):
         return None
+
+
+def get_wind_chill(wind_speed, temperature):
+    return 13.12 + 0.6215 * temperature - 13.96 * wind_speed ** 0.16 + 0.4867 * temperature * wind_speed**0.16

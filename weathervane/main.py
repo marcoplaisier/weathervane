@@ -108,15 +108,22 @@ class WeatherVane(object):
         weathervane_logger.addHandler(handler)
 
 
-def parse_config(cp):
-    """Takes a configuration parser and returns the configuration as a dictionary
+def parse_bit_packing_section(cp):
+    bit_numbers = cp.options('Bit Packing')
 
-    @param cp:
-    @return:
-    """
-    pins = map(int, cp.get('Stations', 'pins').split(','))
+    bits = {}
+    for bit_number in bit_numbers:
+        bit_config = cp.get('Bit Packing', bit_number).split(',')
+        bits[bit_number] = {
+            'key': bit_config[0],
+            'length': bit_config[1]
+        }
+    return bits
 
+
+def parse_station_numbers(cp):
     station_numbers = cp.options('Stations')
+
     station_config = {}
     for number in station_numbers:
         try:
@@ -125,15 +132,18 @@ def parse_config(cp):
         except ValueError:
             if not number in ['fallback', 'pins']:
                 logging.debug("Option not recognized")
+    return station_config
 
-    bit_numbers = cp.options('Bit Packing')
-    bits = {}
-    for bit_number in bit_numbers:
-        bit_config = cp.get('Bit Packing', bit_number).split(',')
-        bits[bit_number] = {
-            'key': bit_config[0],
-            'length': bit_config[1]
-        }
+
+def parse_config(cp):
+    """Takes a configuration parser and returns the configuration as a dictionary
+
+    @param cp:
+    @return:
+    """
+    pins = map(int, cp.get('Stations', 'pins').split(','))
+    station_config = parse_station_numbers(cp)
+    bits = parse_bit_packing_section(cp)
 
     configuration = {
         'channel': cp.getint('SPI', 'channel'),
@@ -154,14 +164,14 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Get weather data from a provider and send it through SPI")
     parser.add_argument('-c', '--config', action='store', default='config.ini',
                         help="get the configuration from a specific configuration file")
-    args = parser.parse_args()
+    supplied_args = parser.parse_args()
 
     wv = WeatherVane()
     wv.set_logger()
-    logging.info(args)
+    logging.info(supplied_args)
 
     config_parser = ConfigParser.RawConfigParser()
-    config_file_location = os.path.join(os.getcwd(), args.config)
+    config_file_location = os.path.join(os.getcwd(), supplied_args.config)
     config_parser.read(config_file_location)
     config = parse_config(config_parser)
 

@@ -1,9 +1,11 @@
 #!/usr/bin/env python
+import ConfigParser
 
 import argparse
 import logging
 import logging.handlers
 from multiprocessing import Process, Pipe
+import os
 from time import sleep
 from gpio import TestInterface
 
@@ -33,7 +35,7 @@ class WeatherVane(object):
             else:
                 test = 0xAA
 
-            data = [counter % 255, (255-counter) % 255, test]
+            data = [counter % 255, (255 - counter) % 255, test]
 
             interface.send(data)
             sleep(1)
@@ -41,27 +43,31 @@ class WeatherVane(object):
     def get_source(self, source):
         if source == 'buienradar':
             from datasources import BuienradarSource
+
             return BuienradarSource()
         elif source == 'knmi':
             from datasources import KNMISource
+
             return KNMISource()
         elif source == 'rijkswaterstaat':
             from datasources import RijkswaterstaatSource
+
             return RijkswaterstaatSource()
         elif source == 'test':
             from datasources import TestSource
+
             return TestSource()
         else:
             raise NameError('Data provider not found')
 
-    def main(self, interval, station_id, source='buienradar'):
+    def main(self, *args, **kwargs):
         logging.info("Starting operation")
-        interface = WeatherVaneInterface(channel=0, frequency=250000)
+        interface = WeatherVaneInterface(*args, **kwargs)
 
         logging.debug("Using " + str(interface))
         wd = weather_data(wind_direction=None, wind_speed=None, wind_speed_max=None, air_pressure=None)
 
-        data_source = self.get_source(source)
+        data_source = self.get_source(kwargs['source'])
 
         pipe_end_1, pipe_end_2 = Pipe()
         counter = 0
@@ -76,7 +82,7 @@ class WeatherVane(object):
                     selected_station = station_id
                     logging.info("New station selected: {}".format(station_id))
 
-            if (counter % interval) == 0:
+            if (counter % kwargs['interval']) == 0:
                 counter = 0
                 p = Process(target=data_source.get_data, args=(pipe_end_1, station_id))
                 p.start()
@@ -102,22 +108,58 @@ class WeatherVane(object):
         weathervane_logger.addHandler(handler)
 
 
+def parse_config(cp):
+    pins = map(int, cp.get('Stations', 'pins').split(','))
+
+    station_numbers = cp.options('Stations')
+    station_config = {}
+    for number in station_numbers:
+        try:
+            number = int(number)
+            station_config[number] = cp.get('Stations', str(number))
+        except ValueError:
+            if not number in ['fallback', 'pins']:
+                logging.debug("Option not recognized")
+
+    bit_numbers = cp.options('Bit Packing')
+    bits = {}
+    for bit_number in bit_numbers:
+        bit_config = cp.get('Bit Packing', bit_number).split(',')
+        bits[bit_number] = {
+            'key': bit_config[0],
+            'length': bit_config[1]
+        }
+
+    configuration = {
+        'channel': cp.getint('SPI', 'channel'),
+        'frequency': cp.getint('SPI', 'frequency'),
+        'interval': cp.getint('General', 'interval'),
+        'source': cp.get('General', 'source'),
+        'stations': {
+            'pins': pins,
+            'config': station_config
+        },
+        'bits': bits
+    }
+    return configuration
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Get weather data from a provider and send it through SPI")
-    parser.add_argument('-t', '--test', action='store_true', default=False, help="run the program in test mode")
-    parser.add_argument('-i', '--interval', action='store', type=int, default=300,
-                        help="specify the interval (in seconds) when the weather data is retrieved")
-    parser.add_argument('-s', '--station', action='store', type=int, default=None,
-                        help="the id of the the weather station from which the weather data is retrieved")
-    parser.add_argument('-p', '--provider', choices=['buienradar', 'knmi', 'rijkswaterstaat'],
-                        help='select the provider', default='buienradar')
+    parser.add_argument('-c', '--config', action='store', default='config.ini',
+                        help="get the configuration from a specific configuration file")
     args = parser.parse_args()
 
     wv = WeatherVane()
     wv.set_logger()
     logging.info(args)
 
-    if args.test:
+    config_parser = ConfigParser.RawConfigParser()
+    config_file_location = os.path.join(os.getcwd(), args.config)
+    config_parser.read(config_file_location)
+    config = parse_config(config_parser)
+
+    if config.get('test', False):
         wv.test_mode()
     else:
-        wv.main(interval=args.interval, source=args.provider, station_id=args.station)
+        wv.main(**config)

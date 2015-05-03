@@ -22,16 +22,16 @@ class WeatherVaneInterface(object):
     AIR_PRESSURE_MINIMUM = 900
     AIR_PRESSURE_MAXIMUM = 1155
     FIXED_PATTERN = 0b01010000
-    STATIONS = {0: 6320, 1: 6321, 2: 6310, 3: 6312, 4: 6308, 5: 6311, 6: 6331, 7: 6316}
 
-    def __init__(self, channel=0, frequency=250000):
-        self.channel = channel
-        self.frequency = frequency
+    def __init__(self, *args, **kwargs):
+        self.channel = kwargs['channel']
+        self.frequency = kwargs['frequency']
         self.gpio = GPIO()
-        self.gpio.__init__(channel=channel, frequency=frequency)
+        self.gpio.__init__(channel=self.channel, frequency=self.frequency)
         self.data_changed = False
         self.weather_data = {}
-        self.station_bits = [3, 4, 5]
+        self.station_bits = kwargs['stations']['pins']
+        self.stations = kwargs['stations']['config']
 
     def __repr__(self):
         return "WeatherVaneInterface(channel=%d, frequency=%d)" % (self.channel, self.frequency)
@@ -175,4 +175,4 @@ class WeatherVaneInterface(object):
         for index, value in enumerate(bits):
             result += value * 2 ** index
 
-        return self.STATIONS[result]
+        return self.stations[result]

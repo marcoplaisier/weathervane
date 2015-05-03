@@ -26,11 +26,11 @@ class WeatherVaneInterface(object):
     def __init__(self, *args, **kwargs):
         self.channel = kwargs['channel']
         self.frequency = kwargs['frequency']
-        self.gpio = GPIO()
-        self.gpio.__init__(channel=self.channel, frequency=self.frequency)
+        self.gpio = GPIO(**kwargs)
+        # self.gpio.__init__(channel=self.channel, frequency=self.frequency)
+        # TODO: check why I put the call to __init__ separately initially
         self.data_changed = False
         self.weather_data = {}
-        pprint(kwargs)
         self.station_bits = kwargs['stations']['pins']
         self.stations = kwargs['stations']['config']
 

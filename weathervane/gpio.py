@@ -18,7 +18,7 @@ class GPIO(object):
     PWM_OUTPUT = 2
     GPIO_CLOCK = 3
 
-    def __init__(self, library='wiringPi', channel=0, frequency=500000):
+    def __init__(self, *args, **kwargs):
         """
         The constructor makes the protocol ready to send data via the SPI protocol on the pins on the Raspberry Pi.
 
@@ -34,6 +34,9 @@ class GPIO(object):
         http://raspberrypi.stackexchange.com/questions/699/what-spi-frequencies-does-raspberry-pi-support
         @raise SPISetupException: when setup cannot proceed, it will raise a setup exception
         """
+        channel = kwargs['channel']
+        frequency = kwargs['frequency']
+        library = kwargs['library']
 
         if channel not in self.AVAILABLE_CHANNELS:
             # If the channel is not 0 or 1, the rest of the program may fail silently or give weird errors. So, we

@@ -109,6 +109,11 @@ class WeatherVane(object):
 
 
 def parse_config(cp):
+    """Takes a configuration parser and returns the configuration as a dictionary
+
+    @param cp:
+    @return:
+    """
     pins = map(int, cp.get('Stations', 'pins').split(','))
 
     station_numbers = cp.options('Stations')

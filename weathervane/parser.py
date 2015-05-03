@@ -31,6 +31,7 @@ class BuienradarParser(object):
     def get_wind_direction_degrees(self, station_id):
         data = self.get_data_from_station(station_id, "windrichtinggr")
         if data in self.INVALID_DATA:
+            # TODO: move magic number 6310 to parameter or config-file
             data = self.get_data_from_station(6310, "windrichtinggr")
         return data
 
@@ -130,3 +131,7 @@ class KNMIParser(object):
 
     def get_wind_maximum(self, station_id):
         return None
+
+
+def get_wind_chill(wind_speed, temperature):
+    return 13.12 + 0.6215 * temperature - 13.96 * wind_speed ** 0.16 + 0.4867 * temperature * wind_speed**0.16

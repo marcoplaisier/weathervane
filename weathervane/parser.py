@@ -1,5 +1,69 @@
-from BeautifulSoup import BeautifulSoup
+import ConfigParser
 import datetime
+from pprint import pprint
+from BeautifulSoup import BeautifulSoup
+
+
+class WeathervaneConfigParser(ConfigParser.SafeConfigParser):
+    def parse_bit_packing_section(self):
+        bit_numbers = self.options('Bit Packing')
+
+        bits = {}
+        for bit_number in bit_numbers:
+            bit_config = self.get('Bit Packing', bit_number).split(',')
+            if len(bit_config) == 2:
+                bits[bit_number] = {
+                    'key': bit_config[0],
+                    'length': bit_config[1]
+                }
+            else:
+                bits[bit_number] = {
+                    'key': bit_config[0],
+                    'length': bit_config[1],
+                    'min': bit_config[2],
+                    'max': bit_config[3],
+                    'step': bit_config[4]
+                }
+        return bits
+
+    def parse_station_numbers(self):
+        station_numbers = self.options('Stations')
+
+        station_config = {}
+        for number in station_numbers:
+            try:
+                number = int(number)
+                station_config[number] = self.get('Stations', str(number))
+            except ValueError:
+                if number not in ['fallback', 'pins']:
+                    logging.debug("Option not recognized")
+        return station_config
+
+    def parse_config(self):
+        """Takes a configuration parser and returns the configuration as a dictionary
+
+        @param cp:
+        @return:
+        """
+        pins = map(int, self.get('Stations', 'pins').split(','))
+        station_config = self.parse_station_numbers()
+        bits = self.parse_bit_packing_section()
+
+        configuration = {
+            'extended-error-mode': self.getboolean('General', 'extended-error-mode'),
+            'channel': self.getint('SPI', 'channel'),
+            'frequency': self.getint('SPI', 'frequency'),
+            'library': self.get('SPI', 'library'),
+            'interval': self.getint('General', 'interval'),
+            'source': self.get('General', 'source'),
+            'stations': {
+                'pins': pins,
+                'config': station_config
+            },
+            'bits': bits
+        }
+        pprint(configuration)
+        return configuration
 
 
 class BuienradarParser(object):

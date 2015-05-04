@@ -1,15 +1,15 @@
 #!/usr/bin/env python
 import ConfigParser
-
 import argparse
 import logging
 import logging.handlers
 from multiprocessing import Process, Pipe
 import os
 from time import sleep
-from gpio import TestInterface
 
+from gpio import TestInterface
 from weathervane.datasources import weather_data
+from weathervane.parser import WeathervaneConfigParser
 from weathervaneinterface import WeatherVaneInterface
 
 
@@ -108,58 +108,6 @@ class WeatherVane(object):
         weathervane_logger.addHandler(handler)
 
 
-def parse_bit_packing_section(cp):
-    bit_numbers = cp.options('Bit Packing')
-
-    bits = {}
-    for bit_number in bit_numbers:
-        bit_config = cp.get('Bit Packing', bit_number).split(',')
-        bits[bit_number] = {
-            'key': bit_config[0],
-            'length': bit_config[1]
-        }
-    return bits
-
-
-def parse_station_numbers(cp):
-    station_numbers = cp.options('Stations')
-
-    station_config = {}
-    for number in station_numbers:
-        try:
-            number = int(number)
-            station_config[number] = cp.get('Stations', str(number))
-        except ValueError:
-            if not number in ['fallback', 'pins']:
-                logging.debug("Option not recognized")
-    return station_config
-
-
-def parse_config(cp):
-    """Takes a configuration parser and returns the configuration as a dictionary
-
-    @param cp:
-    @return:
-    """
-    pins = map(int, cp.get('Stations', 'pins').split(','))
-    station_config = parse_station_numbers(cp)
-    bits = parse_bit_packing_section(cp)
-
-    configuration = {
-        'channel': cp.getint('SPI', 'channel'),
-        'frequency': cp.getint('SPI', 'frequency'),
-        'library': cp.get('SPI', 'library'),
-        'interval': cp.getint('General', 'interval'),
-        'source': cp.get('General', 'source'),
-        'stations': {
-            'pins': pins,
-            'config': station_config
-        },
-        'bits': bits
-    }
-    return configuration
-
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Get weather data from a provider and send it through SPI")
     parser.add_argument('-c', '--config', action='store', default='config.ini',
@@ -170,10 +118,10 @@ if __name__ == "__main__":
     wv.set_logger()
     logging.info(supplied_args)
 
-    config_parser = ConfigParser.RawConfigParser()
+    config_parser = WeathervaneConfigParser()
     config_file_location = os.path.join(os.getcwd(), supplied_args.config)
     config_parser.read(config_file_location)
-    config = parse_config(config_parser)
+    config = config_parser.parse_config()
 
     if config.get('test', False):
         wv.test_mode()

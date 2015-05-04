@@ -132,7 +132,7 @@ class BuienradarParser(object):
     def get_wind_chill(self, station_id):
         wind_speed = self.get_wind_speed(station_id)
         temperature = self.get_temperature(station_id)
-        return get_wind_chill(wind_speed, temperature)
+        return calculate_wind_chill(wind_speed, temperature)
 
 
 class KNMIParser(object):
@@ -208,5 +208,5 @@ class KNMIParser(object):
         return None
 
 
-def get_wind_chill(wind_speed, temperature):
+def calculate_wind_chill(wind_speed, temperature):
     return 13.12 + 0.6215 * temperature - 13.96 * wind_speed ** 0.16 + 0.4867 * temperature * wind_speed**0.16

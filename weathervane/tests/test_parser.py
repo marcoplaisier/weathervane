@@ -43,5 +43,5 @@ def wind_chill_test():
 
 
 def check_wind_chill(wind_speed, temperature, expected, places):
-    calculated_wind_chill = parser.get_wind_chill(wind_speed, temperature)
+    calculated_wind_chill = parser.calculate_wind_chill(wind_speed, temperature)
     assert round(abs(expected - calculated_wind_chill), places) == 0

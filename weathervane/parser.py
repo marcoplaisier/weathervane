@@ -1,6 +1,5 @@
 import ConfigParser
 import datetime
-from pprint import pprint
 from BeautifulSoup import BeautifulSoup
 
 
@@ -56,21 +55,40 @@ class WeathervaneConfigParser(ConfigParser.SafeConfigParser):
             'library': self.get('SPI', 'library'),
             'interval': self.getint('General', 'interval'),
             'source': self.get('General', 'source'),
+            'fallback-station': self.get('Stations', 'fallback'),
             'stations': {
                 'pins': pins,
                 'config': station_config
             },
             'bits': bits
         }
-        pprint(configuration)
         return configuration
 
 
 class BuienradarParser(object):
     INVALID_DATA = ['0', 0, '-', '', None]
+    FIELD_MAPPING = {
+        'wind_direction': 'windrichtingGR',
+        'wind_speed': 'windsnelheidMS',
+        'wind_speed_max': 'windstotenMS',
+        'wind_speed_bft': 'windsnelheidBF',
+        'air_pressure': 'luchtdruk',
+        'temperature': 'temperatuurGC',
+        'wind_chill': 'wind_chill',
+        'humidity': 'luchtvochtigheid',
+        'station_name': 'stationnaam',
+        'latitude': 'lat',
+        'longitude': 'lon',
+        'date': 'datum',
+        'wind_direction_code': 'windrichting',
+        'sight_distance': 'zichtmeters',
+        'rain_mm_per_hour': 'regenMMPU',
+        'temperature_10_cm': 'temperatuur10cm'
+    }
 
-    def __init__(self, data):
+    def __init__(self, data, fallback=6310, *args, **kwargs):
         self.soup = BeautifulSoup(data)
+        self.fallback = fallback
 
     def get_date(self, station_id):
         date = self.get_data_from_station(station_id, 'datum')
@@ -95,38 +113,37 @@ class BuienradarParser(object):
     def get_wind_direction_degrees(self, station_id):
         data = self.get_data_from_station(station_id, "windrichtinggr")
         if data in self.INVALID_DATA:
-            # TODO: move magic number 6310 to parameter or config-file
-            data = self.get_data_from_station(6310, "windrichtinggr")
+            data = self.get_data_from_station(self.fallback, "windrichtinggr")
         return float(data)
 
     def get_wind_speed(self, station_id):
         data = self.get_data_from_station(station_id, "windsnelheidms")
         if data in self.INVALID_DATA:
-            data = self.get_data_from_station(6310, "windsnelheidms")
+            data = self.get_data_from_station(self.fallback, "windsnelheidms")
         return float(data)
 
     def get_wind_direction(self, station_id):
         data = self.get_data_from_station(station_id, "windrichting")
         if data in self.INVALID_DATA:
-            data = self.get_data_from_station(6310, "windrichting")
+            data = self.get_data_from_station(self.fallback, "windrichting")
         return data
 
     def get_air_pressure(self, station_id):
         data = self.get_data_from_station(station_id, "luchtdruk")
         if data in self.INVALID_DATA:
-            data = self.get_data_from_station(6310, "luchtdruk")
+            data = self.get_data_from_station(self.fallback, "luchtdruk")
         return float(data)
 
     def get_wind_maximum(self, station_id):
         data = self.get_data_from_station(station_id, "windstotenms")
         if data in self.INVALID_DATA:
-            data = self.get_data_from_station(6310, "windstotenms")
+            data = self.get_data_from_station(self.fallback, "windstotenms")
         return float(data)
 
     def get_temperature(self, station_id):
         data = self.get_data_from_station(station_id, "temperatuurGC")
         if data in self.INVALID_DATA:
-            data = self.get_data_from_station(6310, "temperatuurGC")
+            data = self.get_data_from_station(self.fallback, "temperatuurGC")
         return float(data)
 
     def get_wind_chill(self, station_id):

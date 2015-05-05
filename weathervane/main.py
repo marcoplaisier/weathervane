@@ -8,7 +8,7 @@ import os
 from time import sleep
 
 from gpio import TestInterface
-from weathervane.datasources import weather_data
+from weathervane.datasources import fetch_weather_data
 from weathervane.parser import WeathervaneConfigParser
 from weathervaneinterface import WeatherVaneInterface
 
@@ -40,32 +40,9 @@ class WeatherVane(object):
             interface.send(data)
             sleep(1)
 
-    def get_source(self, source):
-        if source == 'buienradar':
-            from datasources import BuienradarSource
-
-            return BuienradarSource()
-        elif source == 'knmi':
-            from datasources import KNMISource
-
-            return KNMISource()
-        elif source == 'rijkswaterstaat':
-            from datasources import RijkswaterstaatSource
-
-            return RijkswaterstaatSource()
-        elif source == 'test':
-            from datasources import TestSource
-
-            return TestSource()
-        else:
-            raise NameError('Data provider not found')
-
     def main(self, *args, **kwargs):
-        logging.info("Starting operation")
         interface = WeatherVaneInterface(*args, **kwargs)
-
         logging.debug("Using " + str(interface))
-        wd = weather_data(wind_direction=None, wind_speed=None, wind_speed_max=None, air_pressure=None)
 
         data_source = self.get_source(kwargs['source'])
 
@@ -84,7 +61,9 @@ class WeatherVane(object):
 
             if (counter % kwargs['interval']) == 0:
                 counter = 0
-                p = Process(target=data_source.get_data, args=(pipe_end_1, station_id))
+                arguments = [pipe_end_1, station_id]
+                arguments.extend(args)
+                p = Process(target=fetch_weather_data, args=arguments, kwargs=kwargs)
                 p.start()
 
             if pipe_end_2.poll(0):

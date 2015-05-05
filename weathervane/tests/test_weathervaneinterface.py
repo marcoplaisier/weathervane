@@ -1,7 +1,6 @@
 from mock import Mock, patch
 import unittest
 from weathervane.weathervaneinterface import WeatherVaneInterface
-from weathervane.datasources import weather_data
 
 
 @patch('weathervane.weathervaneinterface.GPIO', autospec=True)

@@ -1,69 +1,16 @@
-from collections import namedtuple
 from urllib2 import urlopen
 from parser import BuienradarParser
 
-weather_data = namedtuple('weather_data', ['wind_direction', 'wind_speed', 'wind_speed_max', 'air_pressure'])
+
+def retrieve_xml(self, url):
+    response = urlopen(url)
+    data = response.read()
+    return data
 
 
-class DataSource(object):
-    def __init__(self, *args, **kwargs):
-        self.fallback = kwargs['fallback-station']
+def fetch_weather_data(self, conn, station_id, *args, **kwargs):
+    data = retrieve_xml("http://xml.buienradar.nl")
+    wd = BuienradarParser.parse(data, *args, **kwargs)
 
-    def get_data(self, conn, station_id):
-        raise NotImplementedError("Do not use this interface directly, but subclass it and add your own functionality")
-
-    def fetch_weather_data(self, url):
-        response = urlopen(url)
-        data = response.read()
-        return data
-
-
-class TestSource(DataSource):
-    def __init__(self, *args, **kwargs):
-        super(TestSource, self).__init__(*args, **kwargs)
-        self.counter = 0
-
-    def get_data(self, conn, station_id):
-        """
-        Test mode is used to output a predicable sequence of bytes to
-        the output pins.
-        The program will send 3 bytes every second to the pins.
-        - Byte 1: an increasing counter (modulo 255)
-        - Byte 2: a decreasing counter (idem)
-        - Byte 3: switches between 0x55 and 0xAA
-
-        """
-        self.counter += 1
-
-        if self.counter > 255:
-            self.counter = 0
-
-        if self.counter % 2:
-            test = 0x55
-        else:
-            test = 0xAA
-
-        wd = weather_data(wind_direction=self.counter % 255,
-                          wind_speed=(255 - self.counter) % 255,
-                          wind_speed_max=test,
-                          air_pressure=None)
-
-        conn.send(wd)
-        conn.close()
-
-
-class BuienradarSource(DataSource):
-    def __init__(self, *args, **kwargs):
-        super(TestSource, self).__init__(*args, **kwargs)
-
-    def get_data(self, conn, station_id):
-        data = self.fetch_weather_data("http://xml.buienradar.nl")
-        parser = BuienradarParser(data, *args, **kwargs)
-
-        wd = weather_data(wind_direction=parser.get_wind_direction(station_id),
-                          wind_speed=parser.get_wind_speed(station_id),
-                          wind_speed_max=parser.get_wind_maximum(station_id),
-                          air_pressure=parser.get_air_pressure(station_id))
-
-        conn.send(wd)
-        conn.close()
+    conn.send(wd)
+    conn.close()

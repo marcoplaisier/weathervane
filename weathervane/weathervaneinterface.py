@@ -170,7 +170,8 @@ class WeatherVaneInterface(object):
 
         return self.weather_data
 
-    def get_selected_station(self):
+    @property
+    def selected_station(self):
         bits = self.gpio.read_pin(self.station_bits)
         result = 0
         for index, value in enumerate(bits):

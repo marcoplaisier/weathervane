@@ -72,11 +72,11 @@ class WeatherVane(object):
         pipe_end_1, pipe_end_2 = Pipe()
         counter = 0
 
-        selected_station = interface.get_selected_station()
+        selected_station = interface.selected_station
 
         while True:
             if (counter % 3) == 0:  # check the station selection every three seconds
-                station_id = interface.get_selected_station()
+                station_id = interface.selected_station
                 if station_id != selected_station:  # reset if a new station is selected
                     counter = 0
                     selected_station = station_id

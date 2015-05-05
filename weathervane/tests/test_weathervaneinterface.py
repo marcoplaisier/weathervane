@@ -197,14 +197,14 @@ class WeatherVaneTest(unittest.TestCase):
     def test_get_station(self, mock_class):
         config = {0: 6320, 1: 6321, 2: 6310, 3: 6312, 4: 6308, 5: 6311, 6: 6331, 7: 6316}
         interface = WeatherVaneInterface(channel=0, frequency=0, stations={'pins': [4, 5, 6], 'config': config})
-        station_id = interface.get_selected_station()
+        station_id = interface.selected_station
         self.assertEqual(station_id, 6320)
 
     def test_get_other_station(self, mock_class):
         config = {0: 6320, 1: 6321, 2: 6310, 3: 6312, 4: 6308, 5: 6311, 6: 6331, 7: 6316}
         interface = WeatherVaneInterface(channel=0, frequency=0, stations={'pins': [4, 5, 6], 'config': config})
         interface.gpio.read_pin = Mock(return_value=[1, 1, 0])
-        station_id = interface.get_selected_station()
+        station_id = interface.selected_station
         self.assertEqual(station_id, 6312)  # remember, byte ordering
 
 

@@ -6,6 +6,9 @@ weather_data = namedtuple('weather_data', ['wind_direction', 'wind_speed', 'wind
 
 
 class DataSource(object):
+    def __init__(self, *args, **kwargs):
+        self.fallback = kwargs['fallback-station']
+
     def get_data(self, conn, station_id):
         raise NotImplementedError("Do not use this interface directly, but subclass it and add your own functionality")
 
@@ -16,7 +19,8 @@ class DataSource(object):
 
 
 class TestSource(DataSource):
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
+        super(TestSource, self).__init__(*args, **kwargs)
         self.counter = 0
 
     def get_data(self, conn, station_id):
@@ -49,9 +53,12 @@ class TestSource(DataSource):
 
 
 class BuienradarSource(DataSource):
+    def __init__(self, *args, **kwargs):
+        super(TestSource, self).__init__(*args, **kwargs)
+
     def get_data(self, conn, station_id):
         data = self.fetch_weather_data("http://xml.buienradar.nl")
-        parser = BuienradarParser(data)
+        parser = BuienradarParser(data, fallback=self.fallback)
 
         wd = weather_data(wind_direction=parser.get_wind_direction(station_id),
                           wind_speed=parser.get_wind_speed(station_id),
@@ -63,6 +70,9 @@ class BuienradarSource(DataSource):
 
 
 class KNMISource(DataSource):
+    def __init__(self, *args, **kwargs):
+        super(TestSource, self).__init__(*args, **kwargs)
+
     def get_data(self, conn, station_id):
         """
         >>> from multiprocessing import Pipe
@@ -86,7 +96,7 @@ class KNMISource(DataSource):
 
 class RijkswaterstaatSource(object):
     def __init__(self):
-        return NotImplementedError("Rijkswaterstaat is not yet ready")
+        raise NotImplementedError("Rijkswaterstaat is not yet ready")
         # http://www.rijkswaterstaat.nl/apps/geoservices/rwsnl/awd.php?mode=html
 
 if __name__ == '__main__':

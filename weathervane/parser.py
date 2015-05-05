@@ -93,15 +93,15 @@ class BuienradarParser(object):
     def parse(data, station, **kwargs):
         soup = BeautifulSoup(data)
         fallback = kwargs['fallback-station']
-        fields = [BuienradarParser.FIELD_MAPPING[kwargs['bits'][number]['key']] for number in kwargs['bits'].keys() if
+        fields = [kwargs['bits'][number]['key'] for number in kwargs['bits'].keys() if
                   kwargs['bits'][number]['key'] in BuienradarParser.FIELD_MAPPING]
         weather_data_tuple = namedtuple('weather_data', fields)
-        get_data = BuienradarParser.get_data_from_station(soup, str(station), fallback)
-        data = {field_name: get_data(field_name) for field_name in fields}
+        get_data = BuienradarParser._get_data_from_station(soup, str(station), fallback)
+        data = {field_name: get_data(BuienradarParser.FIELD_MAPPING[field_name]) for field_name in fields}
         return weather_data_tuple(**data)
 
     @staticmethod
-    def get_data_from_station(soup, station, fallback=None):
+    def _get_data_from_station(soup, station, fallback=None):
         def get_data(field_name):
             if field_name == 'wind_chill':
                 return BuienradarParser.get_wind_chill(soup, station, fallback)
@@ -109,7 +109,7 @@ class BuienradarParser(object):
             station_data = soup.find("weerstation", id=station).find(field_name.lower())
 
             if field_name == 'datum':
-                return datetime.datetime.strptime(station_data, '%d/%m/%Y %H:%M:%S')
+                return datetime.datetime.strptime(station_data.string, '%d/%m/%Y %H:%M:%S')
             if station_data is None:
                 return station_data
             else:
@@ -124,15 +124,16 @@ class BuienradarParser(object):
 
         return get_data
 
-    @property
-    def station_codes(self):
-        code_tags = self.soup("stationcode")
+    @staticmethod
+    def station_codes(raw_xml):
+        soup = BeautifulSoup(raw_xml)
+        code_tags = soup("stationcode")
         codes = [int(tag.string) for tag in code_tags]
         return codes
 
     @staticmethod
     def get_wind_chill(soup, station, fallback=None):
-        get_data = BuienradarParser.get_data_from_station(soup, station, fallback)
+        get_data = BuienradarParser._get_data_from_station(soup, station, fallback)
         wind_speed = get_data('windsnelheidMS')
         temperature = get_data('temperatuurGC')
         return BuienradarParser.calculate_wind_chill(wind_speed, temperature)

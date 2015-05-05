@@ -1,6 +1,6 @@
 from collections import namedtuple
 from urllib2 import urlopen
-from parser import KNMIParser, BuienradarParser
+from parser import BuienradarParser
 
 weather_data = namedtuple('weather_data', ['wind_direction', 'wind_speed', 'wind_speed_max', 'air_pressure'])
 
@@ -58,7 +58,7 @@ class BuienradarSource(DataSource):
 
     def get_data(self, conn, station_id):
         data = self.fetch_weather_data("http://xml.buienradar.nl")
-        parser = BuienradarParser(data, fallback=self.fallback)
+        parser = BuienradarParser(data, *args, **kwargs)
 
         wd = weather_data(wind_direction=parser.get_wind_direction(station_id),
                           wind_speed=parser.get_wind_speed(station_id),
@@ -67,38 +67,3 @@ class BuienradarSource(DataSource):
 
         conn.send(wd)
         conn.close()
-
-
-class KNMISource(DataSource):
-    def __init__(self, *args, **kwargs):
-        super(TestSource, self).__init__(*args, **kwargs)
-
-    def get_data(self, conn, station_id):
-        """
-        >>> from multiprocessing import Pipe
-        >>> knmi = KNMISource()
-        >>> p1, p2 = Pipe()
-        >>> s = knmi.get_data(p2, 251)
-        >>> data = p1.recv()
-        >>> print data
-        """
-        data = self.fetch_weather_data("http://www.knmi.nl/actueel/")
-        parser = KNMIParser(data)
-
-        wd = weather_data(wind_direction=parser.get_wind_direction(station_id),
-                          wind_speed=parser.get_wind_speed(station_id),
-                          wind_speed_max=parser.get_wind_maximum(station_id),
-                          air_pressure=parser.get_air_pressure(station_id))
-
-        conn.send(wd)
-        conn.close()
-
-
-class RijkswaterstaatSource(object):
-    def __init__(self):
-        raise NotImplementedError("Rijkswaterstaat is not yet ready")
-        # http://www.rijkswaterstaat.nl/apps/geoservices/rwsnl/awd.php?mode=html
-
-if __name__ == '__main__':
-    import doctest
-    doctest.testmod()

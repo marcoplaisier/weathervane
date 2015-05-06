@@ -1,5 +1,6 @@
 import unittest
 import logging
+import bitstring
 
 from mock import MagicMock, patch
 
@@ -49,12 +50,6 @@ class SpiTests(unittest.TestCase):
         self.assertEqual(2, length)
 
     @patch('weathervane.gpio.GPIO.load_library_by_name')
-    def test_pack_with_string(self, mock_class):
-        spi = GPIO(channel=0, frequency=25000, library='wiringPi')
-        data = 'test'
-        self.assertRaises(TypeError, spi.pack, data)
-
-    @patch('weathervane.gpio.GPIO.load_library_by_name')
     def test_pack_with_iterable(self, mock_class):
         spi = GPIO(channel=0, frequency=25000, library='wiringPi')
         it = range(0, 10)
@@ -66,8 +61,7 @@ class SpiTests(unittest.TestCase):
     def test_pack_with_large_bytes(self, mock_class):
         spi = GPIO(channel=0, frequency=25000, library='wiringPi')
         data = [-10, -1, 0, 255, 256, 266]
-        data_packet, length = spi.pack(data=data)
-        self.assertEqual([246, 255, 0, 255, 0, 10], list(data_packet))
+        self.assertRaises(ValueError, spi.pack, data=data)
 
     @patch('weathervane.gpio.GPIO.load_library_by_name')
     def test_pack_with_iterable(self, mock_class):
@@ -91,7 +85,7 @@ class SpiTests(unittest.TestCase):
         spi = GPIO(channel=0, frequency=25000, library='wiringPi')
         spi.handle.wiringPiSPIDataRW = MagicMock()
         spi.handle.wiringPiSPIDataRW.return_value = -1
-        data = [1]
+        data = bitstring.pack('uint:4', 1)
         self.assertRaises(SPIDataTransmissionError, spi.send_data, data)
 
 if __name__ == '__main__':

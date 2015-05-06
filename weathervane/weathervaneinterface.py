@@ -29,7 +29,8 @@ class WeatherVaneInterface(object):
         self.gpio = GPIO(**kwargs)
         # self.gpio.__init__(channel=self.channel, frequency=self.frequency)
         # TODO: check why I put the call to __init__ separately initially
-        self.data_changed = False
+        self.old_bit_string = None
+        self.new_bit_string = None
         self.weather_data = {}
         self.requested_data = kwargs['bits']
         self.station_bits = kwargs['stations']['pins']
@@ -38,105 +39,24 @@ class WeatherVaneInterface(object):
     def __repr__(self):
         return "WeatherVaneInterface(channel=%d, frequency=%d)" % (self.channel, self.frequency)
 
-    def __cast_wind_direction_to_byte(self, weather_data):
-        errors = 0x00
-
-        try:
-            wind_direction_code = weather_data.wind_direction
-            wind_direction_byte = self.WIND_DIRECTIONS[wind_direction_code]
-        except (KeyError, TypeError, AttributeError):
-            wind_direction_byte = 0x00
-            errors |= self.WIND_DIRECTION_ERROR
-
-        return int(wind_direction_byte), errors
-
-    def __cast_air_pressure_to_byte(self, weather_data):
-        errors = 0x00
-
-        try:
-            air_pressure = round(float(weather_data.air_pressure), 0)
-        except (KeyError, ValueError, TypeError, AttributeError):
-            air_pressure = 0x00
-            errors |= self.AIR_PRESSURE_ERROR
-
-        if air_pressure < self.AIR_PRESSURE_MINIMUM:
-            air_pressure = 0x00
-            errors |= self.AIR_PRESSURE_ERROR
-        elif self.AIR_PRESSURE_MAXIMUM < air_pressure:
-            air_pressure = 0xFF
-            errors |= self.AIR_PRESSURE_ERROR
-        else:
-            air_pressure -= self.AIR_PRESSURE_MINIMUM
-
-        return int(air_pressure), errors
-
-    def __cast_wind_speed_to_byte(self, weather_data):
-        errors = 0x00
-
-        try:
-            wind_speed = round(float(weather_data.wind_speed), 0)
-        except (KeyError, ValueError, TypeError, AttributeError):
-            wind_speed = 0x00
-            errors |= self.WIND_SPEED_ERROR
-
-        if wind_speed < self.WIND_SPEED_MINIMUM:
-            wind_speed = 0x00
-            errors |= self.WIND_SPEED_ERROR
-        elif self.WIND_SPEED_MAXIMUM < wind_speed:
-            wind_speed = 63
-            errors |= self.WIND_SPEED_ERROR
-
-        return int(wind_speed), errors
-
-    def __cast_wind_speed_max_to_byte(self, weather_data):
-        errors = 0x00
-
-        try:
-            wind_speed_max = round(float(weather_data.wind_speed_max), 0)
-        except (KeyError, ValueError, TypeError, AttributeError):
-            wind_speed_max = 0x00
-            errors |= self.WIND_SPEED_MAX_ERROR
-
-        if wind_speed_max < self.WIND_SPEED_MINIMUM:
-            wind_speed_max = 0x00
-            errors |= self.WIND_SPEED_MAX_ERROR
-        elif self.WIND_SPEED_MAXIMUM < wind_speed_max:
-            wind_speed_max = 63
-            errors |= self.WIND_SPEED_MAX_ERROR
-
-        try:
-            wind_speed = round(float(weather_data.wind_speed), 0)
-        except (KeyError, ValueError, TypeError, AttributeError):
-            wind_speed = 0
-        if wind_speed_max < wind_speed:
-            wind_speed_max = wind_speed
-
-        return int(wind_speed_max), errors
-
-    def __get_data_changed(self, weather_data):
-        if weather_data == self.weather_data:
-            result = self.DATA_UNCHANGED
-            self.data_changed = False
-        else:
-            result = self.DATA_CHANGED
-            self.data_changed = True
-
-        self.weather_data = copy.copy(weather_data)
-
-        return result
+    @property
+    def data_changed(self):
+        return self.old_bit_string != self.new_bit_string
 
     def format_string(self):
-        fmt = ''
-        for i, data in enumerate(self.station_bits):
-            formatting = self.station_bits[str(i)]
-            s = "hex:{0}={1},".format(formatting['length'], formatting['key'])
-            fmt += s
+        fmt = []
+        for i, data in enumerate(self.requested_data):
+            formatting = self.requested_data[str(i)]
+            s = "uint:{0}={1}".format(formatting['length'], formatting['key'])
+            fmt.append(s)
+
         return fmt
 
     def __convert_data(self, weather_data):
         fmt = self.format_string()
-        data, error = self.transmittable_data(weather_data)
-        return bitstring.pack(fmt, data)
+        data, error = self.transmittable_data(weather_data, self.requested_data)
+        b = bitstring.pack(fmt, **data)
+        return b
 
     def send(self, weather_data):
         """Send data to the connected SPI device.
@@ -145,8 +65,9 @@ class WeatherVaneInterface(object):
         weather_data -- a named_tuple with the data
         """
         data_array = self.__convert_data(weather_data)
-        logging.debug("Sending data:" + ", ".join(str(x) for x in data_array))
+        logging.debug("Sending data: {}".format(data_array))
         self.gpio.send_data(data_array)
+        self.old_bit_string, self.new_bit_string = self.new_bit_string, data_array
 
     def get_data(self):
         """Return the data sent by the spi device.
@@ -183,18 +104,61 @@ class WeatherVaneInterface(object):
 
         return self.stations[result]
 
-    def transmittable_data(self, weather_data):
+    def transmittable_data(self, weather_data, requested_data):
         result = {}
+        error = False
         index = 0
-        for key, fmt in self.station_bits.items():
-            value = weather_data._asdict().get(fmt['key'], 0)
-            if fmt.get('min', 0) <= value <= fmt.get('max', 0):
-                error = True
+        weather_data_dict = weather_data._asdict()
 
-            value -= float(fmt.get('min', 0))
-            value /= float(fmt.get('step', 1))
-            value = int(value)
-            result[fmt['key']] = value
+        for key, fmt in requested_data.items():
+            measurement_name = requested_data[key]['key']
+            value = weather_data_dict.get(fmt['key'], 0)
+
+            if measurement_name == 'wind_direction':
+                if value in self.WIND_DIRECTIONS:
+                    result['wind_direction'] = self.WIND_DIRECTIONS[value]
+                else:
+                    result['wind_direction'] = 0
+                    error = True
+                    logging.debug('Wind direction {} not found.'.format(result['wind_direction']))
+            else:
+                min_value = float(fmt.get('min', 0))
+                max_value = float(fmt.get('max', 255))
+                step_value = float(fmt.get('step', 1))
+
+                if value < min_value:
+                    value = min_value
+                    error = True
+                    logging.debug('Value {} for {} is smaller than minimum {}'
+                                  .format(value, measurement_name, min_value))
+                if max_value < value:
+                    value = max_value
+                    error = True
+                    logging.debug('Value {} for {} is larger than maximum {}'
+                                  .format(value, measurement_name, max_value))
+                try:
+                    value -= min_value
+                    value /= step_value
+                    value = int(value)
+                except TypeError:
+                    value = 0
+                    error = True
+                    logging.debug('Value {} for {} is not a number'
+                                  .format(value, measurement_name))
+
+                result[fmt['key']] = value
+
             index += 1
 
+        try:
+            wind_speed = result['wind_speed']
+            wind_speed_max = result['wind_speed_max']
+            if wind_speed > result['wind_speed_max']:
+                result['wind_speed'] = wind_speed_max
+                error = True
+                logging.debug(
+                    'Regular wind speed {} may not exceed maximum wind speed {}'
+                        .format(wind_speed, wind_speed_max))
+        except KeyError:
+            pass
         return result, error

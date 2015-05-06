@@ -93,7 +93,6 @@ class GPIO(object):
 
         status_code = self.handle.wiringPiSetup()
 
-
     def pack(self, data):
         """
         Pack the data in an array of bytes, ready for transmission
@@ -104,7 +103,7 @@ class GPIO(object):
         # noinspection PyTypeChecker
         data_list = c_ubyte * len(data)
         # noinspection PyCallingNonCallable
-        self.data = data_list(*data)
+        self.data = data_list.from_buffer(bytearray(data))
 
         return self.data, len(self.data)
 

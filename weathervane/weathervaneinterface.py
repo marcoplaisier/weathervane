@@ -1,6 +1,6 @@
 import copy
 import logging
-from pprint import pprint
+import bitstring
 
 from gpio import GPIO
 
@@ -31,6 +31,7 @@ class WeatherVaneInterface(object):
         # TODO: check why I put the call to __init__ separately initially
         self.data_changed = False
         self.weather_data = {}
+        self.requested_data = kwargs['bits']
         self.station_bits = kwargs['stations']['pins']
         self.stations = kwargs['stations']['config']
 
@@ -124,15 +125,18 @@ class WeatherVaneInterface(object):
 
         return result
 
-    def __convert_data(self, weather_data):
-        wind_direction, wind_direction_error = self.__cast_wind_direction_to_byte(weather_data)
-        wind_speed, wind_speed_error = self.__cast_wind_speed_to_byte(weather_data)
-        wind_speed_max, wind_speed_max_error = self.__cast_wind_speed_max_to_byte(weather_data)
-        air_pressure, air_pressure_error = self.__cast_air_pressure_to_byte(weather_data)
-        error_byte = wind_direction_error | wind_speed_error | wind_speed_max_error | air_pressure_error
-        service_byte = error_byte | self.__get_data_changed(weather_data) | self.FIXED_PATTERN
+    def format_string(self):
+        fmt = ''
+        for i, data in enumerate(self.station_bits):
+            formatting = self.station_bits[str(i)]
+            s = "hex:{0}={1},".format(formatting['length'], formatting['key'])
+            fmt += s
+        return fmt
 
-        return [wind_direction, wind_speed, wind_speed_max, air_pressure, service_byte, self.DUMMY_BYTE]
+    def __convert_data(self, weather_data):
+        fmt = self.format_string()
+        data, error = self.transmittable_data(weather_data)
+        return bitstring.pack(fmt, data)
 
     def send(self, weather_data):
         """Send data to the connected SPI device.
@@ -178,3 +182,19 @@ class WeatherVaneInterface(object):
             result += value * 2 ** index
 
         return self.stations[result]
+
+    def transmittable_data(self, weather_data):
+        result = {}
+        index = 0
+        for key, fmt in self.station_bits.items():
+            value = weather_data._asdict().get(fmt['key'], 0)
+            if fmt.get('min', 0) <= value <= fmt.get('max', 0):
+                error = True
+
+            value -= float(fmt.get('min', 0))
+            value /= float(fmt.get('step', 1))
+            value = int(value)
+            result[fmt['key']] = value
+            index += 1
+
+        return result, error

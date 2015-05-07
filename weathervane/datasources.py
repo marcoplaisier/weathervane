@@ -10,7 +10,7 @@ def retrieve_xml(url):
 
 def fetch_weather_data(conn, station_id, *args, **kwargs):
     data = retrieve_xml("http://xml.buienradar.nl")
-    wd = BuienradarParser.parse(data, station_id, **kwargs)
+    wd = BuienradarParser.parse(data, station_id, *args, **kwargs)
 
     conn.send(wd)
     conn.close()

@@ -91,7 +91,7 @@ class BuienradarParser(object):
     }
 
     @staticmethod
-    def parse(data, station, **kwargs):
+    def parse(data, station, *args, **kwargs):
         soup = BeautifulSoup(data)
         fallback = kwargs['fallback-station']
         fields = [kwargs['bits'][number]['key'] for number in kwargs['bits'].keys() if

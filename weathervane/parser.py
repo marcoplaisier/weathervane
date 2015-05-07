@@ -1,6 +1,7 @@
 import ConfigParser
 from collections import namedtuple
 import datetime
+import logging
 from pprint import pprint
 from BeautifulSoup import BeautifulSoup
 

@@ -69,14 +69,6 @@ for i, data in enumerate(bits):
 qqq = fmt[:-1]
 import bitstring
 
-
-del BuienradarParser
-del f
-del formatting
-del data
-del i
-del s
-
 result = {}
 print wd._asdict()
 index = 0

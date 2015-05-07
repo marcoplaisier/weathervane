@@ -43,8 +43,6 @@ class WeatherVane(object):
         interface = WeatherVaneInterface(*args, **kwargs)
         logging.debug("Using " + str(interface))
 
-        data_source = self.get_source(kwargs['source'])
-
         pipe_end_1, pipe_end_2 = Pipe()
         counter = 0
 

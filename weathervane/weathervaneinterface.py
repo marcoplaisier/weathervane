@@ -1,7 +1,5 @@
-import copy
 import logging
 import bitstring
-
 from gpio import GPIO
 
 

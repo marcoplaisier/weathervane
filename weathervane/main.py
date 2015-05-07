@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-import ConfigParser
 import argparse
 import logging
 import logging.handlers

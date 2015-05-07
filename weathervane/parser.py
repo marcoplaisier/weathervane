@@ -1,4 +1,4 @@
-import ConfigParser
+from ConfigParser import SafeConfigParser
 from collections import namedtuple
 import datetime
 import logging
@@ -6,7 +6,10 @@ from pprint import pprint
 from BeautifulSoup import BeautifulSoup
 
 
-class WeathervaneConfigParser(ConfigParser.SafeConfigParser):
+class WeathervaneConfigParser(SafeConfigParser):
+    def __init__(self):
+        SafeConfigParser.__init__(self)
+
     def parse_bit_packing_section(self):
         bit_numbers = self.options('Bit Packing')
 
@@ -91,11 +94,20 @@ class BuienradarParser(object):
     }
 
     @staticmethod
+    def field_names(field_definitions):
+        for i in field_definitions.keys():
+            print i
+
+        english_field_names = [field_definitions[number]['key'] for number in field_definitions.keys() if
+                               field_definitions[number]['key'] in BuienradarParser.FIELD_MAPPING]
+        return english_field_names
+
+    @staticmethod
     def parse(data, station, *args, **kwargs):
         soup = BeautifulSoup(data)
         fallback = kwargs['fallback-station']
-        fields = [kwargs['bits'][number]['key'] for number in kwargs['bits'].keys() if
-                  kwargs['bits'][number]['key'] in BuienradarParser.FIELD_MAPPING]
+        print kwargs['bits']['0']['key']
+        fields = BuienradarParser.field_names(kwargs['bits'])
         weather_data_tuple = namedtuple('weather_data', fields)
         get_data = BuienradarParser._get_data_from_station(soup, str(station), fallback)
         data = {field_name: get_data(BuienradarParser.FIELD_MAPPING[field_name]) for field_name in fields}

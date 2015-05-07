@@ -156,7 +156,7 @@ class WeatherVaneInterface(object):
                 error = True
                 logging.debug(
                     'Regular wind speed {} may not exceed maximum wind speed {}'
-                        .format(wind_speed, wind_speed_max))
+                    .format(wind_speed, wind_speed_max))
         except KeyError:
             pass
         return result, error

@@ -115,9 +115,9 @@ class WeatherVaneInterface(object):
                 if value in self.WIND_DIRECTIONS:
                     result['wind_direction'] = self.WIND_DIRECTIONS[value]
                 else:
+                    logging.debug('Wind direction {} not found. Using North as substitute.'.format(result['wind_direction']))
                     result['wind_direction'] = 0
                     error = True
-                    logging.debug('Wind direction {} not found.'.format(result['wind_direction']))
             else:
                 min_value = float(fmt.get('min', 0))
                 max_value = float(fmt.get('max', 255))

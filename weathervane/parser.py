@@ -73,7 +73,8 @@ class WeathervaneConfigParser(SafeConfigParser):
 class BuienradarParser(object):
     INVALID_DATA = ['0', 0, '-', '', None]
     FIELD_MAPPING = {
-        'wind_direction': 'windrichtingGR',
+        'wind_direction': 'windrichting',
+        'wind_direction_degrees': 'windrichtingGR',
         'wind_speed': 'windsnelheidMS',
         'wind_speed_max': 'windstotenMS',
         'wind_speed_bft': 'windsnelheidBF',

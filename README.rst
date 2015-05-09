@@ -53,8 +53,8 @@ Alternatively, you can clone the github repository
     ::
 
       git clone https://github.com/marcofinalist/weathervane.git
-      pip install requirements.txt
-      
+      sudo pip install -r requirements.txt
+
 Running
 -------
 1. Load the SPI drivers from WiringPi

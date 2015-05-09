@@ -111,12 +111,12 @@ class WeatherVaneInterface(object):
             measurement_name = requested_data[key]['key']
             value = weather_data.get(fmt['key'], 0)
 
-            if measurement_name == 'wind_direction':
+            if measurement_name == 'wind_direction_bft':
                 if value in self.WIND_DIRECTIONS:
-                    result['wind_direction'] = self.WIND_DIRECTIONS[value]
+                    result['wind_direction_bft'] = self.WIND_DIRECTIONS[value]
                 else:
                     logging.debug('Wind direction {} not found. Using North as substitute.'.format(value))
-                    result['wind_direction'] = 0
+                    result['wind_direction_bft'] = 0
                     error = True
             else:
                 min_value = float(fmt.get('min', 0))

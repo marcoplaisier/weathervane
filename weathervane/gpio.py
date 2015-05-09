@@ -1,5 +1,6 @@
 from ctypes import cdll, c_ubyte, util
 import logging
+from time import sleep
 
 
 class SPISetupException(Exception):
@@ -53,6 +54,19 @@ class GPIO(object):
             logging.exception('Could not setup SPI protocol. Library: {}, channel: {}, frequency: {}. Please run '
                               '"gpio load spi" or install the drivers first'.format(library, channel, frequency))
             raise
+        self.ready_pin = kwargs['ready_pin']
+        self.handle.pinMode(self.ready_pin, self.OUTPUT)
+        self.handle.digitalWrite(self.ready_pin, 0)
+
+    def __enter__(self):
+        self.handle.digitalWrite(self.ready_pin, 1)
+        sleep(0.05)
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.handle.digitalWrite(self.ready_pin, 0)
+        sleep(0.05)
+        return self
 
     @staticmethod
     def load_library_by_name(library):

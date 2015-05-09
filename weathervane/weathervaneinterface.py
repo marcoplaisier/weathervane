@@ -64,7 +64,10 @@ class WeatherVaneInterface(object):
         """
         data_array = self.__convert_data(weather_data)
         logging.debug("Sending data: {}".format(data_array))
-        self.gpio.send_data(data_array)
+
+        with self.gpio as gpio:
+            gpio.send_data(data_array)
+            
         self.old_bit_string, self.new_bit_string = self.new_bit_string, data_array
 
     def get_data(self):

@@ -106,11 +106,10 @@ class WeatherVaneInterface(object):
         result = {}
         error = False
         index = 0
-        weather_data_dict = weather_data._asdict()
 
         for key, fmt in requested_data.items():
             measurement_name = requested_data[key]['key']
-            value = weather_data_dict.get(fmt['key'], 0)
+            value = weather_data.get(fmt['key'], 0)
 
             if measurement_name == 'wind_direction':
                 if value in self.WIND_DIRECTIONS:

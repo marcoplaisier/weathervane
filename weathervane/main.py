@@ -69,6 +69,7 @@ class WeatherVane(object):
                 logging.debug('Received data:' + str(wd))
 
             if wd:
+
                 interface.send(wd)
 
             logging.debug('Heartbeat-{}'.format(counter))

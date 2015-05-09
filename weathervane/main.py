@@ -70,7 +70,8 @@ class WeatherVane(object):
 
             if wd:
                 interface.send(wd)
-            logging.debug('Heartbeat-', counter)
+
+            logging.debug('Heartbeat-{}'.format(counter))
             counter += 1
             sleep(1)
 

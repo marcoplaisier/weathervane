@@ -3,7 +3,7 @@
 import os
 
 from unittest import TestCase
-from weathervane.parser import WeathervaneConfigParser
+from parser import WeathervaneConfigParser
 
 
 class TestWeathervaneConfigParser(TestCase):

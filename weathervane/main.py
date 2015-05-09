@@ -42,7 +42,7 @@ class WeatherVane(object):
     def main(self, *args, **kwargs):
         interface = WeatherVaneInterface(*args, **kwargs)
         logging.debug("Using " + str(interface))
-
+        wd = None
         pipe_end_1, pipe_end_2 = Pipe()
         counter = 0
 
@@ -67,7 +67,8 @@ class WeatherVane(object):
                 wd = pipe_end_2.recv()
                 logging.info("Received data:" + str(wd))
 
-            interface.send(wd)
+            if wd:
+                interface.send(wd)
 
             counter += 1
             sleep(1)

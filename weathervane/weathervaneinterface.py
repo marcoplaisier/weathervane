@@ -115,7 +115,7 @@ class WeatherVaneInterface(object):
                 if value in self.WIND_DIRECTIONS:
                     result['wind_direction'] = self.WIND_DIRECTIONS[value]
                 else:
-                    logging.debug('Wind direction {} not found. Using North as substitute.'.format(result['wind_direction']))
+                    logging.debug('Wind direction {} not found. Using North as substitute.'.format(value))
                     result['wind_direction'] = 0
                     error = True
             else:

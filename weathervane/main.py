@@ -62,10 +62,11 @@ class WeatherVane(object):
                 arguments.extend(args)
                 p = Process(target=fetch_weather_data, args=arguments, kwargs=kwargs)
                 p.start()
+                logging.debug('Retrieving data')
 
             if pipe_end_2.poll(0):
                 wd = pipe_end_2.recv()
-                logging.info("Received data:" + str(wd))
+                logging.debug('Received data:' + str(wd))
 
             if wd:
                 interface.send(wd)

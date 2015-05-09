@@ -68,7 +68,7 @@ class WeathervaneConfigParser(SafeConfigParser):
             },
             'bits': bits
         }
-        pprint(configuration)
+        debug.log('Configuration:', configuration)
         return configuration
 
 
@@ -95,9 +95,6 @@ class BuienradarParser(object):
 
     @staticmethod
     def field_names(field_definitions):
-        for i in field_definitions.keys():
-            print i
-
         english_field_names = [field_definitions[number]['key'] for number in field_definitions.keys() if
                                field_definitions[number]['key'] in BuienradarParser.FIELD_MAPPING]
         return english_field_names
@@ -106,7 +103,6 @@ class BuienradarParser(object):
     def parse(data, station, *args, **kwargs):
         soup = BeautifulSoup(data)
         fallback = kwargs['fallback-station']
-        print kwargs['bits']['0']['key']
         fields = BuienradarParser.field_names(kwargs['bits'])
         weather_data_tuple = namedtuple('weather_data', fields)
         get_data = BuienradarParser._get_data_from_station(soup, str(station), fallback)
@@ -146,12 +142,16 @@ class BuienradarParser(object):
 
     @staticmethod
     def get_wind_chill(soup, station, fallback=None):
+        print 'station', station
         get_data = BuienradarParser._get_data_from_station(soup, station, fallback)
         wind_speed = get_data('windsnelheidMS')
+        print 'wind_speed: ', wind_speed
         temperature = get_data('temperatuurGC')
+        print 'temperature: ', temperature
         return BuienradarParser.calculate_wind_chill(wind_speed, temperature)
 
     @staticmethod
     def calculate_wind_chill(wind_speed, temperature):
+        print type(wind_speed), wind_speed, type(temperature), temperature
         wind_chill = 13.12 + 0.6215 * temperature - 13.96 * wind_speed ** 0.16 + 0.4867 * temperature * wind_speed ** 0.16
         return round(wind_chill, 0)

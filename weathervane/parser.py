@@ -68,7 +68,7 @@ class WeathervaneConfigParser(SafeConfigParser):
             },
             'bits': bits
         }
-        debug.log('Configuration:', configuration)
+        logging.debug('Configuration:', configuration)
         return configuration
 
 

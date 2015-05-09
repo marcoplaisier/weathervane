@@ -48,6 +48,13 @@ Installation
 
       pip install weathervane
 
+Alternatively, you can clone the github repository
+
+    ::
+
+      git clone https://github.com/marcofinalist/weathervane.git
+      pip install requirements.txt
+      
 Running
 -------
 1. Load the SPI drivers from WiringPi

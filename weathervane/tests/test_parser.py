@@ -34,15 +34,15 @@ class test_parser(unittest.TestCase):
             print self.weather_data
 
     def wind_speed_parse_test(self):
-        wind_speed = self.weather_data.wind_speed
+        wind_speed = self.weather_data['wind_speed']
         assert wind_speed == 6.27
 
     def temperature_test(self):
-        temperature = self.weather_data.temperature
+        temperature = self.weather_data['temperature']
         assert temperature == 16.4
 
     def wind_chill_parse_test(self):
-        wind_chill = self.weather_data.wind_chill
+        wind_chill = self.weather_data['wind_chill']
         self.assertAlmostEqual(15.0, wind_chill, 1)
 
     def station_codes_test(self):

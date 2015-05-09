@@ -1,5 +1,4 @@
 from ConfigParser import SafeConfigParser
-from collections import namedtuple
 import datetime
 import logging
 from BeautifulSoup import BeautifulSoup
@@ -103,10 +102,9 @@ class BuienradarParser(object):
         soup = BeautifulSoup(data)
         fallback = kwargs['fallback-station']
         fields = BuienradarParser.field_names(kwargs['bits'])
-        weather_data_tuple = namedtuple('weather_data', fields)
         get_data = BuienradarParser._get_data_from_station(soup, str(station), fallback)
         data = {field_name: get_data(BuienradarParser.FIELD_MAPPING[field_name]) for field_name in fields}
-        return weather_data_tuple(**data)
+        return data
 
     @staticmethod
     def _get_data_from_station(soup, station, fallback=None):
@@ -116,10 +114,11 @@ class BuienradarParser(object):
 
             station_data = soup.find("weerstation", id=station).find(field_name.lower())
 
-            if station_data in BuienradarParser.INVALID_DATA:
+            if station_data in BuienradarParser.INVALID_DATA or station_data.string in BuienradarParser.INVALID_DATA:
                 if fallback:
                     logging.debug('Returning {} from fallback {}'.format(field_name, fallback))
-                    return BuienradarParser._get_data_from_station(soup, fallback, None)
+                    get_data_from_fallback = BuienradarParser._get_data_from_station(soup, fallback, None)
+                    return get_data_from_fallback(field_name)
                 else:
                     logging.debug('Field {} without valid data. Returning 0'.format(field_name))
                     return 0

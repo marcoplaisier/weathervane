@@ -83,6 +83,7 @@ class WeatherVane(object):
         formatter = logging.Formatter("%(asctime)s:%(levelname)s:%(module)s:%(message)s")
         handler.setFormatter(formatter)
         weathervane_logger.addHandler(handler)
+        weathervane_logger.addHandler(logging.StreamHandler())
 
 
 if __name__ == "__main__":

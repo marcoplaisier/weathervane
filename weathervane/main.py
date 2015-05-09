@@ -7,8 +7,8 @@ import os
 from time import sleep
 
 from gpio import TestInterface
-from weathervane.datasources import fetch_weather_data
-from weathervane.parser import WeathervaneConfigParser
+from datasources import fetch_weather_data
+from parser import WeathervaneConfigParser
 from weathervaneinterface import WeatherVaneInterface
 
 

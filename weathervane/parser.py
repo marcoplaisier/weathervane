@@ -2,7 +2,6 @@ from ConfigParser import SafeConfigParser
 from collections import namedtuple
 import datetime
 import logging
-from pprint import pprint
 from BeautifulSoup import BeautifulSoup
 
 
@@ -117,6 +116,13 @@ class BuienradarParser(object):
 
             station_data = soup.find("weerstation", id=station).find(field_name.lower())
 
+            if station_data in BuienradarParser.INVALID_DATA:
+                if fallback:
+                    logging.debug('Returning {} from fallback {}'.format(field_name, fallback))
+                    return BuienradarParser._get_data_from_station(soup, fallback, None)
+                else:
+                    logging.debug('Field {} without valid data. Returning 0'.format(field_name))
+                    return 0
             if field_name == 'datum':
                 return datetime.datetime.strptime(station_data.string, '%d/%m/%Y %H:%M:%S')
             if station_data is None:

@@ -1,5 +1,7 @@
 import os
-from weathervane.parser import BuienradarParser
+
+from parser import BuienradarParser
+
 
 a = {'bits': {'0': {'key': 'wind_direction', 'length': '4'},
               '1': {'key': 'wind_speed',

@@ -1,13 +1,13 @@
 import csv
 import os
 import unittest
-from weathervane import parser
-from weathervane.parser import BuienradarParser
+
+from parser import BuienradarParser
 
 
 class test_parser(unittest.TestCase):
     def setUp(self):
-        with file(os.path.join(os.getcwd(), 'weathervane', 'tests', 'buienradar.xml'), 'rU') as f:
+        with file(os.path.join(os.getcwd(), 'tests', 'buienradar.xml'), 'rU') as f:
             data = f.read()
             config = {
                 'fallback-station': 6277,
@@ -46,7 +46,7 @@ class test_parser(unittest.TestCase):
         self.assertAlmostEqual(15.0, wind_chill, 1)
 
     def station_codes_test(self):
-        with file(os.path.join(os.getcwd(), 'weathervane', 'tests', 'buienradar.xml'), 'rU') as f:
+        with file(os.path.join(os.getcwd(), 'tests', 'buienradar.xml'), 'rU') as f:
             data = f.read()
             station_codes = BuienradarParser.station_codes(data)
             expected_codes = [6275, 6391, 6249, 6308, 6260, 6235, 6370, 6377, 6321, 6350, 6283, 6280, 6315, 6278, 6356,
@@ -57,7 +57,7 @@ class test_parser(unittest.TestCase):
 
 
 def wind_chill_test():
-    with file(os.path.join(os.getcwd(), 'weathervane', 'tests', 'testdata.csv'), 'rU') as f:
+    with file(os.path.join(os.getcwd(), 'tests', 'testdata.csv'), 'rU') as f:
         data = csv.DictReader(f)
         for line in data:
             wind_speed = float(line['windspeed'])

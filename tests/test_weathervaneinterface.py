@@ -1,7 +1,9 @@
-from mock import Mock, patch
 import unittest
+
+from mock import Mock, patch
+
 from weathervane.weathervaneinterface import WeatherVaneInterface
-import test_config
+from tests import test_config
 
 
 @patch('weathervane.weathervaneinterface.GPIO', autospec=True)

@@ -60,12 +60,12 @@ class GPIO(object):
 
     def __enter__(self):
         self.handle.digitalWrite(self.ready_pin, 1)
-        sleep(0.05)
+        sleep(0.0005)
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.handle.digitalWrite(self.ready_pin, 0)
-        sleep(0.05)
+        sleep(0.0005)
         return self
 
     @staticmethod

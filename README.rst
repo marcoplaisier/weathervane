@@ -90,3 +90,18 @@ Run the tests in the folder tests.
 Hardware
 --------
 This program does nothing really interesting on its own. It will be connected to a real weathervane that continuously displays the wind direct, wind speed and air pressure. Images will follow.
+
+Problems
+--------
+Unable to open SPI device: No such file or directory
+use gpio load spi before starting the program
+
+After gpio load spi, you get the following error message
+ERROR: could not insert 'spi_bcm2708': No such device
+gpio: Unable to load spi_bcm2708
+Solution: enable the SPI device on the raspberry pi
+::
+
+    sudo raspi-config
+
+Go to 8. advanced options and select A6 SPI. Choose Yes and Yes. Reboot the raspberry Pi.

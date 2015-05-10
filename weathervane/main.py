@@ -13,6 +13,15 @@ from weathervaneinterface import WeatherVaneInterface
 
 
 class WeatherVane(object):
+    def __init__(self, *args, **configuration):
+        self.args = args
+        self.configuration = configuration
+        self.interface = WeatherVaneInterface(*args, **configuration)
+        logging.info("Using " + str(self.interface))
+        self.wd = None
+        self.counter = 0
+        self.interval = configuration['interval']
+
     def test_mode(self):
         """
         Test mode is used to output a predicable sequence of bytes to
@@ -39,41 +48,62 @@ class WeatherVane(object):
             interface.send(data)
             sleep(1)
 
-    def main(self, *args, **kwargs):
-        interface = WeatherVaneInterface(*args, **kwargs)
-        logging.debug("Using " + str(interface))
-        wd = None
-        pipe_end_1, pipe_end_2 = Pipe()
-        counter = 0
+    def check_selected_station(self, selected_station):
+        """Check if another station is selected and change it when it has
 
-        selected_station = interface.selected_station
+        Determine whether the selected station has changed on the interface. If it has changed, then immediately start
+        using data from this new station and return the id of the newly selected station.
+        In the config-file you can specify a list of stations where data may be collected from. You can choose the
+        specific station by also specifying on or more pins on the raspberry that together form a bitwise number.
+        E.g you want to select one of four stations. You will need to specify 2 pins on the raspberry (2**2) that select
+        on of these four stations. If pin 0 is high and pin 1 is low, you will select station 2. If both pins are high,
+        you will select station 3, etc.
+
+        Side effect: reset counter to 0 if another station is selected
+
+        @param selected_station: the currently used station
+        @return: either the id of the new station or the id of the station already in use
+        """
+        station_id = self.interface.selected_station
+        if station_id != selected_station:  # reset if a new station is selected
+            self.counter = 0
+            logging.info("New station selected: {}".format(station_id))
+        return station_id
+
+    def start_data_collection(self, pipe_end_1, station_id):
+        """Side effect: reset counter to 0
+
+        @param pipe_end_1:
+        @param station_id:
+        @return:
+        """
+        self.counter = 0
+        arguments = [pipe_end_1, station_id]
+        arguments.extend(self.args)
+        p = Process(target=fetch_weather_data, args=arguments, kwargs=self.configuration)
+        p.start()
+        logging.debug('Retrieving data')
+
+    def main(self):
+        """
+
+
+        """
+        pipe_end_1, pipe_end_2 = Pipe()
+        selected_station = self.interface.selected_station
 
         while True:
-            if (counter % 3) == 0:  # check the station selection every three seconds
-                station_id = interface.selected_station
-                if station_id != selected_station:  # reset if a new station is selected
-                    counter = 0
-                    selected_station = station_id
-                    logging.info("New station selected: {}".format(station_id))
-
-            if (counter % kwargs['interval']) == 0:
-                counter = 0
-                arguments = [pipe_end_1, station_id]
-                arguments.extend(args)
-                p = Process(target=fetch_weather_data, args=arguments, kwargs=kwargs)
-                p.start()
-                logging.debug('Retrieving data')
-
+            if (self.counter % 3) == 0:  # check the station selection every three seconds
+                station_id = self.check_selected_station(selected_station)
+            if (self.counter % self.interval) == 0:
+                self.start_data_collection(pipe_end_1, station_id)
             if pipe_end_2.poll(0):
-                wd = pipe_end_2.recv()
-                logging.debug('Received data:' + str(wd))
-
-            if wd:
-
-                interface.send(wd)
-
-            logging.debug('Heartbeat-{}'.format(counter))
-            counter += 1
+                logging.debug('Data available:')
+                self.wd = pipe_end_2.recv()
+            if self.wd:
+                logging.debug('Heartbeat-{}'.format(self.counter))
+                self.interface.send(self.wd)
+            self.counter += 1
             sleep(1)
 
     def set_logger(self):

@@ -1,5 +1,4 @@
 from urllib2 import urlopen
-
 from parser import BuienradarParser
 
 

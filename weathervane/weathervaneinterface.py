@@ -2,7 +2,7 @@ import logging
 
 import bitstring
 
-from gpio import GPIO
+from weathervane.gpio import GPIO
 
 
 class WeatherVaneInterface(object):

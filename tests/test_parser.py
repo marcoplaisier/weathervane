@@ -2,7 +2,7 @@ import csv
 import os
 import unittest
 
-from parser import BuienradarParser
+from weathervane.parser import BuienradarParser
 
 
 class test_parser(unittest.TestCase):

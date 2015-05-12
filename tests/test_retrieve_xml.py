@@ -5,11 +5,12 @@ import os
 from unittest import TestCase
 from multiprocessing import Pipe, Process
 import time
+from urllib2 import URLError
 
-from mock import patch
+from mock import patch, Mock, call
 
-from weathervane.datasources import fetch_weather_data
-import datasources
+from weathervane.datasources import fetch_weather_data, DataSourceError
+from weathervane import datasources
 from tests.test_config import config
 
 
@@ -24,13 +25,13 @@ class TestRetrieveXML(TestCase):
 
 
 class TestFetchWeatherData(TestCase):
-    @patch('datasources.retrieve_xml')
+    @patch('weathervane.datasources.retrieve_xml')
     def test_fetch_weather_data(self, retrieve_function):
 
         p1, p2 = Pipe()
         station_id = 6330
         args = [p1, station_id]
-        with patch('datasources.BuienradarParser.parse', return_value='success') as parser:
+        with patch('weathervane.datasources.BuienradarParser.parse', return_value='success') as parser:
             p = Process(target=fetch_weather_data, args=args, kwargs=config)
             p.start()
 

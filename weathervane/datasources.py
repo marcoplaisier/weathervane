@@ -1,5 +1,10 @@
-from urllib2 import urlopen
-from parser import BuienradarParser
+from urllib2 import urlopen, URLError, HTTPError
+
+from weathervane.parser import BuienradarParser
+
+
+class DataSourceError(RuntimeError):
+    pass
 
 
 def retrieve_xml(url):

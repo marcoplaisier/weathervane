@@ -4,10 +4,10 @@ import unittest
 
 from mock import patch, call
 
-from gpio import GPIO
+from weathervane.gpio import GPIO
 
 
-@patch('gpio.GPIO.load_library_by_name')
+@patch('weathervane.gpio.GPIO.load_library_by_name')
 class PinTest(unittest.TestCase):
     def test_pin_read(self, mock_class):
         interface = GPIO(channel=0, frequency=25000, library='wiringPi', ready_pin=4)

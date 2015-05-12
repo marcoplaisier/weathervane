@@ -6,10 +6,10 @@ from multiprocessing import Process, Pipe
 import os
 from time import sleep
 
-from gpio import TestInterface
-from datasources import fetch_weather_data
-from parser import WeathervaneConfigParser
-from weathervaneinterface import WeatherVaneInterface
+from weathervane.gpio import TestInterface
+from weathervane.datasources import fetch_weather_data
+from weathervane.parser import WeathervaneConfigParser
+from weathervane.weathervaneinterface import WeatherVaneInterface
 
 
 class WeatherVane(object):

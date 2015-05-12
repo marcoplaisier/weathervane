@@ -46,3 +46,10 @@ class TestFetchWeatherData(TestCase):
         print expected
         print observed
         pass
+
+    @patch('weathervane.datasources.retrieve_xml')
+    def test_fetch_weather_data(self, retrieve_function):
+        p1 = Mock()
+        with patch('weathervane.datasources.BuienradarParser.parse', return_value='') as parser:
+            fetch_weather_data(p1, 0)
+        p1.assert_has_calls([call.send(''), call.close()])

@@ -11,3 +11,9 @@ class TestGPIO(unittest.TestCase):
         gpio = GPIO(channel=0, frequency=500000, library='wiringPi', ready_pin=4)
         gpio.handle.wiringPiSetup.assert_called_once_with()
         gpio.handle.wiringPiSPISetup.assert_called_once_with(0, 500000)
+
+    def test_gpio_context_manager(self, mock_loader):
+        with GPIO(channel=0, frequency=10000, library='None', ready_pin=0) as g:
+            result, length = g.pack('a')
+
+        self.assertEqual(list(result), [ord('a')])

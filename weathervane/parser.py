@@ -125,7 +125,7 @@ class BuienradarParser(object):
                     logging.debug('Field {} without valid data. Returning 0'.format(field_name))
                     return 0
             if field_name == 'datum':
-                return datetime.datetime.strptime(station_data.string, '%d/%m/%Y %H:%M:%S')
+                return datetime.datetime.strptime(station_data.string, '%m/%d/%Y %H:%M:%S')
             if station_data is None:
                 return station_data
             else:

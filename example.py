@@ -61,7 +61,10 @@ a = {'bits': {'0': {'key': 'wind_direction', 'length': '4'},
 
 with file(os.path.join(os.getcwd(), 'weathervane', 'tests', 'buienradar.xml'), 'rU') as f:
     data = f.read()
-    wd = BuienradarParser.parse(data, 6275, **a)
+    wd = BuienradarParser.parse(data, 6375, **a)
+
+print wd
+
 bits = a['bits']
 fmt = ''
 for i, data in enumerate(bits):
@@ -72,7 +75,6 @@ qqq = fmt[:-1]
 import bitstring
 
 result = {}
-print wd._asdict()
 index = 0
 for key, value in bits.items():
     fmt = value

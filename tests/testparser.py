@@ -5,7 +5,7 @@ import unittest
 from weathervane.parser import BuienradarParser
 
 
-class test_parser(unittest.TestCase):
+class testParser(unittest.TestCase):
     def setUp(self):
         with file(os.path.join(os.getcwd(), 'tests', 'buienradar.xml'), 'rU') as f:
             data = f.read()
@@ -35,15 +35,15 @@ class test_parser(unittest.TestCase):
 
     def wind_speed_parse_test(self):
         wind_speed = self.weather_data['wind_speed']
-        assert wind_speed == 6.27
+        assert wind_speed == 5.01
 
     def temperature_test(self):
         temperature = self.weather_data['temperature']
-        assert temperature == 16.4
+        assert temperature == 15.2
 
     def wind_chill_parse_test(self):
         wind_chill = self.weather_data['wind_chill']
-        self.assertAlmostEqual(15.0, wind_chill, 1)
+        self.assertAlmostEqual(14.0, wind_chill, 1)
 
     def station_codes_test(self):
         with file(os.path.join(os.getcwd(), 'tests', 'buienradar.xml'), 'rU') as f:

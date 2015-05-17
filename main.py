@@ -125,16 +125,16 @@ if __name__ == "__main__":
                         help="get the configuration from a specific configuration file")
     supplied_args = parser.parse_args()
 
-    wv = WeatherVane()
-    wv.set_logger()
-    logging.info(supplied_args)
-
     config_parser = WeathervaneConfigParser()
     config_file_location = os.path.join(os.getcwd(), supplied_args.config)
     config_parser.read(config_file_location)
     config = config_parser.parse_config()
 
+    wv = WeatherVane(**config)
+    wv.set_logger()
+    logging.info(supplied_args)
+
     if config.get('test', False):
         wv.test_mode()
     else:
-        wv.main(**config)
+        wv.main()

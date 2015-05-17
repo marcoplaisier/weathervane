@@ -12,6 +12,9 @@ class WeatherVaneTest(unittest.TestCase):
     def setUp(self, mock_class):
         self.interface = WeatherVaneInterface(**test_config.config)
 
+    def noArguments(self, mock_class):
+        self.assertRaises(KeyError, WeatherVaneInterface)
+
     def test_init(self, mock_class):
         result = WeatherVaneInterface(**test_config.config)
         expected = 'WeatherVaneInterface(channel=0, frequency=250000)'

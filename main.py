@@ -101,11 +101,11 @@ class WeatherVane(object):
                 station_id = self.check_selected_station(selected_station)
                 logging.debug('Heartbeat-{}'.format(self.counter))
             if (self.counter % self.interval) == 0:
-                self.start_collection_time = datetime.now()
+                self.start_collection_time = datetime.datetime.now()
                 self.start_data_collection(pipe_end_1, station_id)
             if pipe_end_2.poll(0):
                 logging.debug('Data available:')
-                self.end_collection_time = datetime.now()
+                self.end_collection_time = datetime.datetime.now()
                 logging.info('Data parsing took {}'.format(self.end_collection_time-self.start_collection_time))
                 self.wd = pipe_end_2.recv()
             if self.wd:

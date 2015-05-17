@@ -5,6 +5,7 @@ import logging.handlers
 from multiprocessing import Process, Pipe
 import os
 from time import sleep
+import datetime
 
 from weathervane.gpio import TestInterface
 from weathervane.datasources import fetch_weather_data
@@ -22,6 +23,8 @@ class WeatherVane(object):
         self.counter = 0
         self.interval = configuration['interval']
         self.sleep_time = configuration['sleep-time']
+        self.start_collection_time = 0
+        self.end_collection_time = 0
 
     def test_mode(self):
         """
@@ -98,9 +101,12 @@ class WeatherVane(object):
                 station_id = self.check_selected_station(selected_station)
                 logging.debug('Heartbeat-{}'.format(self.counter))
             if (self.counter % self.interval) == 0:
+                self.start_collection_time = datetime.now()
                 self.start_data_collection(pipe_end_1, station_id)
             if pipe_end_2.poll(0):
                 logging.debug('Data available:')
+                self.end_collection_time = datetime.now()
+                logging.info('Data parsing took {}'.format(self.end_collection_time-self.start_collection_time))
                 self.wd = pipe_end_2.recv()
             if self.wd:
                 self.interface.send(self.wd)

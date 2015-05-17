@@ -60,6 +60,7 @@ class WeathervaneConfigParser(SafeConfigParser):
             'ready_pin': self.get('SPI', 'ready_pin'),
             'interval': self.getint('General', 'interval'),
             'source': self.get('General', 'source'),
+            'sleep-time': self.get('General', 'sleep-time'),
             'fallback-station': self.get('Stations', 'fallback'),
             'stations': {
                 'pins': pins,

@@ -21,6 +21,7 @@ class WeatherVane(object):
         self.wd = None
         self.counter = 0
         self.interval = configuration['interval']
+        self.sleep_time = configuration['sleep-time']
 
     def test_mode(self):
         """
@@ -104,7 +105,7 @@ class WeatherVane(object):
             if self.wd:
                 self.interface.send(self.wd)
             self.counter += 1
-            sleep(1)
+            sleep(self.sleep_time)
 
     def set_logger(self):
         weathervane_logger = logging.getLogger('')

@@ -149,16 +149,12 @@ class BuienradarParser(object):
 
     @staticmethod
     def get_wind_chill(soup, station, fallback=None):
-        print 'station', station
         get_data = BuienradarParser._get_data_from_station(soup, station, fallback)
         wind_speed = get_data('windsnelheidMS')
-        print 'wind_speed: ', wind_speed
         temperature = get_data('temperatuurGC')
-        print 'temperature: ', temperature
         return BuienradarParser.calculate_wind_chill(wind_speed, temperature)
 
     @staticmethod
     def calculate_wind_chill(wind_speed, temperature):
-        print type(wind_speed), wind_speed, type(temperature), temperature
         wind_chill = 13.12 + 0.6215 * temperature - 13.96 * wind_speed ** 0.16 + 0.4867 * temperature * wind_speed ** 0.16
         return round(wind_chill, 0)

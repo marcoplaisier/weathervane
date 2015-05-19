@@ -105,12 +105,12 @@ class BuienradarParser(object):
         soup = BeautifulSoup(data)
         fallback = kwargs['fallback-station']
         fields = BuienradarParser.field_names(kwargs['bits'])
-        get_data = BuienradarParser._get_data_from_station(soup, str(station), fallback)
+        get_data = BuienradarParser.get_data_from_station(soup, str(station), fallback)
         data = {field_name: get_data(BuienradarParser.FIELD_MAPPING[field_name]) for field_name in fields}
         return data
 
     @staticmethod
-    def _get_data_from_station(soup, station, fallback=None):
+    def get_data_from_station(soup, station, fallback=None):
         def get_data(field_name):
             if field_name == 'wind_chill':
                 return BuienradarParser.get_wind_chill(soup, station, fallback)
@@ -120,7 +120,7 @@ class BuienradarParser(object):
             if station_data in BuienradarParser.INVALID_DATA or station_data.string in BuienradarParser.INVALID_DATA:
                 if fallback:
                     logging.debug('Returning {} from fallback {}'.format(field_name, fallback))
-                    get_data_from_fallback = BuienradarParser._get_data_from_station(soup, fallback, None)
+                    get_data_from_fallback = BuienradarParser.get_data_from_station(soup, fallback, None)
                     return get_data_from_fallback(field_name)
                 else:
                     logging.debug('Field {} without valid data. Returning 0'.format(field_name))
@@ -150,7 +150,7 @@ class BuienradarParser(object):
 
     @staticmethod
     def get_wind_chill(soup, station, fallback=None):
-        get_data = BuienradarParser._get_data_from_station(soup, station, fallback)
+        get_data = BuienradarParser.get_data_from_station(soup, station, fallback)
         wind_speed = get_data('windsnelheidMS')
         temperature = get_data('temperatuurGC')
         return BuienradarParser.calculate_wind_chill(wind_speed, temperature)

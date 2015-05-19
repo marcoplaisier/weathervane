@@ -107,6 +107,13 @@ class GPIO(object):
 
         status_code = self.handle.wiringPiSetup()
 
+        if status_code == self.ERROR_CODE:
+            error_message = 'Could not setup pins. Status code: {}'.format(status_code)
+            logging.exception(error_message)
+            raise SPISetupException(error_message)
+        else:
+            logging.info('Pins could not be setup')
+
     def pack(self, data):
         """
         Pack the data in an array of bytes, ready for transmission

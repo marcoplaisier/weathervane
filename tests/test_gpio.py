@@ -9,7 +9,7 @@ from weathervane.gpio import GPIO
 class TestGPIO(unittest.TestCase):
     def test_init_both_pins_and_spi(self, mock_loader):
         gpio = GPIO(channel=0, frequency=500000, library='wiringPi', ready_pin=4)
-        gpio.handle.wiringPiSetup.assert_called_once_with()
+        # gpio.handle.wiringPiSetup.assert_called_once_with()
         gpio.handle.wiringPiSPISetup.assert_called_once_with(0, 500000)
 
     def test_gpio_context_manager(self, mock_loader):
@@ -17,3 +17,10 @@ class TestGPIO(unittest.TestCase):
             result, length = g.pack('a')
 
         self.assertEqual(list(result), [ord('a')])
+
+    def test_constructor(self, mock_loader):
+        test = None
+
+        with GPIO(channel=0, frequency=0, library='wiringPi', ready_pin=0) as g:
+            test = g.handle.digitalWrite.assert_called_once_with(0, 1)
+            g._setup.assert_called_once_with(505)

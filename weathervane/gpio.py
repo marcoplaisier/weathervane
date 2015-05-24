@@ -105,14 +105,14 @@ class GPIO(object):
         else:
             logging.info('SPI protocol setup succeeded at channel {} with frequency {}'.format(channel, frequency))
 
-        status_code = self.handle.wiringPiSetup()
+        status_code = self.handle.wiringPiSetupGpio()
 
         if status_code == self.ERROR_CODE:
             error_message = 'Could not setup pins. Status code: {}'.format(status_code)
             logging.exception(error_message)
             raise SPISetupException(error_message)
         else:
-            logging.info('Pins could not be setup')
+            logging.info('Pins successfully configured')
 
     def pack(self, data):
         """

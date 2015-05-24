@@ -56,15 +56,15 @@ class GPIO(object):
             raise
         self.ready_pin = kwargs['ready_pin']
         self.handle.pinMode(self.ready_pin, self.OUTPUT)
-        self.handle.digitalWrite(self.ready_pin, 0)
+        self.handle.digitalWrite(self.ready_pin, 1)
 
     def __enter__(self):
-        self.handle.digitalWrite(self.ready_pin, 1)
+        self.handle.digitalWrite(self.ready_pin, 0)
         sleep(0.0005)
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.handle.digitalWrite(self.ready_pin, 0)
+        self.handle.digitalWrite(self.ready_pin, 1)
         sleep(0.0005)
         return self
 

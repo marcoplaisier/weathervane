@@ -32,6 +32,18 @@ class WeatherVaneTest(unittest.TestCase):
         self.interface.send(weather_data)
         self.assertTrue(self.interface.data_changed)
 
+    def test_bitstring_length_2(self, mock_class):
+        weather_data = {'wind_direction': 'NO',
+                        'wind_speed': 10,
+                        'wind_speed_max': 15,
+                        'wind_speed_bft': 6,
+                        'air_pressure': 1014,
+                        'temperature': 20,
+                        'wind_chill': 21,
+                        'humidity': 100}
+        self.interface.send(weather_data)
+        self.assertEqual(len(self.interface.new_bit_string), 64)
+
     def test_toggle_bit(self, mock_class):
         weather_data = {'wind_direction': 'NO',
                         'wind_speed': 0,

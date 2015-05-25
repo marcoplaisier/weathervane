@@ -43,20 +43,23 @@ class WeatherVaneInterface(object):
     def data_changed(self):
         return self.old_bit_string != self.new_bit_string
 
-    def format_string(self):
-        fmt = []
+    def __convert_data(self, weather_data):
+        s = None
+        t_data, error = self.transmittable_data(weather_data, self.requested_data)
+
         for i, data in enumerate(self.requested_data):
             formatting = self.requested_data[str(i)]
-            s = "uint:{0}={1}".format(formatting['length'], formatting['key'])
-            fmt.append(s)
+            bit_length = int(formatting['length'])
+            bit_key = formatting['key']
+            bit_value = t_data[bit_key]
+            padding_string = '#0{0}b'.format(bit_length + 2)  # don't forget to include '0b' in the length
+            padded_bit_value = format(bit_value, padding_string)
+            if s:
+                s += bitstring.pack("bin:{}={}".format(bit_length, padded_bit_value))
+            else:
+                s = bitstring.pack("bin:{}={}".format(bit_length, padded_bit_value))
 
-        return fmt
-
-    def __convert_data(self, weather_data):
-        fmt = self.format_string()
-        data, error = self.transmittable_data(weather_data, self.requested_data)
-        b = bitstring.pack(fmt, **data)
-        return b
+        return s
 
     def send(self, weather_data):
         """Send data to the connected SPI device.

@@ -21,6 +21,11 @@ class WeatherVaneTest(unittest.TestCase):
         self.assertEqual(expected, str(result), 'Weather Vane Interface failed to be setup correctly - %s, %s'
                          % (expected, result))
 
+    def test_bitstring_length(self, mock_class):
+        weather_data = {'wind_direction': 'NO'}
+        self.interface.send(weather_data)
+        self.assertEqual(len(self.interface.new_bit_string), 64)
+
     def test_toggle_bit_empty_data(self, mock_class):
         weather_data = {'wind_direction': 'NO'}
         self.assertFalse(self.interface.data_changed)

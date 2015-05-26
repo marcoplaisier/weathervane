@@ -112,7 +112,7 @@ class WeatherVaneInterface(object):
         logging.debug("Sending data: {}".format(data_array))
 
         with self.gpio as gpio:
-            gpio.send_data(data_array)
+            gpio.send_data(data_array.tobytes())
 
         self.old_bit_string, self.new_bit_string = self.new_bit_string, data_array
 
@@ -149,6 +149,7 @@ class WeatherVaneInterface(object):
         for key, fmt in requested_data.items():
             measurement_name = requested_data[key]['key']
             value = weather_data.get(fmt['key'], 0)
+
             result[measurement_name], error = self.value_to_bits(measurement_name, value, fmt)
             result = self.compensate_wind(result)
 

@@ -103,7 +103,7 @@ class WeatherVaneTest(unittest.TestCase):
         expected = {'wind_speed': 0}
         result, errors = self.interface.transmittable_data(weather_data, requested_data)
         self.assertEqual(expected, result)
-        self.assertTrue(errors)
+        self.assertFalse(errors)
 
 
     def test_value_too_high(self, mock_class):
@@ -112,7 +112,7 @@ class WeatherVaneTest(unittest.TestCase):
         expected = {'wind_speed': 63}
         result, errors = self.interface.transmittable_data(weather_data, requested_data)
         self.assertEqual(expected, result)
-        self.assertTrue(errors)
+        self.assertFalse(errors)
 
 
     def test_wind_direction(self, mock_class):
@@ -132,7 +132,7 @@ class WeatherVaneTest(unittest.TestCase):
                           '1': {'key': 'wind_speed_max', 'min': 0, 'step': 1, 'max': 63, 'length': 8}}
         result, errors = self.interface.transmittable_data(weather_data, requested_data)
         self.assertEqual(expected, result)
-        self.assertTrue(errors)
+        self.assertFalse(errors)
 
 
     def test_get_station(self, mock_class):

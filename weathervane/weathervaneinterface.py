@@ -133,12 +133,10 @@ class WeatherVaneInterface(object):
 
                 if value < min_value:
                     value = min_value
-                    error = True
                     logging.debug('Value {} for {} is smaller than minimum {}'
                                   .format(value, measurement_name, min_value))
                 if max_value < value:
                     value = max_value
-                    error = True
                     logging.debug('Value {} for {} is larger than maximum {}'
                                   .format(value, measurement_name, max_value))
                 try:
@@ -147,7 +145,6 @@ class WeatherVaneInterface(object):
                     value = int(value)
                 except TypeError:
                     value = 0
-                    error = True
                     logging.debug('Value {} for {} is not a number'
                                   .format(value, measurement_name))
 
@@ -160,7 +157,6 @@ class WeatherVaneInterface(object):
             wind_speed_max = result['wind_speed_max']
             if wind_speed > result['wind_speed_max']:
                 result['wind_speed'] = wind_speed_max
-                error = True
                 logging.debug(
                     'Regular wind speed {} may not exceed maximum wind speed {}'
                     .format(wind_speed, wind_speed_max))

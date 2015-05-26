@@ -41,9 +41,50 @@ class WeatherVaneInterface(object):
 
     @property
     def data_changed(self):
+        """Return whether or not the data was different the last time it was sent.
+
+        @return: a boolean indicating whether the data has changed
+        """
         return self.old_bit_string != self.new_bit_string
 
-    def __convert_data(self, weather_data):
+    @property
+    def selected_station(self):
+        """Return the selected station, based on the station-pins in the stations section of the configuration.
+
+        In the station section of the configuration, it is possible to configure zero or more pins and the corresponding
+        stations. Pins are added bitwise and the resulting number is used to lookup the station id.
+        For example, in the configuration pin 11 and 13 are indicated as station input pins and four stations are listed:
+        0=6000, 1=6001, 2=6002, 3=6003. If pin 13 is high, this results in 0*2**1+1*2**0=1 and id 6001 is returned. If
+        pin 11 and 13 are both high, then station 6003 is returned.
+        Take note that the order is most significant bit first and that the order of the pin numbers is important. Also
+        take care to give an appropriate number of stations. If you indicate two pins and only supply three stations,
+        then an index error may be thrown when both pins are high.
+
+        @return: the station id
+        """
+        bits = self.gpio.read_pin(self.station_bits)
+        result = 0
+        for index, value in enumerate(bits):
+            result += value * 2 ** index
+
+        return self.stations[result]
+
+    def convert_data(self, weather_data):
+        """Converts the weather data into a string of bits
+
+        The display is based on a relatively simple programmable interrupt controller (or PIC) when compared to a
+        Raspberry PI. It only speaks binary, which means that we need to convert the dictionary with weather data into a
+        sequence of bits, before it can be transmitted.
+        This conversion is based on four principles:
+        # The amount of bits available for each data element is fixed
+        # Each element in the data has a minimum value
+        # Each element has a maximum value
+        # Each element can vary only in discrete steps
+
+        @precondition: the member 'requested data' is properly set
+        @param weather_data: a dictionary containing the weatherdata
+        @return: a bitstring with the data in bits according to the configuration
+        """
         s = None
         t_data, error = self.transmittable_data(weather_data, self.requested_data)
 
@@ -52,7 +93,7 @@ class WeatherVaneInterface(object):
             bit_length = int(formatting['length'])
             bit_key = formatting['key']
             bit_value = t_data[bit_key]
-            padding_string = '#0{0}b'.format(bit_length + 2)  # don't forget to include '0b' in the length
+            padding_string = '#0{0}b'.format(bit_length + 2)  # don't forget to account for '0b' in the length
             padded_bit_value = format(bit_value, padding_string)
             if s:
                 s += bitstring.pack("bin:{}={}".format(bit_length, padded_bit_value))
@@ -65,14 +106,14 @@ class WeatherVaneInterface(object):
         """Send data to the connected SPI device.
 
         Keyword arguments:
-        weather_data -- a named_tuple with the data
+        weather_data -- a dictionary with the data
         """
-        data_array = self.__convert_data(weather_data)
+        data_array = self.convert_data(weather_data)
         logging.debug("Sending data: {}".format(data_array))
 
         with self.gpio as gpio:
             gpio.send_data(data_array)
-            
+
         self.old_bit_string, self.new_bit_string = self.new_bit_string, data_array
 
     def get_data(self):
@@ -101,65 +142,49 @@ class WeatherVaneInterface(object):
 
         return self.weather_data
 
-    @property
-    def selected_station(self):
-        bits = self.gpio.read_pin(self.station_bits)
-        result = 0
-        for index, value in enumerate(bits):
-            result += value * 2 ** index
-
-        return self.stations[result]
-
     def transmittable_data(self, weather_data, requested_data):
         result = {}
         error = False
-        index = 0
 
         for key, fmt in requested_data.items():
             measurement_name = requested_data[key]['key']
             value = weather_data.get(fmt['key'], 0)
+            result[measurement_name], error = self.value_to_bits(measurement_name, value, fmt)
+            result = self.compensate_wind(result)
 
-            if measurement_name == 'wind_direction':
+        return result, error
+
+    def value_to_bits(self, measurement_name, value, fmt):
+        if measurement_name == 'wind_direction':
                 if value in self.WIND_DIRECTIONS:
-                    result['wind_direction'] = self.WIND_DIRECTIONS[value]
+                    return self.WIND_DIRECTIONS[value], False
                 else:
                     logging.debug('Wind direction {} not found. Using North as substitute.'.format(value))
-                    result['wind_direction'] = 0
-                    error = True
-            else:
-                min_value = float(fmt.get('min', 0))
-                max_value = float(fmt.get('max', 255))
-                step_value = float(fmt.get('step', 1))
+                    return 0, True
+        else:
+            min_value = float(fmt.get('min', 0))
+            max_value = float(fmt.get('max', 255))
+            step_value = float(fmt.get('step', 1))
 
-                if value < min_value:
-                    value = min_value
-                    logging.debug('Value {} for {} is smaller than minimum {}'
-                                  .format(value, measurement_name, min_value))
-                if max_value < value:
-                    value = max_value
-                    logging.debug('Value {} for {} is larger than maximum {}'
-                                  .format(value, measurement_name, max_value))
-                try:
-                    value -= min_value
-                    value /= step_value
-                    value = int(value)
-                except TypeError:
-                    value = 0
-                    logging.debug('Value {} for {} is not a number'
-                                  .format(value, measurement_name))
+            if value < min_value:
+                value = min_value
+                logging.debug('Value {} for {} is smaller than minimum {}'.format(value, measurement_name, min_value))
+            if max_value < value:
+                value = max_value
+                logging.debug('Value {} for {} is larger than maximum {}'.format(value, measurement_name, max_value))
+            try:
+                value -= min_value
+                value /= step_value
+                return int(value), False
+            except TypeError:
+                logging.debug('Value {} for {} is not a number'.format(value, measurement_name))
+                return 0, False
 
-                result[fmt['key']] = value
+    def compensate_wind(self, result):
+        wind_speed = result.get('wind_speed', 0)
+        wind_speed_max = result.get('wind_speed_max', wind_speed)
+        if wind_speed > wind_speed_max:
+            result['wind_speed'] = wind_speed_max
+            logging.debug('Wind speed {} should not exceed maximum wind speed {}'.format(wind_speed, wind_speed_max))
 
-            index += 1
-
-        try:
-            wind_speed = result['wind_speed']
-            wind_speed_max = result['wind_speed_max']
-            if wind_speed > result['wind_speed_max']:
-                result['wind_speed'] = wind_speed_max
-                logging.debug(
-                    'Regular wind speed {} may not exceed maximum wind speed {}'
-                    .format(wind_speed, wind_speed_max))
-        except KeyError:
-            pass
-        return result, error
+        return result

@@ -116,7 +116,8 @@ class WeatherVaneInterface(object):
 
         self.old_bit_string, self.new_bit_string = self.new_bit_string, data_array
 
-    def get_data(self):
+    @property
+    def data(self):
         """Return the data sent by the spi device.
 
         This function returns the data that was sent by the connected SPI device. To get the data that was originally
@@ -125,9 +126,10 @@ class WeatherVaneInterface(object):
         Returns:
         array of bytes
                 """
-        return self.gpio.get_data()
+        return self.gpio.data
 
-    def get_sent_data(self):
+    @property
+    def sent_data(self):
         """Return the original data sent to the spi device.
 
         This function returns the data that was sent to the connected SPI device. To get the data that was returned by

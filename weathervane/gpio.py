@@ -146,9 +146,6 @@ class GPIO(object):
                                                                                                  data_length))
         logging.info("Sent {} as {}".format(data, data_packet))
 
-    def get_data(self):
-        return self.data
-    
     def read_pin(self, pin_numbers):
         for pin_number in pin_numbers:
             self.handle.pinMode(pin_number, self.INPUT)
@@ -179,4 +176,4 @@ class TestInterface(object):
         This function returns the data that was sent by the connected SPI device. To get the data that was originally
         sent to that device, use get_sent_data.
                 """
-        return self.gpio.get_data()
+        return self.gpio.data

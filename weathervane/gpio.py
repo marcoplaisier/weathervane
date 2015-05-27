@@ -70,10 +70,9 @@ class GPIO(object):
 
     @staticmethod
     def load_library_by_name(library):
-        """
-        Finds and loads the given library by name.
+        """Finds and loads the given library by name.
 
-        Only works on Linux and not on Windows.
+        Only works on Linux.
 
         @param library: the name of the library that is sought
         @return: a handle to the library that can be used to call methods and functions in that library
@@ -129,8 +128,7 @@ class GPIO(object):
         return self.data, len(self.data)
 
     def send_data(self, data):
-        """
-        Send data over the 'wire'
+        """ Send data over the 'wire'
 
         @param data: an iterable that returns only bytes (0 - 255). If the value is outside this range, then
         value = value mod 256. So -10 will be 246, 257 will be 1 and so on.
@@ -147,9 +145,29 @@ class GPIO(object):
         logging.info("Sent {} as {}".format(data, data_packet))
 
     def read_pin(self, pin_numbers):
+        """ Read the values of the supplied sequence of pins and returns them as a list
+
+        Take note that pin numbering on the Raspberry Pi is not straightforward. There are three sorts of numbering in
+        use. Four, if you want to get technical. This depends on the way you setup WiringPi.
+        First of all, the wiring pi numbering scheme.
+        Second, there is the Broadcom numbering scheme.
+        Third, uses the physical pin numbers on the P1 connector
+        Fourth, only exported pins, but using the same numbering as the second approach.
+
+        We use the second one, because it gives access to more pins.
+
+        Also note that we will set the pinmode of each of the pins to INPUT. So, if you depend on the pins to also
+        output, which you shouldn't do, but hey, then these pins will be set to input when this function is finished.
+        At the moment, I haven't found any way to determine the current mode of a pin in a Python program. So we will
+        restore the pin mode at the end.
+
+        @param pin_numbers: a sequence of pin numbers to be read
+        @rtype : the values for the list of pins
+        """
         for pin_number in pin_numbers:
             self.handle.pinMode(pin_number, self.INPUT)
-        return [self.handle.digitalRead(pin_number) for pin_number in pin_numbers]
+        values = [self.handle.digitalRead(pin_number) for pin_number in pin_numbers]
+        return values
 
 
 class TestInterface(object):

@@ -1,7 +1,8 @@
-import copy
 import logging
 
-from gpio import GPIO
+import bitstring
+
+from weathervane.gpio import GPIO
 
 
 class WeatherVaneInterface(object):
@@ -21,116 +22,85 @@ class WeatherVaneInterface(object):
     AIR_PRESSURE_MINIMUM = 900
     AIR_PRESSURE_MAXIMUM = 1155
     FIXED_PATTERN = 0b01010000
-    STATIONS = {0: 6320, 1: 6321, 2: 6310, 3: 6312, 4: 6308, 5: 6311, 6: 6331, 7: 6316}
 
-    def __init__(self, channel=0, frequency=250000):
-        self.channel = channel
-        self.frequency = frequency
-        self.gpio = GPIO()
-        self.gpio.__init__(channel=channel, frequency=frequency)
-        self.data_changed = False
+    def __init__(self, *args, **kwargs):
+        self.channel = kwargs['channel']
+        self.frequency = kwargs['frequency']
+        self.gpio = GPIO(**kwargs)
+        # self.gpio.__init__(channel=self.channel, frequency=self.frequency)
+        # TODO: check why I put the call to __init__ separately initially
+        self.old_bit_string = None
+        self.new_bit_string = None
         self.weather_data = {}
-        self.station_bits = [3, 4, 5]
+        self.requested_data = kwargs['bits']
+        self.station_bits = kwargs['stations']['pins']
+        self.stations = kwargs['stations']['config']
 
     def __repr__(self):
         return "WeatherVaneInterface(channel=%d, frequency=%d)" % (self.channel, self.frequency)
 
-    def __cast_wind_direction_to_byte(self, weather_data):
-        errors = 0x00
+    @property
+    def data_changed(self):
+        """Return whether or not the data was different the last time it was sent.
 
-        try:
-            wind_direction_code = weather_data['wind_direction']
-            wind_direction_byte = self.WIND_DIRECTIONS[wind_direction_code]
-        except (KeyError, TypeError):
-            wind_direction_byte = 0x00
-            errors |= self.WIND_DIRECTION_ERROR
+        @return: a boolean indicating whether the data has changed
+        """
+        return self.old_bit_string != self.new_bit_string
 
-        return int(wind_direction_byte), errors
+    @property
+    def selected_station(self):
+        """Return the selected station, based on the station-pins in the stations section of the configuration.
 
-    def __cast_air_pressure_to_byte(self, weather_data):
-        errors = 0x00
+        In the station section of the configuration, it is possible to configure zero or more pins and the corresponding
+        stations. Pins are added bitwise and the resulting number is used to lookup the station id.
+        For example, in the configuration pin 11 and 13 are indicated as station input pins and four stations are listed:
+        0=6000, 1=6001, 2=6002, 3=6003. If pin 13 is high, this results in 0*2**1+1*2**0=1 and id 6001 is returned. If
+        pin 11 and 13 are both high, then station 6003 is returned.
+        Take note that the order is most significant bit first and that the order of the pin numbers is important. Also
+        take care to give an appropriate number of stations. If you indicate two pins and only supply three stations,
+        then an index error may be thrown when both pins are high.
 
-        try:
-            air_pressure = round(float(weather_data['air_pressure']), 0)
-        except (KeyError, ValueError, TypeError):
-            air_pressure = 0x00
-            errors |= self.AIR_PRESSURE_ERROR
+        @return: the station id
+        """
+        bits = self.gpio.read_pin(self.station_bits)
+        result = 0
+        for index, value in enumerate(bits):
+            result += value * 2 ** index
 
-        if air_pressure < self.AIR_PRESSURE_MINIMUM:
-            air_pressure = 0x00
-            errors |= self.AIR_PRESSURE_ERROR
-        elif self.AIR_PRESSURE_MAXIMUM < air_pressure:
-            air_pressure = 0xFF
-            errors |= self.AIR_PRESSURE_ERROR
-        else:
-            air_pressure -= self.AIR_PRESSURE_MINIMUM
+        return self.stations[result]
 
-        return int(air_pressure), errors
+    def convert_data(self, weather_data):
+        """Converts the weather data into a string of bits
 
-    def __cast_wind_speed_to_byte(self, weather_data):
-        errors = 0x00
+        The display is based on a relatively simple programmable interrupt controller (or PIC) when compared to a
+        Raspberry PI. It only speaks binary, which means that we need to convert the dictionary with weather data into a
+        sequence of bits, before it can be transmitted.
+        This conversion is based on four principles:
+        # The amount of bits available for each data element is fixed
+        # Each element in the data has a minimum value
+        # Each element has a maximum value
+        # Each element can vary only in discrete steps
 
-        try:
-            wind_speed = round(float(weather_data['wind_speed']), 0)
-        except (KeyError, ValueError, TypeError):
-            wind_speed = 0x00
-            errors |= self.WIND_SPEED_ERROR
+        @precondition: the member 'requested data' is properly set
+        @param weather_data: a dictionary containing the weatherdata
+        @return: a bitstring with the data in bits according to the configuration
+        """
+        s = None
+        t_data, error = self.transmittable_data(weather_data, self.requested_data)
 
-        if wind_speed < self.WIND_SPEED_MINIMUM:
-            wind_speed = 0x00
-            errors |= self.WIND_SPEED_ERROR
-        elif self.WIND_SPEED_MAXIMUM < wind_speed:
-            wind_speed = 63
-            errors |= self.WIND_SPEED_ERROR
+        for i, data in enumerate(self.requested_data):
+            formatting = self.requested_data[str(i)]
+            bit_length = int(formatting['length'])
+            bit_key = formatting['key']
+            bit_value = t_data[bit_key]
+            padding_string = '#0{0}b'.format(bit_length + 2)  # don't forget to account for '0b' in the length
+            padded_bit_value = format(bit_value, padding_string)
+            if s:
+                s += bitstring.pack("bin:{}={}".format(bit_length, padded_bit_value))
+            else:
+                s = bitstring.pack("bin:{}={}".format(bit_length, padded_bit_value))
 
-        return int(wind_speed), errors
-
-    def __cast_wind_speed_max_to_byte(self, weather_data):
-        errors = 0x00
-
-        try:
-            wind_speed_max = round(float(weather_data['wind_speed_max']), 0)
-        except (KeyError, ValueError, TypeError):
-            wind_speed_max = 0x00
-            errors |= self.WIND_SPEED_MAX_ERROR
-
-        if wind_speed_max < self.WIND_SPEED_MINIMUM:
-            wind_speed_max = 0x00
-            errors |= self.WIND_SPEED_MAX_ERROR
-        elif self.WIND_SPEED_MAXIMUM < wind_speed_max:
-            wind_speed_max = 63
-            errors |= self.WIND_SPEED_MAX_ERROR
-
-        try:
-            wind_speed = round(float(weather_data['wind_speed']), 0)
-        except (KeyError, ValueError, TypeError):
-            wind_speed = 0
-        if wind_speed_max < wind_speed:
-            wind_speed_max = wind_speed
-
-        return int(wind_speed_max), errors
-
-    def __get_data_changed(self, weather_data):
-        if weather_data == self.weather_data:
-            result = self.DATA_UNCHANGED
-            self.data_changed = False
-        else:
-            result = self.DATA_CHANGED
-            self.data_changed = True
-
-        self.weather_data = copy.copy(weather_data)
-
-        return result
-
-    def __convert_data(self, weather_data):
-        wind_direction, wind_direction_error = self.__cast_wind_direction_to_byte(weather_data)
-        wind_speed, wind_speed_error = self.__cast_wind_speed_to_byte(weather_data)
-        wind_speed_max, wind_speed_max_error = self.__cast_wind_speed_max_to_byte(weather_data)
-        air_pressure, air_pressure_error = self.__cast_air_pressure_to_byte(weather_data)
-        error_byte = wind_direction_error | wind_speed_error | wind_speed_max_error | air_pressure_error
-        service_byte = error_byte | self.__get_data_changed(weather_data) | self.FIXED_PATTERN
-
-        return [wind_direction, wind_speed, wind_speed_max, air_pressure, service_byte, self.DUMMY_BYTE]
+        return s
 
     def send(self, weather_data):
         """Send data to the connected SPI device.
@@ -138,15 +108,16 @@ class WeatherVaneInterface(object):
         Keyword arguments:
         weather_data -- a dictionary with the data
         """
-        if not isinstance(weather_data, dict):
-            raise TypeError("unsupported type %s " % type(weather_data))
+        data_array = self.convert_data(weather_data)
+        logging.debug("Sending data: {}".format(data_array))
 
-        data_array = self.__convert_data(weather_data)
-        logging.debug("Sending data:" + ", ".join(str(x) for x in data_array))
+        with self.gpio as gpio:
+            gpio.send_data(data_array.tobytes())
 
-        self.gpio.send_data(data_array)
+        self.old_bit_string, self.new_bit_string = self.new_bit_string, data_array
 
-    def get_data(self):
+    @property
+    def data(self):
         """Return the data sent by the spi device.
 
         This function returns the data that was sent by the connected SPI device. To get the data that was originally
@@ -155,9 +126,10 @@ class WeatherVaneInterface(object):
         Returns:
         array of bytes
                 """
-        return self.gpio.get_data()
+        return self.gpio.data
 
-    def get_sent_data(self):
+    @property
+    def sent_data(self):
         """Return the original data sent to the spi device.
 
         This function returns the data that was sent to the connected SPI device. To get the data that was returned by
@@ -172,10 +144,50 @@ class WeatherVaneInterface(object):
 
         return self.weather_data
 
-    def get_selected_station(self):
-        bits = self.gpio.read_pin(self.station_bits)
-        result = 0
-        for index, value in enumerate(bits):
-            result += value * 2**index
+    def transmittable_data(self, weather_data, requested_data):
+        result = {}
+        error = False
 
-        return self.STATIONS[result]
+        for key, fmt in requested_data.items():
+            measurement_name = requested_data[key]['key']
+            value = weather_data.get(fmt['key'], 0)
+
+            result[measurement_name], error = self.value_to_bits(measurement_name, value, fmt)
+            result = self.compensate_wind(result)
+
+        return result, error
+
+    def value_to_bits(self, measurement_name, value, fmt):
+        if measurement_name == 'wind_direction':
+                if value in self.WIND_DIRECTIONS:
+                    return self.WIND_DIRECTIONS[value], False
+                else:
+                    logging.debug('Wind direction {} not found. Using North as substitute.'.format(value))
+                    return 0, True
+        else:
+            min_value = float(fmt.get('min', 0))
+            max_value = float(fmt.get('max', 255))
+            step_value = float(fmt.get('step', 1))
+
+            if value < min_value:
+                value = min_value
+                logging.debug('Value {} for {} is smaller than minimum {}'.format(value, measurement_name, min_value))
+            if max_value < value:
+                value = max_value
+                logging.debug('Value {} for {} is larger than maximum {}'.format(value, measurement_name, max_value))
+            try:
+                value -= min_value
+                value /= step_value
+                return int(value), False
+            except TypeError:
+                logging.debug('Value {} for {} is not a number'.format(value, measurement_name))
+                return 0, False
+
+    def compensate_wind(self, result):
+        wind_speed = result.get('wind_speed', 0)
+        wind_speed_max = result.get('wind_speed_max', wind_speed)
+        if wind_speed > wind_speed_max:
+            result['wind_speed'] = wind_speed_max
+            logging.debug('Wind speed {} should not exceed maximum wind speed {}'.format(wind_speed, wind_speed_max))
+
+        return result

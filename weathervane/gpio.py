@@ -1,5 +1,6 @@
 from ctypes import cdll, c_ubyte, util
 import logging
+from time import sleep
 
 
 class SPISetupException(Exception):
@@ -18,7 +19,7 @@ class GPIO(object):
     PWM_OUTPUT = 2
     GPIO_CLOCK = 3
 
-    def __init__(self, library='wiringPi', channel=0, frequency=500000):
+    def __init__(self, *args, **kwargs):
         """
         The constructor makes the protocol ready to send data via the SPI protocol on the pins on the Raspberry Pi.
 
@@ -34,6 +35,9 @@ class GPIO(object):
         http://raspberrypi.stackexchange.com/questions/699/what-spi-frequencies-does-raspberry-pi-support
         @raise SPISetupException: when setup cannot proceed, it will raise a setup exception
         """
+        channel = kwargs['channel']
+        frequency = kwargs['frequency']
+        library = kwargs['library']
 
         if channel not in self.AVAILABLE_CHANNELS:
             # If the channel is not 0 or 1, the rest of the program may fail silently or give weird errors. So, we
@@ -50,13 +54,25 @@ class GPIO(object):
             logging.exception('Could not setup SPI protocol. Library: {}, channel: {}, frequency: {}. Please run '
                               '"gpio load spi" or install the drivers first'.format(library, channel, frequency))
             raise
+        self.ready_pin = kwargs['ready_pin']
+        self.handle.pinMode(self.ready_pin, self.OUTPUT)
+        self.handle.digitalWrite(self.ready_pin, 1)
+
+    def __enter__(self):
+        self.handle.digitalWrite(self.ready_pin, 0)
+        sleep(0.0005)
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.handle.digitalWrite(self.ready_pin, 1)
+        sleep(0.0005)
+        return self
 
     @staticmethod
     def load_library_by_name(library):
-        """
-        Finds and loads the given library by name.
+        """Finds and loads the given library by name.
 
-        Only works on Linux and not on Windows.
+        Only works on Linux.
 
         @param library: the name of the library that is sought
         @return: a handle to the library that can be used to call methods and functions in that library
@@ -88,8 +104,14 @@ class GPIO(object):
         else:
             logging.info('SPI protocol setup succeeded at channel {} with frequency {}'.format(channel, frequency))
 
-        status_code = self.handle.wiringPiSetup()
+        status_code = self.handle.wiringPiSetupGpio()
 
+        if status_code == self.ERROR_CODE:
+            error_message = 'Could not setup pins. Status code: {}'.format(status_code)
+            logging.exception(error_message)
+            raise SPISetupException(error_message)
+        else:
+            logging.info('Pins successfully configured')
 
     def pack(self, data):
         """
@@ -101,13 +123,12 @@ class GPIO(object):
         # noinspection PyTypeChecker
         data_list = c_ubyte * len(data)
         # noinspection PyCallingNonCallable
-        self.data = data_list(*data)
+        self.data = data_list.from_buffer(bytearray(data))
 
         return self.data, len(self.data)
 
     def send_data(self, data):
-        """
-        Send data over the 'wire'
+        """ Send data over the 'wire'
 
         @param data: an iterable that returns only bytes (0 - 255). If the value is outside this range, then
         value = value mod 256. So -10 will be 246, 257 will be 1 and so on.
@@ -123,13 +144,30 @@ class GPIO(object):
                                                                                                  data_length))
         logging.info("Sent {} as {}".format(data, data_packet))
 
-    def get_data(self):
-        return self.data
-    
     def read_pin(self, pin_numbers):
+        """ Read the values of the supplied sequence of pins and returns them as a list
+
+        Take note that pin numbering on the Raspberry Pi is not straightforward. There are three sorts of numbering in
+        use. Four, if you want to get technical. This depends on the way you setup WiringPi.
+        First of all, the wiring pi numbering scheme.
+        Second, there is the Broadcom numbering scheme.
+        Third, uses the physical pin numbers on the P1 connector
+        Fourth, only exported pins, but using the same numbering as the second approach.
+
+        We use the second one, because it gives access to more pins.
+
+        Also note that we will set the pinmode of each of the pins to INPUT. So, if you depend on the pins to also
+        output, which you shouldn't do, but hey, then these pins will be set to input when this function is finished.
+        At the moment, I haven't found any way to determine the current mode of a pin in a Python program. So we will
+        restore the pin mode at the end.
+
+        @param pin_numbers: a sequence of pin numbers to be read
+        @rtype : the values for the list of pins
+        """
         for pin_number in pin_numbers:
             self.handle.pinMode(pin_number, self.INPUT)
-        return [self.handle.digitalRead(pin_number) for pin_number in pin_numbers]
+        values = [self.handle.digitalRead(pin_number) for pin_number in pin_numbers]
+        return values
 
 
 class TestInterface(object):
@@ -156,4 +194,4 @@ class TestInterface(object):
         This function returns the data that was sent by the connected SPI device. To get the data that was originally
         sent to that device, use get_sent_data.
                 """
-        return self.gpio.get_data()
+        return self.gpio.data

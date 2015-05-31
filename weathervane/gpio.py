@@ -1,3 +1,4 @@
+from contextlib import contextmanager
 from ctypes import cdll, c_ubyte, util
 import logging
 from time import sleep
@@ -58,15 +59,13 @@ class GPIO(object):
         self.handle.pinMode(self.ready_pin, self.OUTPUT)
         self.handle.digitalWrite(self.ready_pin, 1)
 
-    def __enter__(self):
+    @contextmanager
+    def interrupt(self):
         self.handle.digitalWrite(self.ready_pin, 0)
         sleep(0.0005)
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
+        yield self
         self.handle.digitalWrite(self.ready_pin, 1)
         sleep(0.0005)
-        return self
 
     @staticmethod
     def load_library_by_name(library):

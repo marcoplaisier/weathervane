@@ -13,7 +13,7 @@ class TestGPIO(unittest.TestCase):
         gpio.handle.wiringPiSPISetup.assert_called_once_with(0, 500000)
 
     def test_gpio_context_manager(self, mock_loader):
-        with GPIO(channel=0, frequency=10000, library='None', ready_pin=0) as g:
+        with GPIO(channel=0, frequency=10000, library='None', ready_pin=0).interrupt() as g:
             result, length = g.pack('a')
 
         self.assertEqual(list(result), [ord('a')])
@@ -21,6 +21,5 @@ class TestGPIO(unittest.TestCase):
     def test_constructor(self, mock_loader):
         test = None
 
-        with GPIO(channel=0, frequency=0, library='wiringPi', ready_pin=0) as g:
-            test = g.handle.digitalWrite.assert_called_once_with(0, 1)
-            g._setup.assert_called_once_with(505)
+        with GPIO(channel=0, frequency=0, library='wiringPi', ready_pin=0).interrupt() as g:
+            self.assertTrue(g)

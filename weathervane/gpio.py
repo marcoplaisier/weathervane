@@ -55,16 +55,16 @@ class GPIO(object):
             logging.exception('Could not setup SPI protocol. Library: {}, channel: {}, frequency: {}. Please run '
                               '"gpio load spi" or install the drivers first'.format(library, channel, frequency))
             raise
-        self.ready_pin = kwargs['ready_pin']
-        self.handle.pinMode(self.ready_pin, self.OUTPUT)
-        self.handle.digitalWrite(self.ready_pin, 1)
+        self.interrupt = kwargs['interrupt']
+        self.handle.pinMode(self.interrupt, self.OUTPUT)
+        self.handle.digitalWrite(self.interrupt, 1)
 
     @contextmanager
     def interrupt(self):
-        self.handle.digitalWrite(self.ready_pin, 0)
+        self.handle.digitalWrite(self.interrupt, 0)
         sleep(0.0005)
         yield self
-        self.handle.digitalWrite(self.ready_pin, 1)
+        self.handle.digitalWrite(self.interrupt, 1)
         sleep(0.0005)
 
     @staticmethod

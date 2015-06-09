@@ -60,7 +60,7 @@ class GPIO(object):
         self.handle.digitalWrite(self.interrupt, 1)
 
     @contextmanager
-    def interrupt(self):
+    def cm(self):
         self.handle.digitalWrite(self.interrupt, 0)
         sleep(0.0005)
         yield self

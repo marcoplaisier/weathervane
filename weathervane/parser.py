@@ -57,7 +57,7 @@ class WeathervaneConfigParser(SafeConfigParser):
             'channel': self.getint('SPI', 'channel'),
             'frequency': self.getint('SPI', 'frequency'),
             'library': self.get('SPI', 'library'),
-            'ready_pin': self.get('SPI', 'ready_pin'),
+            'interrupt': self.getint('SPI', 'interrupt'),
             'interval': self.getint('General', 'interval'),
             'source': self.get('General', 'source'),
             'sleep-time': float(self.get('General', 'sleep-time')),

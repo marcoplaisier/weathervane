@@ -130,7 +130,7 @@ class GPIO(object):
             raise SPIDataTransmissionError(
                 'Transmission failed and resulted in an error. Data: {}, data length: {}'.format(list(data_packet),
                                                                                                  data_length))
-        logging.info("Sent {} as {}".format(data, data_packet))
+        logging.info("Sent {}".format(binary_format(data)))
 
     def read_pin(self, pin_numbers):
         """ Read the values of the supplied sequence of pins and returns them as a list
@@ -183,3 +183,21 @@ class TestInterface(object):
         sent to that device, use get_sent_data.
                 """
         return self.gpio.data
+
+def binary_format(sequence, bytes_per_line=4):
+    """Format a sequence as binary bytes
+
+    This function converts a sequence into a nicely formatted string of the binary values. The sequence is first
+    converted into a bytearray (which means that only values in the range 0 - 255 are allowed) and then puts each
+    bytes_per_line bytes on a single line. Each line is preceded by the number of the bytes. E.g. 0-3.
+
+    @param sequence:
+    @return: a string, properly formatted
+    """
+    array = bytearray(sequence)
+    test = []
+    for index, item in enumerate(array):
+        if index % bytes_per_line == 0:
+            test.append('\n{}-{} '.format(index, index+3))
+        test.append('{:#010b}'.format(item)[2:])
+    return '|'.join(test) + '|'

@@ -1,7 +1,5 @@
 import unittest
-
 from mock import patch
-
 from weathervane.gpio import GPIO
 
 
@@ -23,3 +21,7 @@ class TestGPIO(unittest.TestCase):
 
         g = GPIO(channel=0, frequency=0, library='wiringPi')
         self.assertTrue(g)
+
+    def test_send(self, mock_loader):
+        g = GPIO(channel=0, frequency=0, library='None')
+        g.send_data('abc'.encode('UTF-16'))

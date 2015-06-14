@@ -73,7 +73,7 @@ class WeathervaneConfigParser(SafeConfigParser):
 
 
 class BuienradarParser(object):
-    INVALID_DATA = ['0', 0, '-', '', None]
+    INVALID_DATA = ['-', '', None]
     FIELD_MAPPING = {
         'wind_direction': 'windrichting',
         'wind_direction_degrees': 'windrichtingGR',
@@ -93,6 +93,14 @@ class BuienradarParser(object):
         'rain_mm_per_hour': 'regenMMPU',
         'temperature_10_cm': 'temperatuur10cm'
     }
+    TREND_MAPPING = {
+        -1: 2,
+        0: 1,
+        1: 4
+    }
+
+    def __init__(self):
+        self.historic_data = []
 
     @staticmethod
     def field_names(field_definitions):
@@ -100,13 +108,15 @@ class BuienradarParser(object):
                                field_definitions[number]['key'] in BuienradarParser.FIELD_MAPPING]
         return english_field_names
 
-    @staticmethod
-    def parse(data, station, *args, **kwargs):
+    def parse(self, data, station, *args, **kwargs):
         soup = BeautifulSoup(data)
         fallback = kwargs['fallback-station']
         fields = BuienradarParser.field_names(kwargs['bits'])
         get_data = BuienradarParser.get_data_from_station(soup, str(station), fallback)
         data = {field_name: get_data(BuienradarParser.FIELD_MAPPING[field_name]) for field_name in fields}
+        if 'trend' in kwargs.keys():
+            trend = self.get_trend_direction(data)
+            data['trend'] = self.TREND_MAPPING[trend]
         return data
 
     @staticmethod
@@ -162,10 +172,21 @@ class BuienradarParser(object):
         wind_chill = 13.12 + 0.6215 * temperature - 13.96 * wind_speed ** 0.16 + 0.4867 * temperature * wind_speed ** 0.16
         return round(wind_chill, 0)
 
+    def get_trend_direction(self, data):
+        self.historic_data.append(data['air_pressure'])
+        self.historic_data = self.historic_data[-5:]
+        trend = Statistics.trend(self.historic_data)
+        return trend
+
 
 class Statistics(object):
     @staticmethod
     def average(s):
+        """Calculates the mean of the given sequence of numbers
+
+        @param s: a sequence of numbers
+        @return: the mean
+        """
         if s:
             return sum(s)/float(len(s))
         else:
@@ -173,6 +194,11 @@ class Statistics(object):
 
     @staticmethod
     def std_dev(s):
+        """
+
+        @param s:
+        @return:
+        """
         if len(s) in [0,1]:
             return 0
         avg = Statistics.average(s)

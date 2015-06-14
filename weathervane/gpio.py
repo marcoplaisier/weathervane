@@ -2,6 +2,7 @@ from contextlib import contextmanager
 from ctypes import cdll, c_ubyte, util
 import logging
 from time import sleep
+from mock import Mock
 
 
 class SPISetupException(Exception):
@@ -46,15 +47,18 @@ class GPIO(object):
             error_message = 'Channel must be 0 or 1. Channel {} is not available'.format(channel)
             logging.exception(error_message)
             raise SPISetupException(error_message)
-
-        try:
-            self.handle = self.load_library_by_name(library)
-            self._setup(channel, frequency)
-            self.data = None
-        except SPISetupException:
-            logging.exception('Could not setup SPI protocol. Library: {}, channel: {}, frequency: {}. Please run '
-                              '"gpio load spi" or install the drivers first'.format(library, channel, frequency))
-            raise
+        if not kwargs['test']:
+            try:
+                self.handle = self.load_library_by_name(library)
+                self._setup(channel, frequency)
+                self.data = None
+            except SPISetupException:
+                logging.exception('Could not setup SPI protocol. Library: {}, channel: {}, frequency: {}. Please run '
+                                  '"gpio load spi" or install the drivers first'.format(library, channel, frequency))
+                raise
+        else:
+            self.handle = Mock()
+            self.read_pin = Mock(return_value=[1,1])
 
     @staticmethod
     def load_library_by_name(library):

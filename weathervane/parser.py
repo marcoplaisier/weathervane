@@ -2,6 +2,7 @@ from ConfigParser import SafeConfigParser
 import datetime
 import logging
 from BeautifulSoup import BeautifulSoup
+import math
 
 
 class WeathervaneConfigParser(SafeConfigParser):
@@ -160,3 +161,33 @@ class BuienradarParser(object):
             raise ValueError("Wind speed must be a positive number")
         wind_chill = 13.12 + 0.6215 * temperature - 13.96 * wind_speed ** 0.16 + 0.4867 * temperature * wind_speed ** 0.16
         return round(wind_chill, 0)
+
+
+class Statistics(object):
+    @staticmethod
+    def average(s):
+        if s:
+            return sum(s)/float(len(s))
+        else:
+            return None
+
+    @staticmethod
+    def std_dev(s):
+        if len(s) in [0,1]:
+            return 0
+        avg = Statistics.average(s)
+        sum_of_squares = sum([(x-avg)**2 for x in s])
+        return math.sqrt(sum_of_squares)/(len(s)-1)
+
+    @staticmethod
+    def trend(s):
+        if len(s) in [0, 1]:
+            return 0
+        stdev = Statistics.std_dev(s)
+        average = Statistics.average(s)
+        if s[-1] < (average - stdev):
+            return -1
+        elif s[-1] > (average + stdev):
+            return 1
+        else:
+            return 0

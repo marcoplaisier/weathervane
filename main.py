@@ -139,12 +139,8 @@ if __name__ == "__main__":
 
     if config.get('test', False):
         print 'Testing mode engaged'
-        wv = WeatherVane(**config)
-        wv.set_logger()
-        logging.info(supplied_args)
-        wv.main()
-    else:
-        wv = WeatherVane(**config)
-        wv.set_logger()
-        logging.info(supplied_args)
-        wv.main()
+
+    wv = WeatherVane(**config)
+    wv.set_logger()
+    logging.info(supplied_args)
+    wv.main()

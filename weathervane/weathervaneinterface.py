@@ -86,7 +86,7 @@ class WeatherVaneInterface(object):
         @return: a bitstring with the data in bits according to the configuration
         """
         s = None
-        t_data, error = self.transmittable_data(weather_data, self.requested_data)
+        t_data = self.transmittable_data(weather_data, self.requested_data)
 
         for i, data in enumerate(self.requested_data):
             formatting = self.requested_data[str(i)]
@@ -145,42 +145,49 @@ class WeatherVaneInterface(object):
 
     def transmittable_data(self, weather_data, requested_data):
         result = {}
-        error = False
 
         for key, fmt in requested_data.items():
             measurement_name = requested_data[key]['key']
             value = weather_data.get(fmt['key'], 0)
 
-            result[measurement_name], error = self.value_to_bits(measurement_name, value, fmt)
+            result[measurement_name] = self.value_to_bits(measurement_name, value, fmt)
             result = self.compensate_wind(result)
 
-        return result, error
+        return result
 
     def value_to_bits(self, measurement_name, value, fmt):
         if measurement_name == 'wind_direction':
-                if value in self.WIND_DIRECTIONS:
-                    return self.WIND_DIRECTIONS[value], False
-                else:
-                    logging.debug('Wind direction {} not found. Using North as substitute.'.format(value))
-                    return 0, True
+            if value in self.WIND_DIRECTIONS:
+                return self.WIND_DIRECTIONS[value]
+            else:
+                logging.debug('Wind direction {} not found. Using North as substitute.'.format(value))
+                return 0
+        elif measurement_name == 'rain_mm_per_hour':
+            if value > 0:
+                return 1
+            else:
+                return 0
         else:
+            step_value = float(fmt.get('step', 1))
             min_value = float(fmt.get('min', 0))
             max_value = float(fmt.get('max', 255))
-            step_value = float(fmt.get('step', 1))
 
             if value < min_value:
-                value = min_value
                 logging.debug('Value {} for {} is smaller than minimum {}'.format(value, measurement_name, min_value))
+                value = min_value
             if max_value < value:
-                value = max_value
                 logging.debug('Value {} for {} is larger than maximum {}'.format(value, measurement_name, max_value))
+                value = max_value
+
             try:
                 value -= min_value
                 value /= step_value
-                return int(value), False
             except TypeError:
                 logging.debug('Value {} for {} is not a number'.format(value, measurement_name))
-                return 0, False
+                return 0
+
+            return int(value)
+
 
     def compensate_wind(self, result):
         wind_speed = result.get('wind_speed', 0)

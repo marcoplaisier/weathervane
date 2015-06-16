@@ -75,54 +75,43 @@ class WeatherVaneTest(unittest.TestCase):
         weather_data = {'wind_direction': 'A'}
         requested_data = {'0': {'key': 'wind_direction', 'length': '4'}}
         expected = {'wind_direction': 0}
-        result, errors = self.interface.transmittable_data(weather_data, requested_data)
+        result = self.interface.transmittable_data(weather_data, requested_data)
         self.assertEqual(expected, result)
-        self.assertEqual(True, errors)
 
     def test_air_pressure(self, mock_class):
         weather_data = {'air_pressure': 901}
         requested_data = {'1': {'key': 'air_pressure', 'length': '8', 'max': '1155', 'min': '900', 'step': '1'}}
         expected = {'air_pressure': 1}
-        result, errors = self.interface.transmittable_data(weather_data, requested_data)
+        result = self.interface.transmittable_data(weather_data, requested_data)
         self.assertEqual(expected, result)
-        self.assertEqual(0b00000000, errors)
-
 
     def test_value_rounded(self, mock_class):
         weather_data = {'air_pressure': 48.493}
         requested_data = {'0': {'key': 'air_pressure', 'min': '0', 'max': 63}}
         expected = {'air_pressure': 48}
-        result, errors = self.interface.transmittable_data(weather_data, requested_data)
+        result = self.interface.transmittable_data(weather_data, requested_data)
         self.assertEqual(expected, result)
-        self.assertFalse(errors)
-
 
     def test_value_too_low(self, mock_class):
         weather_data = {'wind_speed': -1}
         requested_data = {'0': {'key': 'wind_speed', 'min': '0', 'max': 63}}
         expected = {'wind_speed': 0}
-        result, errors = self.interface.transmittable_data(weather_data, requested_data)
+        result = self.interface.transmittable_data(weather_data, requested_data)
         self.assertEqual(expected, result)
-        self.assertFalse(errors)
-
 
     def test_value_too_high(self, mock_class):
         weather_data = {'wind_speed': 64}
         requested_data = {'0': {'key': 'wind_speed', 'min': '0', 'max': 63}}
         expected = {'wind_speed': 63}
-        result, errors = self.interface.transmittable_data(weather_data, requested_data)
+        result = self.interface.transmittable_data(weather_data, requested_data)
         self.assertEqual(expected, result)
-        self.assertFalse(errors)
-
 
     def test_wind_direction(self, mock_class):
         weather_data = {'wind_direction': 'WNW'}
         expected = {'wind_direction': 0x0D}
         requested_data = {'0': {'key': 'wind_direction', 'length': 4}}
-        result, errors = self.interface.transmittable_data(weather_data, requested_data)
+        result = self.interface.transmittable_data(weather_data, requested_data)
         self.assertEqual(expected, result)
-        self.assertEqual(0b00000000, errors)
-
 
     def test_wind_speed_may_not_exceed_wind_speed_max(self, mock_class):
         wind_speed = 10
@@ -130,10 +119,8 @@ class WeatherVaneTest(unittest.TestCase):
         expected = {'wind_speed': wind_speed, 'wind_speed_max': wind_speed}
         requested_data = {'0': {'key': 'wind_speed', 'min': 0, 'step': 1, 'max': 63, 'length': 8},
                           '1': {'key': 'wind_speed_max', 'min': 0, 'step': 1, 'max': 63, 'length': 8}}
-        result, errors = self.interface.transmittable_data(weather_data, requested_data)
+        result = self.interface.transmittable_data(weather_data, requested_data)
         self.assertEqual(expected, result)
-        self.assertFalse(errors)
-
 
     def test_get_station(self, mock_class):
         config = {0: 6320, 1: 6321, 2: 6310, 3: 6312, 4: 6308, 5: 6311, 6: 6331, 7: 6316}
@@ -142,7 +129,6 @@ class WeatherVaneTest(unittest.TestCase):
         station_id = interface.selected_station
         self.assertEqual(station_id, 6320)
 
-
     def test_get_other_station(self, mock_class):
         config = {0: 6320, 1: 6321, 2: 6310, 3: 6312, 4: 6308, 5: 6311, 6: 6331, 7: 6316}
         interface = WeatherVaneInterface(channel=0, bits=None, frequency=0,
@@ -150,7 +136,6 @@ class WeatherVaneTest(unittest.TestCase):
         interface.gpio.read_pin = Mock(return_value=[1, 1, 0])
         station_id = interface.selected_station
         self.assertEqual(station_id, 6312)  # remember, byte ordering
-
 
 if __name__ == '__main__':
     unittest.main()

@@ -10,18 +10,6 @@ class WeatherVaneInterface(object):
                        'O': 0x04, 'OZO': 0x05, 'ZO': 0x06, 'ZZO': 0x07,
                        'Z': 0x08, 'ZZW': 0x09, 'ZW': 0x0A, 'WZW': 0x0B,
                        'W': 0x0C, 'WNW': 0x0D, 'NW': 0x0E, 'NNW': 0x0F}
-    DATA_CHANGED = 0b10000000
-    DATA_UNCHANGED = 0b00000000
-    DUMMY_BYTE = 0x00
-    WIND_DIRECTION_ERROR = 0b00000001
-    WIND_SPEED_ERROR = 0b00000010
-    AIR_PRESSURE_ERROR = 0b00000100
-    WIND_SPEED_MAX_ERROR = 0b00001000
-    WIND_SPEED_MINIMUM = 0
-    WIND_SPEED_MAXIMUM = 63
-    AIR_PRESSURE_MINIMUM = 900
-    AIR_PRESSURE_MAXIMUM = 1155
-    FIXED_PATTERN = 0b01010000
 
     def __init__(self, *args, **kwargs):
         self.channel = kwargs['channel']

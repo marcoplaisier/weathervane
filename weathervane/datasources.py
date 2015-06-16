@@ -1,3 +1,4 @@
+import os
 from urllib2 import urlopen, URLError, HTTPError
 
 from weathervane.parser import BuienradarParser
@@ -14,7 +15,12 @@ def retrieve_xml(url):
 
 
 def fetch_weather_data(conn, station_id, *args, **kwargs):
-    data = retrieve_xml("http://xml.buienradar.nl")
+    if not kwargs.get('test', False):
+        data = retrieve_xml("http://xml.buienradar.nl")
+    else:
+        with file(os.path.join(os.getcwd(), 'tests', 'buienradar.xml'), 'rU') as f:
+            data = f.read()
+
     bp = BuienradarParser()
     wd = bp.parse(data, station_id, *args, **kwargs)
 

@@ -62,6 +62,7 @@ class WeathervaneConfigParser(SafeConfigParser):
             'source': self.get('General', 'source'),
             'sleep-time': float(self.get('General', 'sleep-time')),
             'test': bool(self.get('General', 'test')),
+            'trend': bool(self.get('General', 'trend')),
             'fallback-station': self.get('Stations', 'fallback'),
             'stations': {
                 'pins': pins,

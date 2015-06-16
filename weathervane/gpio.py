@@ -47,7 +47,8 @@ class GPIO(object):
             error_message = 'Channel must be 0 or 1. Channel {} is not available'.format(channel)
             logging.exception(error_message)
             raise SPISetupException(error_message)
-        if not kwargs['test']:
+
+        if not kwargs.get('test', False):
             try:
                 self.handle = self.load_library_by_name(library)
                 self._setup(channel, frequency)

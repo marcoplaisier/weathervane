@@ -92,7 +92,7 @@ class BuienradarParser(object):
         'date': 'datum',
         'wind_direction_code': 'windrichting',
         'sight_distance': 'zichtmeters',
-        'rain_mm_per_hour': 'regenMMPU',
+        'rain': 'regenMMPU',
         'temperature_10_cm': 'temperatuur10cm'
     }
     TREND_MAPPING = {
@@ -130,6 +130,8 @@ class BuienradarParser(object):
             station_data = soup.find("weerstation", id=station).find(field_name.lower())
 
             if station_data in BuienradarParser.INVALID_DATA or station_data.string in BuienradarParser.INVALID_DATA:
+                if field_name == 'regenMMPU':
+                    return 0.0
                 if fallback:
                     logging.debug('Returning {} from fallback {}'.format(field_name, fallback))
                     get_data_from_fallback = BuienradarParser.get_data_from_station(soup, fallback, None)

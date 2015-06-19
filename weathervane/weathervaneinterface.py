@@ -176,7 +176,6 @@ class WeatherVaneInterface(object):
 
             return int(value)
 
-
     def compensate_wind(self, result):
         wind_speed = result.get('wind_speed', 0)
         wind_speed_max = result.get('wind_speed_max', wind_speed)

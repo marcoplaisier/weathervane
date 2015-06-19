@@ -15,12 +15,7 @@ def retrieve_xml(url):
 
 
 def fetch_weather_data(conn, station_id, *args, **kwargs):
-    if not kwargs.get('test', False):
-        data = retrieve_xml("http://xml.buienradar.nl")
-    else:
-        with file(os.path.join(os.getcwd(), 'tests', 'buienradar.xml'), 'rU') as f:
-            data = f.read()
-
+    data = retrieve_xml("http://xml.buienradar.nl")
     bp = BuienradarParser()
     wd = bp.parse(data, station_id, *args, **kwargs)
 

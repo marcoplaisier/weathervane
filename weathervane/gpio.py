@@ -1,6 +1,8 @@
+from contextlib import contextmanager
 from ctypes import cdll, c_ubyte, util
 import logging
 from time import sleep
+from mock import Mock
 
 
 class SPISetupException(Exception):
@@ -46,27 +48,18 @@ class GPIO(object):
             logging.exception(error_message)
             raise SPISetupException(error_message)
 
-        try:
-            self.handle = self.load_library_by_name(library)
-            self._setup(channel, frequency)
-            self.data = None
-        except SPISetupException:
-            logging.exception('Could not setup SPI protocol. Library: {}, channel: {}, frequency: {}. Please run '
-                              '"gpio load spi" or install the drivers first'.format(library, channel, frequency))
-            raise
-        self.ready_pin = kwargs['ready_pin']
-        self.handle.pinMode(self.ready_pin, self.OUTPUT)
-        self.handle.digitalWrite(self.ready_pin, 1)
-
-    def __enter__(self):
-        self.handle.digitalWrite(self.ready_pin, 0)
-        sleep(0.0005)
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.handle.digitalWrite(self.ready_pin, 1)
-        sleep(0.0005)
-        return self
+        if not kwargs.get('test', False):
+            try:
+                self.handle = self.load_library_by_name(library)
+                self._setup(channel, frequency)
+                self.data = None
+            except SPISetupException:
+                logging.exception('Could not setup SPI protocol. Library: {}, channel: {}, frequency: {}. Please run '
+                                  '"gpio load spi" or install the drivers first'.format(library, channel, frequency))
+                raise
+        else:
+            self.handle = Mock()
+            self.read_pin = Mock(return_value=[1,1])
 
     @staticmethod
     def load_library_by_name(library):
@@ -142,7 +135,7 @@ class GPIO(object):
             raise SPIDataTransmissionError(
                 'Transmission failed and resulted in an error. Data: {}, data length: {}'.format(list(data_packet),
                                                                                                  data_length))
-        logging.info("Sent {} as {}".format(data, data_packet))
+        logging.info("Sent {}".format(binary_format(data)))
 
     def read_pin(self, pin_numbers):
         """ Read the values of the supplied sequence of pins and returns them as a list
@@ -195,3 +188,21 @@ class TestInterface(object):
         sent to that device, use get_sent_data.
                 """
         return self.gpio.data
+
+def binary_format(sequence, bytes_per_line=4):
+    """Format a sequence as binary bytes
+
+    This function converts a sequence into a nicely formatted string of the binary values. The sequence is first
+    converted into a bytearray (which means that only values in the range 0 - 255 are allowed) and then puts each
+    bytes_per_line bytes on a single line. Each line is preceded by the number of the bytes. E.g. 0-3.
+
+    @param sequence:
+    @return: a string, properly formatted
+    """
+    array = bytearray(sequence)
+    test = []
+    for index, item in enumerate(array):
+        if index % bytes_per_line == 0:
+            test.append('\n{}-{} '.format(index, index+3))
+        test.append('{:#010b}'.format(item)[2:])
+    return '|'.join(test) + '|'

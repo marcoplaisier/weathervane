@@ -2,6 +2,7 @@ from ConfigParser import SafeConfigParser
 import datetime
 import logging
 from BeautifulSoup import BeautifulSoup
+import math
 
 
 class WeathervaneConfigParser(SafeConfigParser):
@@ -57,10 +58,11 @@ class WeathervaneConfigParser(SafeConfigParser):
             'channel': self.getint('SPI', 'channel'),
             'frequency': self.getint('SPI', 'frequency'),
             'library': self.get('SPI', 'library'),
-            'ready_pin': self.get('SPI', 'ready_pin'),
             'interval': self.getint('General', 'interval'),
             'source': self.get('General', 'source'),
             'sleep-time': float(self.get('General', 'sleep-time')),
+            'test': bool(self.get('General', 'test')),
+            'trend': bool(self.get('General', 'trend')),
             'fallback-station': self.get('Stations', 'fallback'),
             'stations': {
                 'pins': pins,
@@ -73,7 +75,7 @@ class WeathervaneConfigParser(SafeConfigParser):
 
 
 class BuienradarParser(object):
-    INVALID_DATA = ['0', 0, '-', '', None]
+    INVALID_DATA = ['-', '', None]
     FIELD_MAPPING = {
         'wind_direction': 'windrichting',
         'wind_direction_degrees': 'windrichtingGR',
@@ -90,9 +92,17 @@ class BuienradarParser(object):
         'date': 'datum',
         'wind_direction_code': 'windrichting',
         'sight_distance': 'zichtmeters',
-        'rain_mm_per_hour': 'regenMMPU',
+        'rain': 'regenMMPU',
         'temperature_10_cm': 'temperatuur10cm'
     }
+    TREND_MAPPING = {
+        -1: 2,
+        0: 1,
+        1: 4
+    }
+
+    def __init__(self):
+        self.historic_data = []
 
     @staticmethod
     def field_names(field_definitions):
@@ -100,13 +110,15 @@ class BuienradarParser(object):
                                field_definitions[number]['key'] in BuienradarParser.FIELD_MAPPING]
         return english_field_names
 
-    @staticmethod
-    def parse(data, station, *args, **kwargs):
+    def parse(self, data, station, *args, **kwargs):
         soup = BeautifulSoup(data)
         fallback = kwargs['fallback-station']
         fields = BuienradarParser.field_names(kwargs['bits'])
         get_data = BuienradarParser.get_data_from_station(soup, str(station), fallback)
         data = {field_name: get_data(BuienradarParser.FIELD_MAPPING[field_name]) for field_name in fields}
+        if 'trend' in kwargs.keys():
+            trend = self.get_trend_direction(data)
+            data['trend'] = self.TREND_MAPPING[trend]
         return data
 
     @staticmethod
@@ -118,6 +130,8 @@ class BuienradarParser(object):
             station_data = soup.find("weerstation", id=station).find(field_name.lower())
 
             if station_data in BuienradarParser.INVALID_DATA or station_data.string in BuienradarParser.INVALID_DATA:
+                if field_name == 'regenMMPU':
+                    return 0.0
                 if fallback:
                     logging.debug('Returning {} from fallback {}'.format(field_name, fallback))
                     get_data_from_fallback = BuienradarParser.get_data_from_station(soup, fallback, None)
@@ -157,5 +171,53 @@ class BuienradarParser(object):
 
     @staticmethod
     def calculate_wind_chill(wind_speed, temperature):
+        if wind_speed < 0:
+            raise ValueError("Wind speed must be a positive number")
         wind_chill = 13.12 + 0.6215 * temperature - 13.96 * wind_speed ** 0.16 + 0.4867 * temperature * wind_speed ** 0.16
         return round(wind_chill, 0)
+
+    def get_trend_direction(self, data):
+        self.historic_data.append(data['air_pressure'])
+        self.historic_data = self.historic_data[-5:]
+        trend = Statistics.trend(self.historic_data)
+        return trend
+
+
+class Statistics(object):
+    @staticmethod
+    def average(s):
+        """Calculates the mean of the given sequence of numbers
+
+        @param s: a sequence of numbers
+        @return: the mean
+        """
+        if s:
+            return sum(s)/float(len(s))
+        else:
+            return None
+
+    @staticmethod
+    def std_dev(s):
+        """
+
+        @param s:
+        @return:
+        """
+        if len(s) in [0,1]:
+            return 0
+        avg = Statistics.average(s)
+        sum_of_squares = sum([(x-avg)**2 for x in s])
+        return math.sqrt(sum_of_squares)/(len(s)-1)
+
+    @staticmethod
+    def trend(s):
+        if len(s) in [0, 1]:
+            return 0
+        stdev = Statistics.std_dev(s)
+        average = Statistics.average(s)
+        if s[-1] < (average - stdev):
+            return -1
+        elif s[-1] > (average + stdev):
+            return 1
+        else:
+            return 0

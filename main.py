@@ -137,11 +137,10 @@ if __name__ == "__main__":
     config_parser.read(config_file_location)
     config = config_parser.parse_config()
 
+    if config.get('test', False):
+        print 'Testing mode engaged'
+
     wv = WeatherVane(**config)
     wv.set_logger()
     logging.info(supplied_args)
-
-    if config.get('test', False):
-        wv.test_mode()
-    else:
-        wv.main()
+    wv.main()

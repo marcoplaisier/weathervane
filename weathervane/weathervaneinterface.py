@@ -10,18 +10,6 @@ class WeatherVaneInterface(object):
                        'O': 0x04, 'OZO': 0x05, 'ZO': 0x06, 'ZZO': 0x07,
                        'Z': 0x08, 'ZZW': 0x09, 'ZW': 0x0A, 'WZW': 0x0B,
                        'W': 0x0C, 'WNW': 0x0D, 'NW': 0x0E, 'NNW': 0x0F}
-    DATA_CHANGED = 0b10000000
-    DATA_UNCHANGED = 0b00000000
-    DUMMY_BYTE = 0x00
-    WIND_DIRECTION_ERROR = 0b00000001
-    WIND_SPEED_ERROR = 0b00000010
-    AIR_PRESSURE_ERROR = 0b00000100
-    WIND_SPEED_MAX_ERROR = 0b00001000
-    WIND_SPEED_MINIMUM = 0
-    WIND_SPEED_MAXIMUM = 63
-    AIR_PRESSURE_MINIMUM = 900
-    AIR_PRESSURE_MAXIMUM = 1155
-    FIXED_PATTERN = 0b01010000
 
     def __init__(self, *args, **kwargs):
         self.channel = kwargs['channel']
@@ -86,7 +74,7 @@ class WeatherVaneInterface(object):
         @return: a bitstring with the data in bits according to the configuration
         """
         s = None
-        t_data, error = self.transmittable_data(weather_data, self.requested_data)
+        t_data = self.transmittable_data(weather_data, self.requested_data)
 
         for i, data in enumerate(self.requested_data):
             formatting = self.requested_data[str(i)]
@@ -111,8 +99,7 @@ class WeatherVaneInterface(object):
         data_array = self.convert_data(weather_data)
         logging.debug("Sending data: {}".format(data_array))
 
-        with self.gpio as gpio:
-            gpio.send_data(data_array.tobytes())
+        self.gpio.send_data(data_array.tobytes())
 
         self.old_bit_string, self.new_bit_string = self.new_bit_string, data_array
 
@@ -146,42 +133,48 @@ class WeatherVaneInterface(object):
 
     def transmittable_data(self, weather_data, requested_data):
         result = {}
-        error = False
 
         for key, fmt in requested_data.items():
             measurement_name = requested_data[key]['key']
             value = weather_data.get(fmt['key'], 0)
 
-            result[measurement_name], error = self.value_to_bits(measurement_name, value, fmt)
+            result[measurement_name] = self.value_to_bits(measurement_name, value, fmt)
             result = self.compensate_wind(result)
 
-        return result, error
+        return result
 
     def value_to_bits(self, measurement_name, value, fmt):
         if measurement_name == 'wind_direction':
-                if value in self.WIND_DIRECTIONS:
-                    return self.WIND_DIRECTIONS[value], False
-                else:
-                    logging.debug('Wind direction {} not found. Using North as substitute.'.format(value))
-                    return 0, True
+            if value in self.WIND_DIRECTIONS:
+                return self.WIND_DIRECTIONS[value]
+            else:
+                logging.debug('Wind direction {} not found. Using North as substitute.'.format(value))
+                return 0
+        elif measurement_name == 'rain_mm_per_hour':
+            if value > 0:
+                return 1
+            else:
+                return 0
         else:
+            step_value = float(fmt.get('step', 1))
             min_value = float(fmt.get('min', 0))
             max_value = float(fmt.get('max', 255))
-            step_value = float(fmt.get('step', 1))
 
             if value < min_value:
-                value = min_value
                 logging.debug('Value {} for {} is smaller than minimum {}'.format(value, measurement_name, min_value))
+                value = min_value
             if max_value < value:
-                value = max_value
                 logging.debug('Value {} for {} is larger than maximum {}'.format(value, measurement_name, max_value))
+                value = max_value
+
             try:
                 value -= min_value
                 value /= step_value
-                return int(value), False
             except TypeError:
                 logging.debug('Value {} for {} is not a number'.format(value, measurement_name))
-                return 0, False
+                return 0
+
+            return int(value)
 
     def compensate_wind(self, result):
         wind_speed = result.get('wind_speed', 0)

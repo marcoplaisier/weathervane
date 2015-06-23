@@ -98,10 +98,7 @@ class WeatherVaneInterface(object):
         weather_data -- a dictionary with the data
         """
         data_array = self.convert_data(weather_data)
-        logging.debug("Sending data: {}".format(data_array))
-
         self.gpio.send_data(data_array.tobytes())
-
         self.old_bit_string, self.new_bit_string = self.new_bit_string, data_array
 
     @property

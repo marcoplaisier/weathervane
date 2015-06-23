@@ -203,6 +203,6 @@ def binary_format(sequence, bytes_per_line=4):
     test = []
     for index, item in enumerate(array):
         if index % bytes_per_line == 0:
-            test.append('\n{}-{} '.format(index, index+3))
+            test.append('\n{:2}-{:2} '.format(index, index+3))
         test.append('{:#010b}'.format(item)[2:])
     return '|'.join(test) + '|'

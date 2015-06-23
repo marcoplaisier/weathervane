@@ -3,6 +3,7 @@ import datetime
 import logging
 from BeautifulSoup import BeautifulSoup
 import math
+from random import randint
 
 
 class WeathervaneConfigParser(SafeConfigParser):
@@ -77,23 +78,24 @@ class WeathervaneConfigParser(SafeConfigParser):
 class BuienradarParser(object):
     INVALID_DATA = ['-', '', None]
     FIELD_MAPPING = {
+        'air_pressure': 'luchtdruk',
+        'date': 'datum',
+        'humidity': 'luchtvochtigheid',
+        'latitude': 'lat',
+        'longitude': 'lon',
+        'rain': 'regenMMPU',
+        'random': 'random',
+        'sight_distance': 'zichtmeters',
+        'temperature': 'temperatuurGC',
+        'temperature_10_cm': 'temperatuur10cm',
+        'station_name': 'stationnaam',
+        'wind_chill': 'wind_chill',
         'wind_direction': 'windrichting',
+        'wind_direction_code': 'windrichting',
         'wind_direction_degrees': 'windrichtingGR',
         'wind_speed': 'windsnelheidMS',
         'wind_speed_max': 'windstotenMS',
         'wind_speed_bft': 'windsnelheidBF',
-        'air_pressure': 'luchtdruk',
-        'temperature': 'temperatuurGC',
-        'wind_chill': 'wind_chill',
-        'humidity': 'luchtvochtigheid',
-        'station_name': 'stationnaam',
-        'latitude': 'lat',
-        'longitude': 'lon',
-        'date': 'datum',
-        'wind_direction_code': 'windrichting',
-        'sight_distance': 'zichtmeters',
-        'rain': 'regenMMPU',
-        'temperature_10_cm': 'temperatuur10cm'
     }
     TREND_MAPPING = {
         -1: 2,

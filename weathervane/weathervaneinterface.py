@@ -1,4 +1,5 @@
 import logging
+from random import randint
 
 import bitstring
 
@@ -137,6 +138,10 @@ class WeatherVaneInterface(object):
         for key, fmt in requested_data.items():
             measurement_name = requested_data[key]['key']
             value = weather_data.get(fmt['key'], 0)
+
+            if measurement_name == 'random':
+                length = int(requested_data[key]['length'])
+                value = randint(0, 2**length)
 
             result[measurement_name] = self.value_to_bits(measurement_name, value, fmt)
             result = self.compensate_wind(result)

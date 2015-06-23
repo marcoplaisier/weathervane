@@ -16,3 +16,6 @@
 /.idea/
 
 /.hypothesis/
+
+# Log files should not be committed
+*.log

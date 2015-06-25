@@ -99,8 +99,8 @@ class BuienradarParser(object):
     }
     TREND_MAPPING = {
         -1: 2,
-        0: 1,
-        1: 4
+        0: 4,
+        1: 1
     }
 
     def __init__(self):

@@ -95,6 +95,7 @@ class WeatherVane(object):
         """
         pipe_end_1, pipe_end_2 = Pipe()
         selected_station = self.interface.selected_station
+        logging.debug("Selected station: {}".format(selected_station))
 
         while True:
             if (self.counter % 3) == 0:  # check the station selection every three seconds

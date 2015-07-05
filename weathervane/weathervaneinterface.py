@@ -56,7 +56,8 @@ class WeatherVaneInterface(object):
         for index, value in enumerate(bits):
             result += value * 2 ** index
 
-        return self.stations[result]
+        station_id = self.stations[result]
+        return station_id
 
     def convert_data(self, weather_data):
         """Converts the weather data into a string of bits
@@ -171,7 +172,7 @@ class WeatherVaneInterface(object):
 
             try:
                 value -= min_value
-                value /= step_value
+                value /= float(step_value)
             except TypeError:
                 logging.debug('Value {} for {} is not a number'.format(value, measurement_name))
                 return 0

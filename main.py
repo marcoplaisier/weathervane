@@ -94,12 +94,12 @@ class WeatherVane(object):
 
         """
         pipe_end_1, pipe_end_2 = Pipe()
-        selected_station = self.interface.selected_station
-        logging.debug("Selected station: {}".format(selected_station))
+        station_id = self.interface.selected_station
+        logging.debug("Selected station: {}".format(station_id))
 
         while True:
             if (self.counter % 3) == 0:  # check the station selection every three seconds
-                station_id = self.check_selected_station(selected_station)
+                station_id = self.check_selected_station(station_id)
                 logging.debug('Heartbeat-{}'.format(self.counter))
             if (self.counter % self.interval) == 0:
                 self.start_collection_time = datetime.datetime.now()

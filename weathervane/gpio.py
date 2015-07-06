@@ -161,7 +161,6 @@ class GPIO(object):
 
         for pin_number in pin_numbers:
             status = self.handle.pinMode(pin_number, self.INPUT)
-            assert status > pin_number, "Pin {} not read".format(pin_number)
             pin_state = self.handle.digitalRead(pin_number)
             values.append(pin_state)
 

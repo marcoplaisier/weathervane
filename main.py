@@ -4,7 +4,8 @@ import logging
 import logging.handlers
 from multiprocessing import Process, Pipe
 import os
-from time import sleep
+import random
+from time import sleep, time
 import datetime
 
 from weathervane.gpio import TestInterface
@@ -15,6 +16,7 @@ from weathervane.weathervaneinterface import WeatherVaneInterface
 
 class WeatherVane(object):
     def __init__(self, *args, **configuration):
+        self.old_weatherdata = None
         self.args = args
         self.configuration = configuration
         self.interface = WeatherVaneInterface(*args, **configuration)
@@ -107,10 +109,15 @@ class WeatherVane(object):
             if pipe_end_2.poll(0):
                 logging.debug('Data available:')
                 self.end_collection_time = datetime.datetime.now()
-                logging.info('Data parsing took {}'.format(self.end_collection_time-self.start_collection_time))
-                self.wd = pipe_end_2.recv()
+                logging.info('Data retrieval including parsing took {}'.format(
+                    self.end_collection_time - self.start_collection_time))
+                self.old_weatherdata, self.wd = self.wd, pipe_end_2.recv()
             if self.wd:
-                self.interface.send(self.wd)
+                if self.old_weatherdata and self.configuration['trend']:
+                    wd = self.interpolate(self.old_weatherdata, self.wd, self.interval)
+                    self.interface.send(wd)
+                else:
+                    self.interface.send(self.wd)
             self.counter += 1
             sleep(self.sleep_time)
 
@@ -125,6 +132,22 @@ class WeatherVane(object):
         handler.setFormatter(formatter)
         weathervane_logger.addHandler(handler)
         # weathervane_logger.addHandler(logging.StreamHandler())
+
+    def interpolate(self, old_weatherdata, new_weatherdata, interval):
+        interpolated_wd = {}
+
+        for key, old_value in old_weatherdata.items():
+            new_value = new_weatherdata[key]
+            if old_value != new_value:
+                try:
+                    interpolated_value = float(old_value) + (self.counter * (float(new_value) - float(old_value)) / interval)
+                    interpolated_wd[key] = interpolated_value
+                except ValueError:
+                    interpolated_wd[key] = new_value
+                    logging.debug("Cannot interpolate ", new_value)
+            else:
+                interpolated_wd[key] = old_value
+        return interpolated_wd
 
 
 if __name__ == "__main__":

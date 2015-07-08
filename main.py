@@ -4,7 +4,8 @@ import logging
 import logging.handlers
 from multiprocessing import Process, Pipe
 import os
-from time import sleep
+import random
+from time import sleep, time
 import datetime
 
 from weathervane.gpio import TestInterface
@@ -111,7 +112,7 @@ class WeatherVane(object):
                     self.end_collection_time - self.start_collection_time))
                 self.old_weatherdata, self.wd = self.wd, pipe_end_2.recv()
             if self.wd:
-                if self.old_weatherdata:
+                if self.old_weatherdata and self.configuration['trend']:
                     wd = self.interpolate(self.old_weatherdata, self.wd, self.interval)
                     self.interface.send(wd)
                 else:
@@ -133,16 +134,18 @@ class WeatherVane(object):
 
     def interpolate(self, old_weatherdata, new_weatherdata, interval):
         interpolated_wd = {}
+
         for key, old_value in old_weatherdata.items():
             new_value = new_weatherdata[key]
-            try:
-                interpolated_value = float(old_value) + ((float(old_value) - float(new_value)) / interval)
-                interpolated_wd[key] = interpolated_value
-                print old_value, new_value, interpolated_value
-            except ValueError:
-                interpolated_wd[key] = new_value
-                print "Cannot interpolate ", new_value
-
+            if old_value != new_value:
+                try:
+                    interpolated_value = float(old_value) + (self.counter * (float(new_value) - float(old_value)) / interval)
+                    interpolated_wd[key] = interpolated_value
+                except ValueError:
+                    interpolated_wd[key] = new_value
+                    logging.debug("Cannot interpolate ", new_value)
+            else:
+                interpolated_wd[key] = old_value
         return interpolated_wd
 
 

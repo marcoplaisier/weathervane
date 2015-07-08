@@ -157,9 +157,13 @@ class GPIO(object):
         @param pin_numbers: a sequence of pin numbers to be read
         @rtype : the values for the list of pins
         """
+        values = []
+
         for pin_number in pin_numbers:
-            self.handle.pinMode(pin_number, self.INPUT)
-        values = [self.handle.digitalRead(pin_number) for pin_number in pin_numbers]
+            status = self.handle.pinMode(pin_number, self.INPUT)
+            pin_state = self.handle.digitalRead(pin_number)
+            values.append(pin_state)
+
         return values
 
 

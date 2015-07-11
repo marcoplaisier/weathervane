@@ -144,7 +144,8 @@ class WeatherVane(object):
                     interpolated_wd[key] = interpolated_value
                 except ValueError:
                     interpolated_wd[key] = new_value
-                    logging.debug("Cannot interpolate ", new_value)
+                    if key != 'wind_direction':
+                        logging.debug("Cannot interpolate " + new_value)
             else:
                 interpolated_wd[key] = old_value
         return interpolated_wd

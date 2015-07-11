@@ -138,7 +138,7 @@ class WeatherVaneInterface(object):
             value = weather_data.get(fmt['key'], 0)
             if measurement_name == 'random':
                 length = int(requested_data[key]['length'])
-                value = randint(0, 2**length)
+                value = randint(0, 2**length-1)
 
             result[measurement_name] = self.value_to_bits(measurement_name, value, fmt)
             result = self.compensate_wind(result)

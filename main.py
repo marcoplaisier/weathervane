@@ -98,6 +98,7 @@ class WeatherVane(object):
         pipe_end_1, pipe_end_2 = Pipe()
         station_id = self.interface.selected_station
         logging.debug("Selected station: {}".format(station_id))
+        error_state = False
 
         while True:
             if (self.counter % 3) == 0:  # check the station selection every three seconds
@@ -112,8 +113,15 @@ class WeatherVane(object):
                 logging.info('Data retrieval including parsing took {}'.format(
                     self.end_collection_time - self.start_collection_time))
                 self.old_weatherdata, self.wd = self.wd, pipe_end_2.recv()
+                if self.wd.get('error', False):
+                    error_state = True
+                else:
+                    if error_state:
+                        self.old_weatherdata = None
+                        self.counter = 0
+                        error_state = False
             if self.wd:
-                if self.old_weatherdata and self.configuration['trend']:
+                if self.old_weatherdata and self.configuration['trend'] and not error_state:
                     wd = self.interpolate(self.old_weatherdata, self.wd, self.interval)
                     self.interface.send(wd)
                 else:
@@ -137,6 +145,7 @@ class WeatherVane(object):
         interpolated_wd = {}
 
         for key, old_value in old_weatherdata.items():
+            print key
             new_value = new_weatherdata[key]
             if old_value != new_value:
                 try:

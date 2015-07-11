@@ -85,7 +85,7 @@ class WeatherVaneInterface(object):
             bit_value = t_data[bit_key]
             padding_string = '#0{0}b'.format(bit_length + 2)  # don't forget to account for '0b' in the length
             padded_bit_value = format(bit_value, padding_string)
-            if s:
+            if s is not None:
                 s += bitstring.pack("bin:{}={}".format(bit_length, padded_bit_value))
             else:
                 s = bitstring.pack("bin:{}={}".format(bit_length, padded_bit_value))

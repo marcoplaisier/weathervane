@@ -145,7 +145,6 @@ class WeatherVane(object):
         interpolated_wd = {}
 
         for key, old_value in old_weatherdata.items():
-            print key
             new_value = new_weatherdata[key]
             if old_value != new_value:
                 try:

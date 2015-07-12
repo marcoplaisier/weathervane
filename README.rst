@@ -81,7 +81,7 @@ Add the following line at the bottom (include the ampersand)
 
    ::
    
-      python /home/pi/weathervane/weathervane.py &
+      python /home/pi/weathervane/main.py &
 
 Testing
 -------

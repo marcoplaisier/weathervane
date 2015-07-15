@@ -148,7 +148,6 @@ class WeatherVane(object):
             self.reached = True
 
         interpolated_wd = {}
-        print self.reached, new_weatherdata
 
         for key, old_value in old_weatherdata.items():
             new_value = new_weatherdata[key]
@@ -163,7 +162,6 @@ class WeatherVane(object):
             else:
                 interpolated_wd[key] = new_value
 
-        print self.counter, interpolated_wd
         return interpolated_wd
 
 
@@ -177,9 +175,6 @@ if __name__ == "__main__":
     config_file_location = os.path.join(os.getcwd(), supplied_args.config)
     config_parser.read(config_file_location)
     config = config_parser.parse_config()
-
-    if config.get('test', False):
-        print 'Testing mode engaged'
 
     wv = WeatherVane(**config)
     wv.set_logger()

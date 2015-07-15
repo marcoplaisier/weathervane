@@ -143,19 +143,22 @@ class WeatherVane(object):
 
     def interpolate(self, old_weatherdata, new_weatherdata, interval):
         interpolated_wd = {}
+        print new_weatherdata
 
         for key, old_value in old_weatherdata.items():
-            new_value = new_weatherdata[key]
-            if old_value != new_value:
+            if key not in ['error', 'wind_direction', 'wind_direction', 'rain', 'trend']:
+                new_value = new_weatherdata[key]
                 try:
                     interpolated_value = float(old_value) + (self.counter * (float(new_value) - float(old_value)) / interval)
                     interpolated_wd[key] = interpolated_value
                 except ValueError:
                     interpolated_wd[key] = new_value
-                    if key != 'wind_direction':
-                        logging.debug("Cannot interpolate " + new_value)
+                except TypeError:
+                    interpolated_wd[key] = new_value
             else:
                 interpolated_wd[key] = old_value
+
+        print self.counter, interpolated_wd
         return interpolated_wd
 
 

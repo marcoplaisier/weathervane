@@ -27,6 +27,7 @@ class WeatherVane(object):
         self.sleep_time = configuration['sleep-time']
         self.start_collection_time = 0
         self.end_collection_time = 0
+        self.reached = False
 
     def test_mode(self):
         """
@@ -110,6 +111,7 @@ class WeatherVane(object):
             if pipe_end_2.poll(0):
                 logging.debug('Data available:')
                 self.end_collection_time = datetime.datetime.now()
+                self.reached = False
                 logging.info('Data retrieval including parsing took {}'.format(
                     self.end_collection_time - self.start_collection_time))
                 self.old_weatherdata, self.wd = self.wd, pipe_end_2.recv()
@@ -142,12 +144,15 @@ class WeatherVane(object):
         # weathervane_logger.addHandler(logging.StreamHandler())
 
     def interpolate(self, old_weatherdata, new_weatherdata, interval):
+        if self.counter >= interval - 1:
+            self.reached = True
+
         interpolated_wd = {}
-        print new_weatherdata
+        print self.reached, new_weatherdata
 
         for key, old_value in old_weatherdata.items():
-            if key not in ['error', 'wind_direction', 'wind_direction', 'rain', 'trend']:
-                new_value = new_weatherdata[key]
+            new_value = new_weatherdata[key]
+            if key not in ['error', 'wind_direction', 'wind_direction', 'rain', 'trend'] and not self.reached:
                 try:
                     interpolated_value = float(old_value) + (self.counter * (float(new_value) - float(old_value)) / interval)
                     interpolated_wd[key] = interpolated_value
@@ -156,7 +161,7 @@ class WeatherVane(object):
                 except TypeError:
                     interpolated_wd[key] = new_value
             else:
-                interpolated_wd[key] = old_value
+                interpolated_wd[key] = new_value
 
         print self.counter, interpolated_wd
         return interpolated_wd

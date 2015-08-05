@@ -152,7 +152,7 @@ class WeatherVaneInterface(object):
             else:
                 logging.debug('Wind direction {} not found. Using North as substitute.'.format(value))
                 return 0
-        elif measurement_name == 'rain_mm_per_hour':
+        elif measurement_name == 'rain':
             if value > 0:
                 return 1
             else:

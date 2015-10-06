@@ -87,7 +87,7 @@ class testParser(unittest.TestCase):
                 }
             }
             weather_data = bp.parse(data, 6260, **config)
-        self.assertEqual(4, weather_data['trend'])
+        self.assertEqual(1, weather_data['trend'])
 
 def wind_chill_test():
     with file(os.path.join(os.getcwd(), 'tests', 'testdata.csv'), 'rU') as f:

@@ -56,7 +56,8 @@ class WeatherVaneInterface(object):
         for index, value in enumerate(bits):
             result += value * 2 ** index
 
-        return self.stations[result]
+        station_id = self.stations[result]
+        return station_id
 
     def convert_data(self, weather_data):
         """Converts the weather data into a string of bits
@@ -84,7 +85,7 @@ class WeatherVaneInterface(object):
             bit_value = t_data[bit_key]
             padding_string = '#0{0}b'.format(bit_length + 2)  # don't forget to account for '0b' in the length
             padded_bit_value = format(bit_value, padding_string)
-            if s:
+            if s is not None:
                 s += bitstring.pack("bin:{}={}".format(bit_length, padded_bit_value))
             else:
                 s = bitstring.pack("bin:{}={}".format(bit_length, padded_bit_value))
@@ -135,10 +136,9 @@ class WeatherVaneInterface(object):
         for key, fmt in requested_data.items():
             measurement_name = requested_data[key]['key']
             value = weather_data.get(fmt['key'], 0)
-
             if measurement_name == 'random':
                 length = int(requested_data[key]['length'])
-                value = randint(0, 2**length)
+                value = randint(0, 2**length-1)
 
             result[measurement_name] = self.value_to_bits(measurement_name, value, fmt)
             result = self.compensate_wind(result)
@@ -152,7 +152,7 @@ class WeatherVaneInterface(object):
             else:
                 logging.debug('Wind direction {} not found. Using North as substitute.'.format(value))
                 return 0
-        elif measurement_name == 'rain_mm_per_hour':
+        elif measurement_name == 'rain':
             if value > 0:
                 return 1
             else:
@@ -171,7 +171,7 @@ class WeatherVaneInterface(object):
 
             try:
                 value -= min_value
-                value /= step_value
+                value /= float(step_value)
             except TypeError:
                 logging.debug('Value {} for {} is not a number'.format(value, measurement_name))
                 return 0

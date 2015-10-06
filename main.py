@@ -4,7 +4,8 @@ import logging
 import logging.handlers
 from multiprocessing import Process, Pipe
 import os
-from time import sleep
+import random
+from time import sleep, time
 import datetime
 
 from weathervane.gpio import TestInterface
@@ -15,6 +16,7 @@ from weathervane.weathervaneinterface import WeatherVaneInterface
 
 class WeatherVane(object):
     def __init__(self, *args, **configuration):
+        self.old_weatherdata = None
         self.args = args
         self.configuration = configuration
         self.interface = WeatherVaneInterface(*args, **configuration)
@@ -25,6 +27,7 @@ class WeatherVane(object):
         self.sleep_time = configuration['sleep-time']
         self.start_collection_time = 0
         self.end_collection_time = 0
+        self.reached = False
 
     def test_mode(self):
         """
@@ -94,11 +97,13 @@ class WeatherVane(object):
 
         """
         pipe_end_1, pipe_end_2 = Pipe()
-        selected_station = self.interface.selected_station
+        station_id = self.interface.selected_station
+        logging.debug("Selected station: {}".format(station_id))
+        error_state = False
 
         while True:
             if (self.counter % 3) == 0:  # check the station selection every three seconds
-                station_id = self.check_selected_station(selected_station)
+                station_id = self.check_selected_station(station_id)
                 logging.debug('Heartbeat-{}'.format(self.counter))
             if (self.counter % self.interval) == 0:
                 self.start_collection_time = datetime.datetime.now()
@@ -106,10 +111,23 @@ class WeatherVane(object):
             if pipe_end_2.poll(0):
                 logging.debug('Data available:')
                 self.end_collection_time = datetime.datetime.now()
-                logging.info('Data parsing took {}'.format(self.end_collection_time-self.start_collection_time))
-                self.wd = pipe_end_2.recv()
+                self.reached = False
+                logging.info('Data retrieval including parsing took {}'.format(
+                    self.end_collection_time - self.start_collection_time))
+                self.old_weatherdata, self.wd = self.wd, pipe_end_2.recv()
+                if self.wd.get('error', False):
+                    error_state = True
+                else:
+                    if error_state:
+                        self.old_weatherdata = None
+                        self.counter = 0
+                        error_state = False
             if self.wd:
-                self.interface.send(self.wd)
+                if self.old_weatherdata and self.configuration['trend'] and not error_state:
+                    wd = self.interpolate(self.old_weatherdata, self.wd, self.interval)
+                    self.interface.send(wd)
+                else:
+                    self.interface.send(self.wd)
             self.counter += 1
             sleep(self.sleep_time)
 
@@ -125,6 +143,27 @@ class WeatherVane(object):
         weathervane_logger.addHandler(handler)
         # weathervane_logger.addHandler(logging.StreamHandler())
 
+    def interpolate(self, old_weatherdata, new_weatherdata, interval):
+        if self.counter >= interval - 1:
+            self.reached = True
+
+        interpolated_wd = {}
+
+        for key, old_value in old_weatherdata.items():
+            new_value = new_weatherdata[key]
+            if key not in ['error', 'wind_direction', 'wind_direction', 'rain', 'trend'] and not self.reached:
+                try:
+                    interpolated_value = float(old_value) + (self.counter * (float(new_value) - float(old_value)) / interval)
+                    interpolated_wd[key] = interpolated_value
+                except ValueError:
+                    interpolated_wd[key] = new_value
+                except TypeError:
+                    interpolated_wd[key] = new_value
+            else:
+                interpolated_wd[key] = new_value
+
+        return interpolated_wd
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Get weather data from a provider and send it through SPI")
@@ -136,9 +175,6 @@ if __name__ == "__main__":
     config_file_location = os.path.join(os.getcwd(), supplied_args.config)
     config_parser.read(config_file_location)
     config = config_parser.parse_config()
-
-    if config.get('test', False):
-        print 'Testing mode engaged'
 
     wv = WeatherVane(**config)
     wv.set_logger()

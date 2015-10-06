@@ -99,8 +99,8 @@ class BuienradarParser(object):
     }
     TREND_MAPPING = {
         -1: 2,
-        0: 1,
-        1: 4
+        0: 4,
+        1: 1
     }
 
     def __init__(self):
@@ -131,7 +131,9 @@ class BuienradarParser(object):
 
             station_data = soup.find("weerstation", id=station).find(field_name.lower())
 
-            if station_data in BuienradarParser.INVALID_DATA or station_data.string in BuienradarParser.INVALID_DATA:
+            if (station_data in BuienradarParser.INVALID_DATA or \
+                    station_data.string in BuienradarParser.INVALID_DATA) and \
+                    field_name != 'random':
                 if field_name == 'regenMMPU':
                     return 0.0
                 if fallback:

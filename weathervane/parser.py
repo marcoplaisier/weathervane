@@ -107,7 +107,7 @@ class BuienradarParser(object):
 
     @staticmethod
     def get_fallback_station(current_station, station_list):
-        i = station_list.index(current_station)
+        i = station_list.values().index(current_station)
         return station_list[(i+1) % len(station_list)]
 
     @staticmethod

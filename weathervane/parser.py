@@ -64,7 +64,6 @@ class WeathervaneConfigParser(SafeConfigParser):
             'sleep-time': float(self.get('General', 'sleep-time')),
             'test': self.getboolean('General', 'test'),
             'trend': self.getboolean('General', 'trend'),
-            'fallback-station': self.get('Stations', 'fallback'),
             'stations': {
                 'pins': pins,
                 'config': station_config
@@ -107,6 +106,11 @@ class BuienradarParser(object):
         self.historic_data = []
 
     @staticmethod
+    def get_fallback_station(current_station, station_list):
+        i = station_list.index(current_station)
+        return station_list[(i+1) % len(station_list)]
+
+    @staticmethod
     def field_names(field_definitions):
         english_field_names = [field_definitions[number]['key'] for number in field_definitions.keys() if
                                field_definitions[number]['key'] in BuienradarParser.FIELD_MAPPING]
@@ -114,8 +118,8 @@ class BuienradarParser(object):
 
     def parse(self, data, station, *args, **kwargs):
         soup = BeautifulSoup(data)
-        fallback = kwargs['fallback-station']
         fields = BuienradarParser.field_names(kwargs['bits'])
+        fallback = self.get_fallback_station(station, kwargs['stations']['config'])
         get_data = BuienradarParser.get_data_from_station(soup, str(station), fallback)
         data = {field_name: get_data(BuienradarParser.FIELD_MAPPING[field_name]) for field_name in fields}
         if 'trend' in kwargs.keys():

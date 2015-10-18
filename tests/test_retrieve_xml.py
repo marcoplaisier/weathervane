@@ -14,16 +14,6 @@ from weathervane import datasources
 from tests.test_config import config
 
 
-class TestRetrieveXML(TestCase):
-    def test_retrieve_xml(self):
-        url = 'file://' + os.path.join(os.getcwd(), 'tests', 'buienradar.xml')
-        data = datasources.retrieve_xml(url)
-        with file(os.path.join(os.getcwd(), 'tests', 'buienradar.xml')) as f:
-            expected = f.read()
-
-        assert data == expected
-
-
 class TestFetchWeatherData(TestCase):
     @patch('weathervane.datasources.retrieve_xml')
     def test_fetch_weather_data(self, retrieve_function):

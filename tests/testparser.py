@@ -7,10 +7,13 @@ from weathervane.parser import BuienradarParser
 
 class testParser(unittest.TestCase):
     def setUp(self):
-        with file(os.path.join(os.getcwd(), 'tests', 'buienradar.xml'), 'rU') as f:
+        with file(os.path.join(os.getcwd(), 'buienradar.xml'), 'rU') as f:
             data = f.read()
             config = {
-                'fallback-station': 6277,
+                'stations': {
+                    'pins': [0, 1],
+                    'config': [6275, 2, 3]
+                },
                 'bits': {
                     '0': {'key': 'wind_direction'},
                     '1': {'key': 'wind_speed'},
@@ -61,10 +64,13 @@ class testParser(unittest.TestCase):
     def test_trend(self):
         bp = BuienradarParser()
         bp.historic_data = [1000, 1000]
-        with file(os.path.join(os.getcwd(), 'tests', 'buienradar.xml'), 'rU') as f:
+        with file(os.path.join(os.getcwd(), 'buienradar.xml'), 'rU') as f:
             data = f.read()
             config = {
-                'fallback-station': 6320,
+                'stations': {
+                    'pins': [0, 1],
+                    'config': [6275, 6260, 3]
+                },
                 'trend': 'air_pressure',
                 'bits': {
                     '0': {'key': 'wind_direction'},

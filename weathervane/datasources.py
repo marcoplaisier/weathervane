@@ -12,10 +12,10 @@ def retrieve_xml(url):
     try:
         response = urlopen(url)
         data = response.read()
-    except URLError:
-        raise DataSourceError('Data connection failed')
     except HTTPError:
-        raise DataSourceError('Data connection failed')
+        raise DataSourceError('HTTP Error: Data connection failed')
+    except URLError:
+        raise DataSourceError('URL Error: Data connection failed')
     return data
 
 

@@ -12,7 +12,8 @@ class testParser(unittest.TestCase):
             config = {
                 'stations': {
                     'pins': [0, 1],
-                    'config': [6275, 2, 3]
+                    'config': {0: 6275,
+                               1: 2}
                 },
                 'bits': {
                     '0': {'key': 'wind_direction'},
@@ -69,7 +70,9 @@ class testParser(unittest.TestCase):
             config = {
                 'stations': {
                     'pins': [0, 1],
-                    'config': [6275, 6260, 3]
+                    'config': {0: 6275,
+                               1: 2,
+                               3: 6260}
                 },
                 'trend': 'air_pressure',
                 'bits': {

@@ -133,7 +133,7 @@ class WeatherVaneInterface(object):
     def transmittable_data(self, weather_data, requested_data):
         result = {}
 
-        for key, fmt in requested_data.items():
+        for key, fmt in list(requested_data.items()):
             measurement_name = requested_data[key]['key']
             value = weather_data.get(fmt['key'], 0)
             if measurement_name == 'random':

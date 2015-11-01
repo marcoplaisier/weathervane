@@ -1,4 +1,6 @@
-BeautifulSoup==3.2.1
-Mock==1.0.1
+BeautifulSoup4
+Mock
 bitstring
 hypothesis
+behave
+nose

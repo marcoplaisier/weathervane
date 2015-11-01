@@ -1,5 +1,6 @@
 import logging
-from urllib2 import urlopen, URLError, HTTPError
+from urllib.request import urlopen
+from urllib.error import URLError, HTTPError
 
 from weathervane.parser import BuienradarParser
 
@@ -13,8 +14,10 @@ def retrieve_xml(url):
         response = urlopen(url)
         data = response.read()
     except HTTPError as e:
+        logging.error('HTTP Error')
         raise DataSourceError('HTTP Error: Data connection failed', e)
     except URLError as e:
+        logging.error('URL Error')
         raise DataSourceError('URL Error: Data connection failed', e)
     return data
 
@@ -24,7 +27,7 @@ def fetch_weather_data(conn, station_id, *args, **kwargs):
     try:
         data = retrieve_xml("http://xml.buienradar.nl")
         wd = bp.parse(data, station_id, *args, **kwargs)
-    except DataSourceError:
+    except DataSourceError as e:
         logging.error('Problem with data collection')
         wd = {
             'error': True,

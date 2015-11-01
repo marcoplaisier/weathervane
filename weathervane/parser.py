@@ -1,14 +1,13 @@
-from ConfigParser import SafeConfigParser
+from configparser import ConfigParser
 import datetime
 import logging
-from BeautifulSoup import BeautifulSoup
 import math
-from random import randint
+from bs4 import BeautifulSoup
 
 
-class WeathervaneConfigParser(SafeConfigParser):
+class WeathervaneConfigParser(ConfigParser):
     def __init__(self):
-        SafeConfigParser.__init__(self)
+        super(WeathervaneConfigParser, self).__init__()
 
     def parse_bit_packing_section(self):
         bit_numbers = self.options('Bit Packing')
@@ -50,7 +49,7 @@ class WeathervaneConfigParser(SafeConfigParser):
         @param cp:
         @return:
         """
-        pins = map(int, self.get('Stations', 'pins').split(','))
+        pins = list(map(int, self.get('Stations', 'pins').split(',')))
         station_config = self.parse_station_numbers()
         bits = self.parse_bit_packing_section()
 
@@ -107,22 +106,22 @@ class BuienradarParser(object):
 
     @staticmethod
     def get_fallback_station(current_station, station_list):
-        i = station_list.values().index(current_station)
+        i = list(station_list.values()).index(current_station)
         return station_list[(i+1) % len(station_list)]
 
     @staticmethod
     def field_names(field_definitions):
-        english_field_names = [field_definitions[number]['key'] for number in field_definitions.keys() if
+        english_field_names = [field_definitions[number]['key'] for number in list(field_definitions.keys()) if
                                field_definitions[number]['key'] in BuienradarParser.FIELD_MAPPING]
         return english_field_names
 
     def parse(self, data, station, *args, **kwargs):
-        soup = BeautifulSoup(data)
+        soup = BeautifulSoup(data, "html.parser")
         fields = BuienradarParser.field_names(kwargs['bits'])
         fallback = self.get_fallback_station(station, kwargs['stations']['config'])
         get_data = BuienradarParser.get_data_from_station(soup, str(station), fallback)
         data = {field_name: get_data(BuienradarParser.FIELD_MAPPING[field_name]) for field_name in fields}
-        if 'trend' in kwargs.keys():
+        if 'trend' in list(kwargs.keys()):
             trend = self.get_trend_direction(data)
             data['trend'] = self.TREND_MAPPING[trend]
         return data

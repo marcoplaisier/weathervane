@@ -52,7 +52,7 @@ class TestStatistics(TestCase):
 
     def test_trend_down_2(self):
         a = [1000, 900, 987, 1029, 900]
-        print Statistics.average(a), Statistics.std_dev(a)
+        print(Statistics.average(a), Statistics.std_dev(a))
         expected = -1
         result = Statistics.trend(a)
         self.assertEqual(expected, result)

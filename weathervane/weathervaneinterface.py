@@ -2,6 +2,7 @@ import logging
 from random import randint
 
 import bitstring
+import time
 
 from weathervane.gpio import GPIO
 
@@ -186,3 +187,26 @@ class WeatherVaneInterface(object):
             logging.debug('Wind speed {} should not exceed maximum wind speed {}'.format(wind_speed, wind_speed_max))
 
         return result
+
+
+class Display(object):
+    def __init__(self, wv_interface, start_time, end_time=time.localtime()):
+        self.wv_interface = wv_interface
+        self.start_time = start_time
+        self.end_time = time.localtime(end_time)
+        self.status = False
+
+    def is_on(self):
+        return self.status
+
+    def tick(self):
+        if self.current_second(self.start_time) < self.current_second(time.localtime()) and not self.is_on():
+            self.wv_interface.gpio.write_pin(7, 1)
+            self.status = True
+        elif self.current_second(self.end_time) < self.current_second(time.localtime()) and self.is_on():
+            self.wv_interface.gpio.write_pin(7, 0)
+            self.status = False
+
+    @staticmethod
+    def current_second(time_struct):
+        return time_struct.tm_hour * 3600 + time_struct.tm_min * 60 + time_struct.tm_sec

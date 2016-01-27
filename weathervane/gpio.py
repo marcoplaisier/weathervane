@@ -166,6 +166,10 @@ class GPIO(object):
 
         return values
 
+    def write_pin(self, pin_number, value):
+        status = self.handle.pinMode(pin_number, self.OUTPUT)
+        self.digitalWrite(pin_number, value)
+
 
 class TestInterface(object):
     def __init__(self, channel=0, frequency=50000):

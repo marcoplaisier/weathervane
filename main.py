@@ -4,22 +4,25 @@ import logging
 import logging.handlers
 from multiprocessing import Process, Pipe
 import os
-import random
-from time import sleep, time
+import time
 import datetime
 
 from weathervane.gpio import TestInterface
 from weathervane.datasources import fetch_weather_data
 from weathervane.parser import WeathervaneConfigParser
-from weathervane.weathervaneinterface import WeatherVaneInterface
+from weathervane.weathervaneinterface import WeatherVaneInterface, Display
 
 
 class WeatherVane(object):
+    start_time = time.mktime((0, 0, 0, 6, 30, 0, 0, 0, 0))
+    end_time = time.mktime((0, 0, 0, 23, 0, 0, 0, 0, 0))
+
     def __init__(self, *args, **configuration):
         self.old_weatherdata = None
         self.args = args
         self.configuration = configuration
         self.interface = WeatherVaneInterface(*args, **configuration)
+        self.display = Display(self.interface, start_time=self.start_time, end_time=self.end_time)
         logging.info("Using " + str(self.interface))
         self.wd = None
         self.counter = 0
@@ -53,7 +56,7 @@ class WeatherVane(object):
             data = [counter % 255, (255 - counter) % 255, test]
 
             interface.send(data)
-            sleep(1)
+            time.sleep(1)
 
     def check_selected_station(self, selected_station):
         """Check if another station is selected and change it when it has
@@ -102,6 +105,7 @@ class WeatherVane(object):
         error_state = False
 
         while True:
+            self.display.tick()
             if (self.counter % 3) == 0:  # check the station selection every three seconds
                 station_id = self.check_selected_station(station_id)
                 logging.debug('Heartbeat-{}'.format(self.counter))
@@ -129,7 +133,7 @@ class WeatherVane(object):
                 else:
                     self.interface.send(self.wd)
             self.counter += 1
-            sleep(self.sleep_time)
+            time.sleep(self.sleep_time)
 
     def set_logger(self):
         weathervane_logger = logging.getLogger('')

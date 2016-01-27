@@ -7,7 +7,7 @@ from weathervane.parser import BuienradarParser
 
 class testParser(unittest.TestCase):
     def setUp(self):
-        with file(os.path.join(os.getcwd(), 'buienradar.xml'), 'rU') as f:
+        with open(os.path.join(os.getcwd(), 'tests', 'buienradar.xml'), 'rU') as f:
             data = f.read()
             config = {
                 'stations': {
@@ -37,7 +37,7 @@ class testParser(unittest.TestCase):
             }
             bp = BuienradarParser()
             self.weather_data = bp.parse(data, 6275, **config)
-            print self.weather_data
+            print(self.weather_data)
 
     def wind_speed_parse_test(self):
         wind_speed = self.weather_data['wind_speed']
@@ -52,7 +52,7 @@ class testParser(unittest.TestCase):
         self.assertAlmostEqual(14.0, wind_chill, 1)
 
     def station_codes_test(self):
-        with file(os.path.join(os.getcwd(), 'tests', 'buienradar.xml'), 'rU') as f:
+        with open(os.path.join(os.getcwd(), 'tests', 'buienradar.xml'), 'rU') as f:
             data = f.read()
             bp = BuienradarParser()
             station_codes = bp.station_codes(data)
@@ -65,7 +65,7 @@ class testParser(unittest.TestCase):
     def test_trend(self):
         bp = BuienradarParser()
         bp.historic_data = [1000, 1000]
-        with file(os.path.join(os.getcwd(), 'buienradar.xml'), 'rU') as f:
+        with open(os.path.join(os.getcwd(), 'tests', 'buienradar.xml'), 'rU') as f:
             data = f.read()
             config = {
                 'stations': {
@@ -99,7 +99,7 @@ class testParser(unittest.TestCase):
         self.assertEqual(1, weather_data['trend'])
 
 def wind_chill_test():
-    with file(os.path.join(os.getcwd(), 'tests', 'testdata.csv'), 'rU') as f:
+    with open(os.path.join(os.getcwd(), 'tests', 'testdata.csv'), 'rU') as f:
         data = csv.DictReader(f)
         for line in data:
             wind_speed = float(line['windspeed'])

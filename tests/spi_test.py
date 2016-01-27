@@ -52,7 +52,7 @@ class SpiTests(unittest.TestCase):
     @patch('weathervane.gpio.GPIO.load_library_by_name')
     def test_pack_with_iterable(self, mock_class):
         spi = GPIO(channel=0, frequency=25000, library='wiringPi')
-        it = range(0, 10)
+        it = list(range(0, 10))
         data_packet, length = spi.pack(data=it)
         self.assertEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], list(data_packet))
         self.assertEqual(len(it), length)
@@ -66,7 +66,7 @@ class SpiTests(unittest.TestCase):
     @patch('weathervane.gpio.GPIO.load_library_by_name')
     def test_pack_with_iterable(self, mock_class):
         spi = GPIO(channel=0, frequency=25000, library='wiringPi')
-        data = range(0, 4)
+        data = list(range(0, 4))
         data_packet, length = spi.pack(data)
         self.assertEqual([0, 1, 2, 3], list(data_packet))
         self.assertEqual(4, length)
@@ -76,9 +76,10 @@ class SpiTests(unittest.TestCase):
         spi = GPIO(channel=0, frequency=25000, library='wiringPi')
         spi.handle.wiringPiSPIDataRW = MagicMock()
         spi.handle.wiringPiSPIDataRW.return_value = 0
+        print(spi.handle.wiringPiSPIDataRW.called)
         data = [1]
         spi.send_data(data)
-        spi.handle.wiringPiSPIDataRW.assert_called_once()
+        assert spi.handle.wiringPiSPIDataRW.called
 
     @patch('weathervane.gpio.GPIO.load_library_by_name')
     def test_incorrect_return_code(self, mock_class):

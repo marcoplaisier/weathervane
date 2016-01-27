@@ -5,7 +5,7 @@ import os
 from unittest import TestCase
 from multiprocessing import Pipe, Process
 import time
-from urllib2 import URLError
+from urllib.error import URLError
 
 from mock import patch, Mock, call
 
@@ -33,8 +33,8 @@ class TestFetchWeatherData(TestCase):
                 time.sleep(0.1)
 
         expected = 'success'
-        print expected
-        print observed
+        print(expected)
+        print(observed)
         pass
 
     @patch('weathervane.datasources.retrieve_xml')

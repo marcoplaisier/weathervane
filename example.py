@@ -62,7 +62,7 @@ with file(os.path.join(os.getcwd(), 'weathervane', 'tests', 'buienradar.xml'), '
     data = f.read()
     wd = BuienradarParser.parse(data, 6375, **a)
 
-print wd
+print(wd)
 
 bits = a['bits']
 fmt = ''
@@ -75,7 +75,7 @@ import bitstring
 
 result = {}
 index = 0
-for key, value in bits.items():
+for key, value in list(bits.items()):
     fmt = value
     value = wd._asdict().get(fmt['key'], 0)
     value -= float(fmt.get('min', 0))
@@ -84,7 +84,7 @@ for key, value in bits.items():
     result[fmt['key']] = value
     index += 1
 
-print 'result: ', result
-print 'qqq: ', qqq
+print('result: ', result)
+print('qqq: ', qqq)
 
 bitstring.pack(qqq, **result)

@@ -26,7 +26,7 @@ def test_stdev(s):
     assume(all(not x == float('inf') for x in s))
     assume(all(not x == float('-inf') for x in s))
     stdev = Statistics.std_dev(s)
-    print type(stdev)
+    print(type(stdev))
     assert type(stdev) in [int, float]
 
 @given(lists(floats(-1.0e-100, 1e100)))

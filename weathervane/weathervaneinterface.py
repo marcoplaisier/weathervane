@@ -192,13 +192,10 @@ class WeatherVaneInterface(object):
 class Display(object):
     def __init__(self, interface):
         self.wv_interface = interface
-        self.status = False
 
     def tick(self):
         t = time.localtime()
-        if 6 < t.tm_hour < 22 and not self.status:
+        if 6 < t.tm_hour < 22:
             self.wv_interface.gpio.write_pin(4, 1)
-            self.status = True
         else:
             self.wv_interface.gpio.write_pin(4, 0)
-            self.status = False

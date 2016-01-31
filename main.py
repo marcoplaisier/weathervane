@@ -5,6 +5,7 @@ import logging.handlers
 from multiprocessing import Process, Pipe
 import os
 import datetime
+import time
 
 from weathervane.gpio import TestInterface
 from weathervane.datasources import fetch_weather_data

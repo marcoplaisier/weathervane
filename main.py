@@ -102,11 +102,10 @@ class WeatherVane(object):
         error_state = False
 
         while True:
+            self.display.tick()
             if (self.counter % 3) == 0:  # check the station selection every three seconds
                 station_id = self.check_selected_station(station_id)
                 logging.debug('Heartbeat-{}'.format(self.counter))
-            if (self.counter % 10) == 0:
-                self.display.tick()
             if (self.counter % self.interval) == 0:
                 self.start_collection_time = datetime.datetime.now()
                 self.start_data_collection(pipe_end_1, station_id)

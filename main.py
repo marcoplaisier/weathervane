@@ -18,7 +18,7 @@ class WeatherVane(object):
         self.args = args
         self.configuration = configuration
         self.interface = WeatherVaneInterface(*args, **configuration)
-        self.display = Display(self.interface, start_time=self.start_time, end_time=self.end_time)
+        self.display = Display(self.interface)
         logging.info("Using " + str(self.interface))
         self.wd = None
         self.counter = 0

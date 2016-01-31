@@ -190,7 +190,8 @@ class WeatherVaneInterface(object):
 
 
 class Display(object):
-    def __init__(self):
+    def __init__(self, interface):
+        self.wv_interface = interface
         self.status = False
 
     def tick(self):

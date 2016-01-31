@@ -139,7 +139,7 @@ class WeatherVaneInterface(object):
             value = weather_data.get(fmt['key'], 0)
             if measurement_name == 'random':
                 length = int(requested_data[key]['length'])
-                value = randint(0, 2**length-1)
+                value = randint(0, 2 ** length - 1)
 
             result[measurement_name] = self.value_to_bits(measurement_name, value, fmt)
             result = self.compensate_wind(result)
@@ -195,13 +195,10 @@ class Display(object):
         self.status = False
 
     def tick(self):
-        if not self.status:
-            self.wv_interface.gpio.write_pin(7, 1)
+        t = time.localtime()
+        if 6 < t.tm_hour < 22 and not self.status:
+            self.wv_interface.gpio.write_pin(4, 1)
             self.status = True
         else:
-            self.wv_interface.gpio.write_pin(7, 0)
+            self.wv_interface.gpio.write_pin(4, 0)
             self.status = False
-
-    @staticmethod
-    def current_second(time_struct):
-        return time_struct.tm_hour * 3600 + time_struct.tm_min * 60 + time_struct.tm_sec

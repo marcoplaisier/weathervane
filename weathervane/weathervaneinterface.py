@@ -190,20 +190,14 @@ class WeatherVaneInterface(object):
 
 
 class Display(object):
-    def __init__(self, wv_interface, start_time, end_time=time.localtime()):
-        self.wv_interface = wv_interface
-        self.start_time = start_time
-        self.end_time = time.localtime(end_time)
+    def __init__(self):
         self.status = False
 
-    def is_on(self):
-        return self.status
-
     def tick(self):
-        if self.current_second(self.start_time) < self.current_second(time.localtime()) and not self.is_on():
+        if not self.status:
             self.wv_interface.gpio.write_pin(7, 1)
             self.status = True
-        elif self.current_second(self.end_time) < self.current_second(time.localtime()) and self.is_on():
+        else:
             self.wv_interface.gpio.write_pin(7, 0)
             self.status = False
 

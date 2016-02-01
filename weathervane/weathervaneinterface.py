@@ -196,6 +196,6 @@ class Display(object):
     def tick(self):
         t = time.localtime()
         if 6 < t.tm_hour < 22:
-            self.wv_interface.gpio.write_pin(4, 1)
-        else:
             self.wv_interface.gpio.write_pin(4, 0)
+        else:
+            self.wv_interface.gpio.write_pin(4, 1)

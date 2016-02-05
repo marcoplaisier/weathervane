@@ -11,7 +11,7 @@ import datetime
 from weathervane.gpio import TestInterface
 from weathervane.datasources import fetch_weather_data
 from weathervane.parser import WeathervaneConfigParser
-from weathervane.weathervaneinterface import WeatherVaneInterface, Display
+from weathervane.weathervaneinterface import WeatherVaneInterface
 
 
 class WeatherVane(object):
@@ -21,7 +21,6 @@ class WeatherVane(object):
         self.configuration = configuration
         self.interface = WeatherVaneInterface(*args, **configuration)
         logging.info("Using " + str(self.interface))
-        self.display = Display(self.interface)
         self.wd = None
         self.counter = 0
         self.interval = configuration['interval']
@@ -103,7 +102,6 @@ class WeatherVane(object):
         error_state = False
 
         while True:
-            self.display.tick()
             if (self.counter % 3) == 0:  # check the station selection every three seconds
                 station_id = self.check_selected_station(station_id)
                 logging.debug('Heartbeat-{}'.format(self.counter))

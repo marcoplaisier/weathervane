@@ -45,6 +45,5 @@ def fetch_weather_data(conn, station_id, *args, **kwargs):
             'wind_speed_max': 0,
             'wind_speed_bft': 0
         }
-
     conn.send(wd)
     conn.close()

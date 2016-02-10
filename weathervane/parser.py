@@ -2,6 +2,7 @@ from configparser import ConfigParser
 import datetime
 import logging
 import math
+
 from bs4 import BeautifulSoup
 
 
@@ -158,13 +159,13 @@ class BuienradarParser(object):
                     else:
                         return float(station_data.string)
                 except ValueError:
-                    return station_data.string
+                    return str(station_data.string)
 
         return get_data
 
     @staticmethod
     def station_codes(raw_xml):
-        soup = BeautifulSoup(raw_xml)
+        soup = BeautifulSoup(raw_xml, "html.parser")
         code_tags = soup("stationcode")
         codes = [int(tag.string) for tag in code_tags]
         return codes

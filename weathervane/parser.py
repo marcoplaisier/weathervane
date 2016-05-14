@@ -47,10 +47,9 @@ class WeathervaneConfigParser(ConfigParser):
     def parse_config(self):
         """Takes a configuration parser and returns the configuration as a dictionary
 
-        @param cp:
-        @return:
+        @return: configuration as dictionary
         """
-        pins = list(map(int, self.get('Stations', 'pins').split(',')))
+        pins = [int(pin) for pin in self.get('Stations', 'pins').split(',')]
         station_config = self.parse_station_numbers()
         bits = self.parse_bit_packing_section()
 
@@ -68,7 +67,13 @@ class WeathervaneConfigParser(ConfigParser):
                 'pins': pins,
                 'config': station_config
             },
-            'bits': bits
+            'bits': bits,
+            'display': {
+                'auto-turn-off': self.getboolean('Display', 'auto-turn-off'),
+                'start-time': self.get('Display', 'start-time'),
+                'end-time': self.get('Display', 'end-time'),
+                'pin': self.getint('Display', 'pin'),
+            },
         }
         logging.debug('Configuration:', configuration)
         return configuration

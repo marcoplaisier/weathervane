@@ -19,9 +19,8 @@ class WeatherVane(object):
         self.args = args
         self.configuration = configuration
         self.interface = WeatherVaneInterface(*args, **configuration)
-        self.display = Display(self.interface)
+        self.display = Display(self.interface, **configuration['Display'])
         logging.info("Using " + str(self.interface))
-        self.display = Display(self.interface)
         self.wd = None
         self.counter = 0
         self.interval = configuration['interval']
@@ -104,6 +103,7 @@ class WeatherVane(object):
 
         while True:
             self.display.tick()
+                
             if (self.counter % 3) == 0:  # check the station selection every three seconds
                 station_id = self.check_selected_station(station_id)
                 logging.debug('Heartbeat-{}'.format(self.counter))

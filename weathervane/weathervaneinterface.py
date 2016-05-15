@@ -205,7 +205,7 @@ class Display(object):
         minutes += time_array[1]
         return minutes
     
-    def is_active(current_minute, start_time, end_time):
+    def is_active(self, current_minute, start_time, end_time):
         if start_time < end_time:
             return self.start_at_minutes < current_minute < self.end_at_minutes
         else:

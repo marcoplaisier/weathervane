@@ -19,7 +19,7 @@ class WeatherVane(object):
         self.args = args
         self.configuration = configuration
         self.interface = WeatherVaneInterface(*args, **configuration)
-        self.display = Display(self.interface, **configuration['Display'])
+        self.display = Display(self.interface, **configuration['display'])
         logging.info("Using " + str(self.interface))
         self.wd = None
         self.counter = 0

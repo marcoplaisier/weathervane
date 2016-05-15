@@ -199,7 +199,7 @@ class Display(object):
         self.end_at_minutes = self.__convert_to_elapsed_minutes__(end_time)
         self.pin = configuration.get('pin', 4)
         
-    def __convert_to_elapsed_minutes__(time_text):
+    def __convert_to_elapsed_minutes__(self, time_text):
         time_array = [int(time_element) for time_element in time_text.split(':')]
         minutes = time_array[0] * 60
         minutes += time_array[1]

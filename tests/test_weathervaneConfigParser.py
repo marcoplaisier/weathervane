@@ -7,6 +7,8 @@ from weathervane.parser import WeathervaneConfigParser
 
 
 class TestWeathervaneConfigParser(TestCase):
+    NUMBER_OF_EXPECTED_BITS = 13
+
     def test_parse_config(self):
         config_file = os.path.join(os.getcwd(), 'tests', 'config-test1.ini')
         cp = WeathervaneConfigParser()
@@ -15,7 +17,7 @@ class TestWeathervaneConfigParser(TestCase):
         expected_keys = ['extended-error-mode', 'channel', 'frequency', 'library', 'interval', 'source',
                          'stations', 'bits', 'sleep-time', 'test', 'trend', 'display']
         self.assertEqual(set(observed.keys()), set(expected_keys))
-        expected_bits = {str(x): x for x in range(12)}
+        expected_bits = {str(x): x for x in range(self.NUMBER_OF_EXPECTED_BITS)}
         self.assertEqual(set(expected_bits.keys()), set(observed['bits'].keys()))
 
     def test_parse_station_numbers(self):

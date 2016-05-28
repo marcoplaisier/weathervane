@@ -7,6 +7,7 @@ import time
 from weathervane.datasources import fetch_weather_data
 from weathervane.parser import WeathervaneConfigParser
 
+
 class RecursionTest(unittest.TestCase):
     def test_recursion(self):
         p_end1, p_end2 = Pipe()

@@ -42,8 +42,7 @@ class WeathervaneConfigParser(ConfigParser):
                 number = int(number)
                 station_config[number] = self.get('Stations', str(number))
             except ValueError:
-                if number not in ['fallback', 'pins']:
-                    logging.debug("Option not recognized")
+                logging.info("Option {} not recognized".format(number))
         return station_config
 
     def parse_config(self):
@@ -51,7 +50,6 @@ class WeathervaneConfigParser(ConfigParser):
 
         @return: configuration as dictionary
         """
-        pins = [int(pin) for pin in self.get('Stations', 'pins').split(',')]
         station_config = self.parse_station_numbers()
         bits = self.parse_bit_packing_section()
 
@@ -66,7 +64,6 @@ class WeathervaneConfigParser(ConfigParser):
             'test': self.getboolean('General', 'test'),
             'trend': self.getboolean('General', 'trend'),
             'stations': {
-                'pins': pins,
                 'config': station_config
             },
             'bits': bits,
@@ -102,6 +99,7 @@ class BuienradarParser(object):
         'wind_speed': 'windsnelheidMS',
         'wind_speed_max': 'windstotenMS',
         'wind_speed_bft': 'windsnelheidBF',
+        'data_from_fallback': 'data_from_fallback'
     }
     TREND_MAPPING = {
         -1: 2,
@@ -115,7 +113,7 @@ class BuienradarParser(object):
     @staticmethod
     def get_fallback_station(current_station, station_list):
         i = list(station_list.values()).index(current_station)
-        return station_list[(i+1) % len(station_list)]
+        return station_list[(i + 1) % len(station_list)]
 
     @staticmethod
     def field_names(field_definitions):
@@ -136,6 +134,7 @@ class BuienradarParser(object):
 
     @staticmethod
     def get_data_from_station(soup, station, fallback=None):
+        
         def get_data(field_name):
             if field_name == 'apparent_temperature':
                 return BuienradarParser.calculate_temperature(soup, station, fallback)
@@ -143,8 +142,8 @@ class BuienradarParser(object):
             station_data = soup.find("weerstation", id=station).find(field_name.lower())
 
             if (station_data in BuienradarParser.INVALID_DATA or \
-                    station_data.string in BuienradarParser.INVALID_DATA) and \
-                    field_name != 'random':
+                            station_data.string in BuienradarParser.INVALID_DATA) and \
+                            field_name != 'random':
                 if field_name == 'regenMMPU':
                     return 0.0
                 if fallback:
@@ -201,7 +200,7 @@ class Statistics(object):
         @return: the mean
         """
         if s:
-            return sum(s)/float(len(s))
+            return sum(s) / float(len(s))
         else:
             return None
 
@@ -212,11 +211,11 @@ class Statistics(object):
         @param s:
         @return:
         """
-        if len(s) in [0,1]:
+        if len(s) in [0, 1]:
             return 0
         avg = Statistics.average(s)
-        sum_of_squares = sum([(x-avg)**2 for x in s])
-        return math.sqrt(sum_of_squares)/(len(s)-1)
+        sum_of_squares = sum([(x - avg) ** 2 for x in s])
+        return math.sqrt(sum_of_squares) / (len(s) - 1)
 
     @staticmethod
     def trend(s):

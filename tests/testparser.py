@@ -40,19 +40,19 @@ class testParser(unittest.TestCase):
             self.weather_data = bp.parse(data, 6275, **config)
             print(self.weather_data)
 
-    def wind_speed_parse_test(self):
+    def test_wind_speed_parse(self):
         wind_speed = self.weather_data['wind_speed']
         assert wind_speed == 5.01
 
-    def temperature_test(self):
+    def test_temperature(self):
         temperature = self.weather_data['temperature']
         assert temperature == 15.2
 
-    def apparent_temperature_parse_test(self):
+    def test_apparent_temperature_parse(self):
         apparent_temperature = self.weather_data['apparent_temperature']
         self.assertAlmostEqual(15.2, apparent_temperature, 0)
 
-    def station_codes_test(self):
+    def test_station_codes(self):
         with open(os.path.join(os.getcwd(), 'tests', 'buienradar.xml'), 'rU') as f:
             data = f.read()
             bp = BuienradarParser()
@@ -195,7 +195,7 @@ class testParser_cadzand(unittest.TestCase):
         self.assertEqual(1, weather_data['trend'])
 
 
-def wind_chill_test():
+def test_wind_chill():
     with open(os.path.join(os.getcwd(), 'tests', 'testdata.csv'), 'rU') as f:
         data = csv.DictReader(f)
         for line in data:

@@ -1,4 +1,4 @@
-class Weather:
+class Weather(object):
     """source: http://pywws.readthedocs.io/en/latest/_modules/pywws/conversions.html"""
 
     @staticmethod
@@ -21,7 +21,7 @@ class Weather:
             return None
         if temp < 26.7 or humidity < 40:
             return temp
-        tempInF = Weather.temp_f(temp)
+        temp_in_fahrenheit = Weather.temp_f(temp)
         R = humidity
         c_1 = -42.379
         c_2 = 2.04901523
@@ -32,9 +32,9 @@ class Weather:
         c_7 = 0.00122874
         c_8 = 0.00085282
         c_9 = -0.00000199
-        h_index = c_1 + (c_2 * tempInF) + (c_3 * R) + (c_4 * tempInF * R) + \
-                  (c_5 * (tempInF ** 2)) + (c_6 * (R ** 2)) + (c_7 * (tempInF ** 2) * R) + \
-                  (c_8 * tempInF * (R ** 2)) + (c_9 * (tempInF ** 2) * (R ** 2))
+        h_index = c_1 + (c_2 * temp_in_fahrenheit) + (c_3 * R) + (c_4 * temp_in_fahrenheit * R) + \
+                  (c_5 * (temp_in_fahrenheit ** 2)) + (c_6 * (R ** 2)) + (c_7 * (temp_in_fahrenheit ** 2) * R) + \
+                  (c_8 * temp_in_fahrenheit * (R ** 2)) + (c_9 * (temp_in_fahrenheit ** 2) * (R ** 2))
         return round(Weather.temp_c(h_index), 1)
 
     @staticmethod

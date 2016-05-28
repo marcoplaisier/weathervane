@@ -4,10 +4,12 @@ from hypothesis import given, assume
 from hypothesis.strategies import floats, lists
 import math
 from weathervane.parser import BuienradarParser, Statistics
+from weathervane.weather import Weather
+
 
 @given(wind=floats(0), temp=floats())
 def test_wind_chill(wind, temp):
-    assert type(BuienradarParser.calculate_wind_chill(wind_speed=wind, temperature=temp)) == float
+    assert type(Weather.wind_chill(wind_speed=wind, temperature=temp)) == float
 
 @given(lists(floats()))
 def test_average(s):

@@ -4,6 +4,8 @@ import logging
 import math
 from bs4 import BeautifulSoup
 
+from weathervane.weather import Weather
+
 
 class WeathervaneConfigParser(ConfigParser):
     def __init__(self):
@@ -87,7 +89,7 @@ class BuienradarParser(object):
         'temperature': 'temperatuurGC',
         'temperature_10_cm': 'temperatuur10cm',
         'station_name': 'stationnaam',
-        'wind_chill': 'wind_chill',
+        'calculated_temperature': 'calculated_temperature',
         'wind_direction': 'windrichting',
         'wind_direction_code': 'windrichting',
         'wind_direction_degrees': 'windrichtingGR',
@@ -129,8 +131,8 @@ class BuienradarParser(object):
     @staticmethod
     def get_data_from_station(soup, station, fallback=None):
         def get_data(field_name):
-            if field_name == 'wind_chill':
-                return BuienradarParser.get_wind_chill(soup, station, fallback)
+            if field_name == 'calculated_temperature':
+                return BuienradarParser.calculate_temperature(soup, station, fallback)
 
             station_data = soup.find("weerstation", id=station).find(field_name.lower())
 
@@ -170,18 +172,12 @@ class BuienradarParser(object):
         return codes
 
     @staticmethod
-    def get_wind_chill(soup, station, fallback=None):
+    def calculate_temperature(soup, station, fallback=None):
         get_data = BuienradarParser.get_data_from_station(soup, station, fallback)
-        wind_speed = get_data('windsnelheidMS')
+        windspeed = get_data('windsnelheidMS')
         temperature = get_data('temperatuurGC')
-        return BuienradarParser.calculate_wind_chill(wind_speed, temperature)
-
-    @staticmethod
-    def calculate_wind_chill(wind_speed, temperature):
-        if wind_speed < 0:
-            raise ValueError("Wind speed must be a positive number")
-        wind_chill = 13.12 + 0.6215 * temperature - 13.96 * wind_speed ** 0.16 + 0.4867 * temperature * wind_speed ** 0.16
-        return round(wind_chill, 0)
+        humidity = get_data('luchtvochtigheid')
+        return Weather.apparent_temperature(windspeed=windspeed, temperature=temperature, humidity=humidity)
 
     def get_trend_direction(self, data):
         self.historic_data.append(data['air_pressure'])

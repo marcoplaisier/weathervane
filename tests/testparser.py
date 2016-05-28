@@ -3,6 +3,7 @@ import os
 import unittest
 
 from weathervane.parser import BuienradarParser
+from weathervane.weather import Weather
 
 
 class testParser(unittest.TestCase):
@@ -22,7 +23,7 @@ class testParser(unittest.TestCase):
                     '3': {'key': 'wind_speed_bft'},
                     '4': {'key': 'air_pressure'},
                     '5': {'key': 'temperature'},
-                    '6': {'key': 'wind_chill'},
+                    '6': {'key': 'calculated_temperature'},
                     '7': {'key': 'humidity'},
                     '8': {'key': 'station_name'},
                     '9': {'key': 'latitude'},
@@ -47,9 +48,9 @@ class testParser(unittest.TestCase):
         temperature = self.weather_data['temperature']
         assert temperature == 15.2
 
-    def wind_chill_parse_test(self):
-        wind_chill = self.weather_data['wind_chill']
-        self.assertAlmostEqual(14.0, wind_chill, 1)
+    def calculated_temperature_parse_test(self):
+        calculated_temperature = self.weather_data['calculated_temperature']
+        self.assertAlmostEqual(15.2, calculated_temperature, 0)
 
     def station_codes_test(self):
         with open(os.path.join(os.getcwd(), 'tests', 'buienradar.xml'), 'rU') as f:
@@ -82,7 +83,7 @@ class testParser(unittest.TestCase):
                     '3': {'key': 'wind_speed_bft'},
                     '4': {'key': 'air_pressure'},
                     '5': {'key': 'temperature'},
-                    '6': {'key': 'wind_chill'},
+                    '6': {'key': 'calculated_temperature'},
                     '7': {'key': 'humidity'},
                     '8': {'key': 'station_name'},
                     '9': {'key': 'latitude'},
@@ -98,16 +99,17 @@ class testParser(unittest.TestCase):
             weather_data = bp.parse(data, 6260, **config)
         self.assertEqual(1, weather_data['trend'])
 
+
 def wind_chill_test():
     with open(os.path.join(os.getcwd(), 'tests', 'testdata.csv'), 'rU') as f:
         data = csv.DictReader(f)
         for line in data:
             wind_speed = float(line['windspeed'])
             temperature = float(line['temperature'])
-            expected_wind_chill = float(line['wind chill'])
-            yield check_wind_chill, wind_speed, temperature, expected_wind_chill, 0
+            expected_calculated_temperature = float(line['wind chill'])
+            yield check_heat_index, wind_speed, temperature, expected_calculated_temperature, 0
 
 
-def check_wind_chill(wind_speed, temperature, expected, places):
-    calculated_wind_chill = BuienradarParser.calculate_wind_chill(wind_speed, temperature)
-    assert round(abs(expected - calculated_wind_chill), places) == 0
+def check_heat_index(wind_speed, temperature, expected, places):
+    heat_index = Weather.wind_chill(wind_speed, temperature)
+    assert round(abs(expected - heat_index), places) == 0

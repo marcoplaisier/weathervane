@@ -39,7 +39,7 @@ class WeatherVaneTest(unittest.TestCase):
                         'wind_speed_bft': 6,
                         'air_pressure': 1014,
                         'temperature': 20,
-                        'wind_chill': 21,
+                        'calculated_temperature': 21,
                         'humidity': 100}
         self.interface.send(weather_data)
         self.assertEqual(len(self.interface.new_bit_string), 64)
@@ -51,7 +51,7 @@ class WeatherVaneTest(unittest.TestCase):
                         'wind_speed_bft': 1,
                         'air_pressure': 900,
                         'temperature': 20,
-                        'wind_chill': 21,
+                        'calculated_temperature': 21,
                         'humidity': 100}
         self.interface.send(weather_data)
         self.assertTrue(self.interface.data_changed)
@@ -62,7 +62,7 @@ class WeatherVaneTest(unittest.TestCase):
                         'wind_speed_bft': 1,
                         'air_pressure': 900,
                         'temperature': 20,
-                        'wind_chill': 21,
+                        'calculated_temperature': 21,
                         'humidity': 100}
 
         self.interface.send(weather_data)

@@ -139,7 +139,7 @@ class WeatherVaneInterface(object):
             value = weather_data.get(fmt['key'], 0)
             if measurement_name == 'random':
                 length = int(requested_data[key]['length'])
-                value = randint(0, 2**length-1)
+                value = randint(0, 2 ** length - 1)
 
             result[measurement_name] = self.value_to_bits(measurement_name, value, fmt)
             result = self.compensate_wind(result)
@@ -190,12 +190,34 @@ class WeatherVaneInterface(object):
 
 
 class Display(object):
-    def __init__(self, interface):
+    def __init__(self, interface, **configuration):
         self.wv_interface = interface
-
-    def tick(self):
-        t = time.localtime()
-        if 6 < t.tm_hour < 22:
-            self.wv_interface.gpio.write_pin(4, 1)
+        self.enabled = configuration.get('auto-turn-off', False)
+        start_time = configuration.get('start-time', '6:30')
+        self.start_at_minutes = self.__convert_to_elapsed_minutes__(start_time)
+        end_time = configuration.get('end-time', '22:00')
+        self.end_at_minutes = self.__convert_to_elapsed_minutes__(end_time)
+        self.pin = configuration.get('pin', 4)
+        
+    def __convert_to_elapsed_minutes__(self, time_text):
+        time_array = [int(time_element) for time_element in time_text.split(':')]
+        minutes = time_array[0] * 60
+        minutes += time_array[1]
+        return minutes
+    
+    def is_active(self, current_minute, start_time, end_time):
+        if start_time < end_time:
+            return self.start_at_minutes < current_minute < self.end_at_minutes
         else:
-            self.wv_interface.gpio.write_pin(4, 0)
+            return self.end_at_minutes < current_minute < self.start_at_minutes
+    
+    def tick(self):
+        if self.enabled:
+            t = time.localtime()
+            current_minute = (t.tm_hour * 60) + t.tm_min
+            if self.is_active(current_minute, self.start_at_minutes, self.end_at_minutes):
+                self.wv_interface.gpio.write_pin(self.pin, 1)
+            else:
+                self.wv_interface.gpio.write_pin(self.pin, 0)
+        else:
+            pass

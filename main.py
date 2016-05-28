@@ -4,8 +4,8 @@ import logging
 import logging.handlers
 from multiprocessing import Process, Pipe
 import os
-import time
 import datetime
+import time
 
 from weathervane.gpio import TestInterface
 from weathervane.datasources import fetch_weather_data
@@ -14,17 +14,13 @@ from weathervane.weathervaneinterface import WeatherVaneInterface, Display
 
 
 class WeatherVane(object):
-    start_time = time.mktime((0, 0, 0, 6, 30, 0, 0, 0, 0))
-    end_time = time.mktime((0, 0, 0, 23, 0, 0, 0, 0, 0))
-
     def __init__(self, *args, **configuration):
         self.old_weatherdata = None
         self.args = args
         self.configuration = configuration
         self.interface = WeatherVaneInterface(*args, **configuration)
-        self.display = Display(self.interface, start_time=self.start_time, end_time=self.end_time)
+        self.display = Display(self.interface, **configuration['display'])
         logging.info("Using " + str(self.interface))
-        self.display = Display(self.interface)
         self.wd = None
         self.counter = 0
         self.interval = configuration['interval']
@@ -107,6 +103,7 @@ class WeatherVane(object):
 
         while True:
             self.display.tick()
+                
             if (self.counter % 3) == 0:  # check the station selection every three seconds
                 station_id = self.check_selected_station(station_id)
                 logging.debug('Heartbeat-{}'.format(self.counter))

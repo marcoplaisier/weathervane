@@ -37,7 +37,7 @@ def fetch_weather_data(conn, station_id, *args, **kwargs):
             'random': 0,
             'temperature': -39.9,
             'temperature_10_cm': -39.9,
-            'calculated_temperature': 0,
+            'apparent_temperature': 0,
             'wind_direction': 'N',
             'wind_direction_code': 'N',
             'wind_direction_degrees': 0,
@@ -45,6 +45,5 @@ def fetch_weather_data(conn, station_id, *args, **kwargs):
             'wind_speed_max': 0,
             'wind_speed_bft': 0
         }
-
     conn.send(wd)
     conn.close()

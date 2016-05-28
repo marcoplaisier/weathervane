@@ -2,6 +2,7 @@ from configparser import ConfigParser
 import datetime
 import logging
 import math
+
 from bs4 import BeautifulSoup
 
 from weathervane.weather import Weather
@@ -48,10 +49,9 @@ class WeathervaneConfigParser(ConfigParser):
     def parse_config(self):
         """Takes a configuration parser and returns the configuration as a dictionary
 
-        @param cp:
-        @return:
+        @return: configuration as dictionary
         """
-        pins = list(map(int, self.get('Stations', 'pins').split(',')))
+        pins = [int(pin) for pin in self.get('Stations', 'pins').split(',')]
         station_config = self.parse_station_numbers()
         bits = self.parse_bit_packing_section()
 
@@ -69,7 +69,13 @@ class WeathervaneConfigParser(ConfigParser):
                 'pins': pins,
                 'config': station_config
             },
-            'bits': bits
+            'bits': bits,
+            'display': {
+                'auto-turn-off': self.getboolean('Display', 'auto-turn-off'),
+                'start-time': self.get('Display', 'start-time'),
+                'end-time': self.get('Display', 'end-time'),
+                'pin': self.getint('Display', 'pin'),
+            },
         }
         logging.debug('Configuration:', configuration)
         return configuration
@@ -89,7 +95,7 @@ class BuienradarParser(object):
         'temperature': 'temperatuurGC',
         'temperature_10_cm': 'temperatuur10cm',
         'station_name': 'stationnaam',
-        'calculated_temperature': 'calculated_temperature',
+        'apparent_temperature': 'apparent_temperature',
         'wind_direction': 'windrichting',
         'wind_direction_code': 'windrichting',
         'wind_direction_degrees': 'windrichtingGR',
@@ -131,7 +137,7 @@ class BuienradarParser(object):
     @staticmethod
     def get_data_from_station(soup, station, fallback=None):
         def get_data(field_name):
-            if field_name == 'calculated_temperature':
+            if field_name == 'apparent_temperature':
                 return BuienradarParser.calculate_temperature(soup, station, fallback)
 
             station_data = soup.find("weerstation", id=station).find(field_name.lower())
@@ -160,13 +166,13 @@ class BuienradarParser(object):
                     else:
                         return float(station_data.string)
                 except ValueError:
-                    return station_data.string
+                    return str(station_data.string)
 
         return get_data
 
     @staticmethod
     def station_codes(raw_xml):
-        soup = BeautifulSoup(raw_xml)
+        soup = BeautifulSoup(raw_xml, "html.parser")
         code_tags = soup("stationcode")
         codes = [int(tag.string) for tag in code_tags]
         return codes

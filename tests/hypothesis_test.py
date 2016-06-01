@@ -32,9 +32,9 @@ def test_stdev(s):
     assert type(stdev) in [int, float]
 
 @given(lists(floats(-1.0e-100, 1e100)))
-def test_trend(s):
+def test_barometric_trend(s):
     assume(s != [])
     assume(all(not x == float('inf') for x in s))
     assume(all(not x == float('-inf') for x in s))
-    trend = Statistics.trend(s)
-    assert trend in [-1, 0, 1]
+    barometric_trend = Statistics.barometric_trend(s)
+    assert barometric_trend in [-1, 0, 1]

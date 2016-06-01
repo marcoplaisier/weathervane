@@ -2,7 +2,6 @@ import os
 
 from weathervane.parser import BuienradarParser
 
-
 a = {'bits': {'0': {'key': 'wind_direction', 'length': '4'},
               '1': {'key': 'wind_speed',
                     'length': '6',
@@ -47,20 +46,19 @@ a = {'bits': {'0': {'key': 'wind_direction', 'length': '4'},
      'interval': 300,
      'library': 'wiringPi',
      'source': 'buienradar',
-     'stations': {'config': {0: '6320',
-                             1: '6321',
-                             2: '6310',
-                             3: '6312',
-                             4: '6308',
-                             5: '6311',
-                             6: '6331',
-                             7: '6316'},
-                  'pins': [3, 4, 5]}}
-
+     'stations': {0: '6320',
+                  1: '6321',
+                  2: '6310',
+                  3: '6312',
+                  4: '6308',
+                  5: '6311',
+                  6: '6331',
+                  7: '6316'}
+     }
 
 with file(os.path.join(os.getcwd(), 'weathervane', 'tests', 'buienradar.xml'), 'rU') as f:
     data = f.read()
-    wd = BuienradarParser.parse(data, 6375, **a)
+    wd = BuienradarParser.parse(data, **a)
 
 print(wd)
 

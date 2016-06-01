@@ -125,7 +125,7 @@ class WeatherVane(object):
                         self.counter = 0
                         error_state = False
             if self.wd:
-                if self.old_weatherdata and self.configuration['trend'] and not error_state:
+                if self.old_weatherdata and self.configuration['barometric_trend'] and not error_state:
                     wd = self.interpolate(self.old_weatherdata, self.wd, self.interval)
                     self.interface.send(wd)
                 else:
@@ -153,7 +153,7 @@ class WeatherVane(object):
 
         for key, old_value in list(old_weatherdata.items()):
             new_value = new_weatherdata[key]
-            if key not in ['error', 'wind_direction', 'wind_direction', 'rain', 'trend'] and not self.reached:
+            if key not in ['error', 'wind_direction', 'wind_direction', 'rain', 'float(weather_data.string)barometric_trend'] and not self.reached:
                 try:
                     interpolated_value = float(old_value) + (self.counter * (float(new_value) - float(old_value)) / interval)
                     interpolated_wd[key] = interpolated_value

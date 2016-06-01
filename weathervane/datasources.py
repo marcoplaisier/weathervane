@@ -23,10 +23,10 @@ def retrieve_xml(url):
 
 
 def fetch_weather_data(conn, station_id, *args, **kwargs):
-    bp = BuienradarParser()
     try:
         data = retrieve_xml("http://xml.buienradar.nl")
-        wd = bp.parse(data, station_id, *args, **kwargs)
+        bp = BuienradarParser(*args, **kwargs)
+        wd = bp.parse(data, *args, **kwargs)
     except DataSourceError as e:
         logging.error('Problem with data collection')
         wd = {

@@ -3,6 +3,7 @@ import datetime
 import logging
 import math
 
+from collections import OrderedDict
 from bs4 import BeautifulSoup
 
 from weathervane.weather import Weather
@@ -62,10 +63,8 @@ class WeathervaneConfigParser(ConfigParser):
             'source': self.get('General', 'source'),
             'sleep-time': float(self.get('General', 'sleep-time')),
             'test': self.getboolean('General', 'test'),
-            'trend': self.getboolean('General', 'trend'),
-            'stations': {
-                'config': station_config
-            },
+            'barometric_trend': self.getboolean('General', 'barometric_trend'),
+            'stations': station_config,
             'bits': bits,
             'display': {
                 'auto-turn-off': self.getboolean('Display', 'auto-turn-off'),
@@ -99,7 +98,10 @@ class BuienradarParser(object):
         'wind_speed': 'windsnelheidMS',
         'wind_speed_max': 'windstotenMS',
         'wind_speed_bft': 'windsnelheidBF',
-        'data_from_fallback': 'data_from_fallback'
+        'data_from_fallback': 'data_from_fallback',
+        'barometric_trend': 'barometric_trend',
+        'error': 'error',
+        'DUMMY_BYTE': 'DUMMY_BYTE',
     }
     TREND_MAPPING = {
         -1: 2,
@@ -107,88 +109,125 @@ class BuienradarParser(object):
         1: 1
     }
 
-    def __init__(self):
-        self.historic_data = []
+    def __init__(self, *args, **kwargs):
+        self.historic_data = dict()
+        self.raw_xml = None
+        default_stations = [6260, 6370]
+        self.station = kwargs.get('stations', default_stations)[0]
+        self.fallback = kwargs.get('stations', default_stations)[1]
 
-    @staticmethod
-    def get_fallback_station(current_station, station_list):
-        i = list(station_list.values()).index(current_station)
-        return station_list[(i + 1) % len(station_list)]
+    def get_fallback_station(self, stations):
+        i = list(stations.values()).index(self.station)
+        return stations[(i + 1) % len(stations)]
 
-    @staticmethod
-    def field_names(field_definitions):
-        english_field_names = [field_definitions[number]['key'] for number in list(field_definitions.keys()) if
-                               field_definitions[number]['key'] in BuienradarParser.FIELD_MAPPING]
-        return english_field_names
+    def parse(self, raw_xml, *args, **kwargs):
+        self.raw_xml = raw_xml
+        self.get_data = self.get_parser_func()
+        field_names = self.extract_field_names(kwargs['bits'])
+        data = {}
+        for english_name, dutch_name in BuienradarParser.FIELD_MAPPING.items():
+            if english_name in field_names:
+                data[english_name] = self.get_data(dutch_name)
 
-    def parse(self, data, station, *args, **kwargs):
-        soup = BeautifulSoup(data, "html.parser")
-        fields = BuienradarParser.field_names(kwargs['bits'])
-        fallback = self.get_fallback_station(station, kwargs['stations']['config'])
-        get_data = BuienradarParser.get_data_from_station(soup, str(station), fallback)
-        data = {field_name: get_data(BuienradarParser.FIELD_MAPPING[field_name]) for field_name in fields}
-        if 'trend' in list(kwargs.keys()):
-            trend = self.get_trend_direction(data)
-            data['trend'] = self.TREND_MAPPING[trend]
         return data
 
-    @staticmethod
-    def get_data_from_station(soup, station, fallback=None):
-        
+    def extract_field_names(self, bits_dict):
+        result = []
+        for v in bits_dict.values():
+            result.append(v['key'])
+
+        try:
+            present = result.index('data_from_fallback')
+            if present:
+                result.append(result.pop(present))
+        except ValueError:
+            pass
+
+        return result
+
+    def get_data_from_station(self, soup, fallback=False):
         def get_data(field_name):
+            if fallback:
+                station = self.fallback
+            else:
+                station = self.station
+
             if field_name == 'apparent_temperature':
-                return BuienradarParser.calculate_temperature(soup, station, fallback)
+                return self.calculate_temperature(soup, fallback)
+            if field_name == 'data_from_fallback':
+                return 0
+            if field_name == 'barometric_trend':
+                return self.calculate_barometric_trend()
 
-            station_data = soup.find("weerstation", id=station).find(field_name.lower())
+            station_data = soup.find(id=station)
+            weather_data = station_data.find(field_name.lower())
 
-            if (station_data in BuienradarParser.INVALID_DATA or \
-                            station_data.string in BuienradarParser.INVALID_DATA) and \
-                            field_name != 'random':
+            if data_is_invalid(weather_data) and field_name != 'random':
                 if field_name == 'regenMMPU':
                     return 0.0
-                if fallback:
+                if not fallback:
                     logging.debug('Returning {} from fallback {}'.format(field_name, fallback))
-                    get_data_from_fallback = BuienradarParser.get_data_from_station(soup, fallback, None)
+                    get_data_from_fallback = self.get_data_from_station(soup, True)
                     return get_data_from_fallback(field_name)
                 else:
-                    logging.debug('Field {} without valid data. Returning 0'.format(field_name))
+                    logging.info('Field {} without valid data. Returning 0'.format(field_name))
                     return 0
             if field_name == 'datum':
-                return datetime.datetime.strptime(station_data.string, '%m/%d/%Y %H:%M:%S')
-            if station_data is None:
-                return station_data
+                return datetime.datetime.strptime(weather_data.string, '%m/%d/%Y %H:%M:%S')
+            if weather_data is None:
+                return weather_data
             else:
                 try:
-                    data = station_data.string
+                    data = weather_data.string
                     if field_name == 'windsnelheidBF':
                         return int(data)
                     else:
-                        return float(station_data.string)
+                        weather_data = float(weather_data.string)
+                        if field_name == 'luchtdruk':
+                            self.historic_data[self.get_data('datum')] = weather_data
+                        return weather_data
                 except ValueError:
-                    return str(station_data.string)
+                    return str(weather_data.string)
+
+        def data_is_invalid(weather_data):
+            return (weather_data in BuienradarParser.INVALID_DATA or
+                    weather_data.string in BuienradarParser.INVALID_DATA)
 
         return get_data
 
-    @staticmethod
-    def station_codes(raw_xml):
-        soup = BeautifulSoup(raw_xml, "html.parser")
-        code_tags = soup("stationcode")
-        codes = [int(tag.string) for tag in code_tags]
-        return codes
+    def calculate_barometric_trend(self):
+        barometric_pressure = self.get_data('luchtdruk')
+        current_time = self.get_data('datum')
+        three_hours_ago = current_time - datetime.timedelta(hours=3)
+        barometric_pressure_three_hours_ago = self.historic_data.get(three_hours_ago, None)
+        if barometric_pressure_three_hours_ago is not None:
+            difference = barometric_pressure - barometric_pressure_three_hours_ago
+            if difference < 0:
+                barometric_trend = -1
+            elif difference > 0:
+                barometric_trend = 1
+            else:
+                barometric_trend = 0
+        else:
+            barometric_trend = 0
+        return self.TREND_MAPPING[barometric_trend]
 
-    @staticmethod
-    def calculate_temperature(soup, station, fallback=None):
-        get_data = BuienradarParser.get_data_from_station(soup, station, fallback)
+    def calculate_temperature(self, soup, fallback=None):
+        get_data = self.get_data_from_station(soup, fallback)
         windspeed = get_data('windsnelheidMS')
         temperature = get_data('temperatuurGC')
         humidity = get_data('luchtvochtigheid')
         return Weather.apparent_temperature(windspeed=windspeed, temperature=temperature, humidity=humidity)
 
-    def get_trend_direction(self, data):
+    def get_barometric_trend_direction(self, data):
         self.historic_data.append(data['air_pressure'])
         self.historic_data = self.historic_data[-5:]
-        trend = Statistics.trend(self.historic_data)
-        return trend
+        barometric_trend = Statistics.barometric_trend(self.historic_data)
+        return barometric_trend
+
+    def get_parser_func(self):
+        soup = BeautifulSoup(self.raw_xml, "html.parser")
+        return self.get_data_from_station(soup, False)
 
 
 class Statistics(object):
@@ -218,7 +257,7 @@ class Statistics(object):
         return math.sqrt(sum_of_squares) / (len(s) - 1)
 
     @staticmethod
-    def trend(s):
+    def barometric_trend(s):
         if len(s) in [0, 1]:
             return 0
         stdev = Statistics.std_dev(s)

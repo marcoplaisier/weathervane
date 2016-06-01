@@ -15,7 +15,7 @@ class TestWeathervaneConfigParser(TestCase):
         cp.read(config_file)
         observed = cp.parse_config()
         expected_keys = ['extended-error-mode', 'channel', 'frequency', 'library', 'interval', 'source',
-                         'stations', 'bits', 'sleep-time', 'test', 'trend', 'display']
+                         'stations', 'bits', 'sleep-time', 'test', 'barometric_trend', 'display']
         self.assertEqual(set(observed.keys()), set(expected_keys))
         expected_bits = {str(x): x for x in range(self.NUMBER_OF_EXPECTED_BITS)}
         self.assertEqual(set(expected_bits.keys()), set(observed['bits'].keys()))

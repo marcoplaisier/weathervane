@@ -1,6 +1,7 @@
 import os
 
 from weathervane.parser import BuienradarParser
+from weathervane.weathervaneinterface import WeatherVaneInterface
 
 a = {'bits': {'0': {'key': 'wind_direction', 'length': '4'},
               '1': {'key': 'wind_speed',
@@ -56,9 +57,10 @@ a = {'bits': {'0': {'key': 'wind_direction', 'length': '4'},
                   7: '6316'}
      }
 
-with file(os.path.join(os.getcwd(), 'weathervane', 'tests', 'buienradar.xml'), 'rU') as f:
+with open(os.path.join(os.getcwd(), 'tests', 'buienradar.xml'), 'rU') as f:
     data = f.read()
-    wd = BuienradarParser.parse(data, **a)
+    bp = BuienradarParser(**a)
+    wd = bp.parse(raw_xml=data, **a)
 
 print(wd)
 
@@ -66,23 +68,21 @@ bits = a['bits']
 fmt = ''
 for i, data in enumerate(bits):
     formatting = bits[str(i)]
-    s = "hex:{0}={1},".format(formatting['length'], formatting['key'])
+    s = "hex:{0}, ".format(formatting['length'])
     fmt += s
-qqq = fmt[:-1]
+hexstring = fmt[:-1]
 import bitstring
 
 result = {}
 index = 0
 for key, value in list(bits.items()):
     fmt = value
-    value = wd._asdict().get(fmt['key'], 0)
-    value -= float(fmt.get('min', 0))
-    value /= float(fmt.get('step', 1))
-    value = int(value)
+    value = wd.get(fmt['key'], 0)
+    if type(value) != str:
+        value -= float(fmt.get('min', 0))
+        value /= float(fmt.get('step', 1))
+        value = int(value)
+    else:
+        value = WeatherVaneInterface.WIND_DIRECTIONS[value]
     result[fmt['key']] = value
     index += 1
-
-print('result: ', result)
-print('qqq: ', qqq)
-
-bitstring.pack(qqq, **result)

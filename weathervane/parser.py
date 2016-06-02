@@ -113,12 +113,14 @@ class BuienradarParser(object):
         default_stations = [6260, 6370]
         self.station = kwargs.get('stations', default_stations)[0]
         self.fallback = kwargs.get('stations', default_stations)[1]
+        self.fallback_used = None
 
     def get_fallback_station(self, stations):
         i = list(stations.values()).index(self.station)
         return stations[(i + 1) % len(stations)]
 
     def parse(self, raw_xml, *args, **kwargs):
+        self.fallback_used = 0
         self.raw_xml = raw_xml
         self.get_data = self.get_parser_func()
         field_names = self.extract_field_names(kwargs['bits'])
@@ -126,20 +128,13 @@ class BuienradarParser(object):
         for english_name, dutch_name in BuienradarParser.FIELD_MAPPING.items():
             if english_name in field_names:
                 data[english_name] = self.get_data(dutch_name)
-
+        data['data_from_fallback'] = self.fallback_used
         return data
 
     def extract_field_names(self, bits_dict):
         result = []
         for v in bits_dict.values():
             result.append(v['key'])
-
-        try:
-            present = result.index('data_from_fallback')
-            if present:
-                result.append(result.pop(present))
-        except ValueError:
-            pass
 
         return result
 
@@ -150,6 +145,8 @@ class BuienradarParser(object):
             else:
                 station = self.station
 
+            if field_name == 'data_from_fallback':
+                return 0
             if field_name == 'apparent_temperature':
                 return self.calculate_temperature(soup, fallback)
             if field_name == 'data_from_fallback':
@@ -166,6 +163,7 @@ class BuienradarParser(object):
                 if not fallback:
                     logging.debug('Returning {} from fallback {}'.format(field_name, fallback))
                     get_data_from_fallback = self.get_data_from_station(soup, True)
+                    self.fallback_used = 1
                     return get_data_from_fallback(field_name)
                 else:
                     logging.info('Field {} without valid data. Returning 0'.format(field_name))

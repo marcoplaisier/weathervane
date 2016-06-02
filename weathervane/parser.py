@@ -1,9 +1,7 @@
-from configparser import ConfigParser
 import datetime
 import logging
-import math
+from configparser import ConfigParser
 
-from collections import OrderedDict
 from bs4 import BeautifulSoup
 
 from weathervane.weather import Weather
@@ -199,7 +197,7 @@ class BuienradarParser(object):
         barometric_pressure = self.get_data('luchtdruk')
         current_time = self.get_data('datum')
         three_hours_ago = current_time - datetime.timedelta(hours=3)
-        barometric_pressure_three_hours_ago = self.historic_data.get(three_hours_ago, None)
+        barometric_pressure_three_hours_ago = self.historic_data.get(three_hours_ago)
         if barometric_pressure_three_hours_ago is not None:
             difference = barometric_pressure - barometric_pressure_three_hours_ago
             if difference < 0:
@@ -219,52 +217,6 @@ class BuienradarParser(object):
         humidity = get_data('luchtvochtigheid')
         return Weather.apparent_temperature(windspeed=windspeed, temperature=temperature, humidity=humidity)
 
-    def get_barometric_trend_direction(self, data):
-        self.historic_data.append(data['air_pressure'])
-        self.historic_data = self.historic_data[-5:]
-        barometric_trend = Statistics.barometric_trend(self.historic_data)
-        return barometric_trend
-
     def get_parser_func(self):
         soup = BeautifulSoup(self.raw_xml, "html.parser")
         return self.get_data_from_station(soup, False)
-
-
-class Statistics(object):
-    @staticmethod
-    def average(s):
-        """Calculates the mean of the given sequence of numbers
-
-        @param s: a sequence of numbers
-        @return: the mean
-        """
-        if s:
-            return sum(s) / float(len(s))
-        else:
-            return None
-
-    @staticmethod
-    def std_dev(s):
-        """
-
-        @param s:
-        @return:
-        """
-        if len(s) in [0, 1]:
-            return 0
-        avg = Statistics.average(s)
-        sum_of_squares = sum([(x - avg) ** 2 for x in s])
-        return math.sqrt(sum_of_squares) / (len(s) - 1)
-
-    @staticmethod
-    def barometric_trend(s):
-        if len(s) in [0, 1]:
-            return 0
-        stdev = Statistics.std_dev(s)
-        average = Statistics.average(s)
-        if s[-1] < (average - stdev):
-            return -1
-        elif s[-1] > (average + stdev):
-            return 1
-        else:
-            return 0

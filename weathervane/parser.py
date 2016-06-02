@@ -198,9 +198,9 @@ class BuienradarParser(object):
         barometric_pressure_three_hours_ago = self.historic_data.get(three_hours_ago)
         if barometric_pressure_three_hours_ago is not None:
             difference = barometric_pressure - barometric_pressure_three_hours_ago
-            if difference < 0:
+            if difference < -1:
                 barometric_trend = -1
-            elif difference > 0:
+            elif difference > 1:
                 barometric_trend = 1
             else:
                 barometric_trend = 0

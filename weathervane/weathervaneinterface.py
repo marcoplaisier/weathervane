@@ -23,7 +23,7 @@ class WeatherVaneInterface(object):
         self.new_bit_string = None
         self.weather_data = {}
         self.requested_data = kwargs['bits']
-        self.stations = kwargs['stations']['config']
+        self.stations = kwargs['stations']
 
     def __repr__(self):
         return "WeatherVaneInterface(channel=%d, frequency=%d)" % (self.channel, self.frequency)

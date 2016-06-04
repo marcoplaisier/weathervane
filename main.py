@@ -77,15 +77,14 @@ class WeatherVane(object):
             logging.info("New station selected: {}".format(station_id))
         return station_id
 
-    def start_data_collection(self, pipe_end_1, station_id):
+    def start_data_collection(self, pipe_end_1):
         """Side effect: reset counter to 0
 
         @param pipe_end_1:
-        @param station_id:
         @return:
         """
         self.counter = 0
-        arguments = [pipe_end_1, station_id]
+        arguments = [pipe_end_1]
         arguments.extend(self.args)
         p = Process(target=fetch_weather_data, args=arguments, kwargs=self.configuration)
         p.start()
@@ -97,19 +96,16 @@ class WeatherVane(object):
 
         """
         pipe_end_1, pipe_end_2 = Pipe()
-        station_id = self.interface.selected_station
-        logging.debug("Selected station: {}".format(station_id))
         error_state = False
 
         while True:
             self.display.tick()
                 
-            if (self.counter % 3) == 0:  # check the station selection every three seconds
-                station_id = self.check_selected_station(station_id)
+            if (self.counter % 3) == 0:
                 logging.debug('Heartbeat-{}'.format(self.counter))
             if (self.counter % self.interval) == 0:
                 self.start_collection_time = datetime.datetime.now()
-                self.start_data_collection(pipe_end_1, station_id)
+                self.start_data_collection(pipe_end_1)
             if pipe_end_2.poll(0):
                 logging.debug('Data available:')
                 self.end_collection_time = datetime.datetime.now()

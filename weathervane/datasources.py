@@ -22,7 +22,7 @@ def retrieve_xml(url):
     return data
 
 
-def fetch_weather_data(conn, station_id, *args, **kwargs):
+def fetch_weather_data(conn, *args, **kwargs):
     try:
         data = retrieve_xml("http://xml.buienradar.nl")
         bp = BuienradarParser(*args, **kwargs)

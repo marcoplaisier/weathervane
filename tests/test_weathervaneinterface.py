@@ -115,27 +115,13 @@ class WeatherVaneTest(unittest.TestCase):
 
     def test_wind_speed_may_not_exceed_wind_speed_max(self, mock_class):
         wind_speed = 10
-        weather_data = {'wind_speed':wind_speed+1, 'wind_speed_max':wind_speed}
+        weather_data = {'wind_speed': wind_speed + 1, 'wind_speed_max': wind_speed}
         expected = {'wind_speed': wind_speed, 'wind_speed_max': wind_speed}
         requested_data = {'0': {'key': 'wind_speed', 'min': 0, 'step': 1, 'max': 63, 'length': 8},
                           '1': {'key': 'wind_speed_max', 'min': 0, 'step': 1, 'max': 63, 'length': 8}}
         result = self.interface.transmittable_data(weather_data, requested_data)
         self.assertEqual(expected, result)
 
-    def test_get_station(self, mock_class):
-        config = {0: 6320, 1: 6321, 2: 6310, 3: 6312, 4: 6308, 5: 6311, 6: 6331, 7: 6316}
-        interface = WeatherVaneInterface(channel=0, frequency=0, bits=None,
-                                         stations={'pins': [4, 5, 6], 'config': config})
-        station_id = interface.selected_station
-        self.assertEqual(station_id, 6320)
-
-    def test_get_other_station(self, mock_class):
-        config = {0: 6320, 1: 6321, 2: 6310, 3: 6312, 4: 6308, 5: 6311, 6: 6331, 7: 6316}
-        interface = WeatherVaneInterface(channel=0, bits=None, frequency=0,
-                                         stations=dict(pins=[4, 5, 6], config=config))
-        interface.gpio.read_pin = Mock(return_value=[1, 1, 0])
-        station_id = interface.selected_station
-        self.assertEqual(station_id, 6312)  # remember, byte ordering
 
 if __name__ == '__main__':
     unittest.main()

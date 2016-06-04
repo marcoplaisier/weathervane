@@ -36,29 +36,6 @@ class WeatherVaneInterface(object):
         """
         return self.old_bit_string != self.new_bit_string
 
-    @property
-    def selected_station(self):
-        """Return the selected station, based on the station-pins in the stations section of the configuration.
-
-        In the station section of the configuration, it is possible to configure zero or more pins and the corresponding
-        stations. Pins are added bitwise and the resulting number is used to lookup the station id.
-        For example, in the configuration pin 11 and 13 are indicated as station input pins and four stations are listed:
-        0=6000, 1=6001, 2=6002, 3=6003. If pin 13 is high, this results in 0*2**1+1*2**0=1 and id 6001 is returned. If
-        pin 11 and 13 are both high, then station 6003 is returned.
-        Take note that the order is most significant bit first and that the order of the pin numbers is important. Also
-        take care to give an appropriate number of stations. If you indicate two pins and only supply three stations,
-        then an index error may be thrown when both pins are high.
-
-        @return: the station id
-        """
-        bits = self.gpio.read_pin(self.station_bits)
-        result = 0
-        for index, value in enumerate(bits):
-            result += value * 2 ** index
-
-        station_id = self.stations[result]
-        return station_id
-
     def convert_data(self, weather_data):
         """Converts the weather data into a string of bits
 

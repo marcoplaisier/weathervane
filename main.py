@@ -108,7 +108,7 @@ class WeatherVane(object):
                 self.start_collection_time = datetime.datetime.now()
                 self.start_data_collection(pipe_end_1)
             if pipe_end_2.poll(0):
-                logging.debug('Data available:')
+                logging.info('Data available:')
                 self.end_collection_time = datetime.datetime.now()
                 self.reached = False
                 logging.info('Data retrieval including parsing took {}'.format(
@@ -133,7 +133,7 @@ class WeatherVane(object):
 
     def set_logger(self):
         weathervane_logger = logging.getLogger('')
-        weathervane_logger.setLevel(logging.DEBUG)
+        weathervane_logger.setLevel(logging.INFO)
         handler = logging.handlers.TimedRotatingFileHandler(filename="weathervane.log",
                                                             when="midnight",
                                                             interval=1,

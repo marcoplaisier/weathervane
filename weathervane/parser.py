@@ -146,7 +146,7 @@ class BuienradarParser(object):
                 station = self.station
 
             # skip these fields
-            if field_name in ['data_from_fallback', 'DUMMY_BYTE', 'random']:
+            if field_name in ['data_from_fallback', 'DUMMY_BYTE', 'random', 'error']:
                 return 0
             if field_name == 'apparent_temperature':
                 return self.calculate_temperature(soup, fallback)

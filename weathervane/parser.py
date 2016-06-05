@@ -145,23 +145,22 @@ class BuienradarParser(object):
             else:
                 station = self.station
 
-            if field_name == 'data_from_fallback':
+            # skip these fields
+            if field_name in ['data_from_fallback', 'DUMMY_BYTE', 'random']:
                 return 0
             if field_name == 'apparent_temperature':
                 return self.calculate_temperature(soup, fallback)
-            if field_name == 'data_from_fallback':
-                return 0
             if field_name == 'barometric_trend':
                 return self.calculate_barometric_trend()
 
             station_data = soup.find(id=station)
             weather_data = station_data.find(field_name.lower())
 
-            if data_is_invalid(weather_data) and field_name != 'random':
+            if data_is_invalid(weather_data):
                 if field_name == 'regenMMPU':
                     return 0.0
                 if not fallback:
-                    logging.debug('Returning {} from fallback {}'.format(field_name, fallback))
+                    logging.info('Returning {} from fallback'.format(field_name))
                     get_data_from_fallback = self.get_data_from_station(soup, True)
                     self.fallback_used = 1
                     return get_data_from_fallback(field_name)
@@ -179,6 +178,7 @@ class BuienradarParser(object):
                         return int(data)
                     else:
                         weather_data = float(weather_data.string)
+                        logging.debug("{} - {}".format(field_name, weather_data))
                         if field_name == 'luchtdruk':
                             self.historic_data[self.get_data('datum')] = weather_data
                         return weather_data

@@ -2,6 +2,7 @@
 import argparse
 import logging
 import logging.handlers
+import pprint
 from multiprocessing import Process, Pipe
 import os
 import datetime
@@ -113,6 +114,7 @@ class WeatherVane(object):
                 logging.info('Data retrieval including parsing took {}'.format(
                     self.end_collection_time - self.start_collection_time))
                 self.old_weatherdata, self.wd = self.wd, pipe_end_2.recv()
+                logging.info(pprint.pformat(self.wd))
                 if self.wd.get('error', False):
                     error_state = True
                 else:
@@ -121,7 +123,7 @@ class WeatherVane(object):
                         self.counter = 0
                         error_state = False
             if self.wd:
-                if self.old_weatherdata and self.configuration['barometric_trend'] and not error_state:
+                if self.old_weatherdata and not error_state:
                     wd = self.interpolate(self.old_weatherdata, self.wd, self.interval)
                     self.interface.send(wd)
                 else:

@@ -178,7 +178,6 @@ class BuienradarParser(object):
                         return int(data)
                     else:
                         weather_data = float(weather_data.string)
-                        logging.debug("{} - {}".format(field_name, weather_data))
                         if field_name == 'luchtdruk':
                             self.historic_data[self.get_data('datum')] = weather_data
                         return weather_data

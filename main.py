@@ -103,33 +103,51 @@ class WeatherVane(object):
             self.display.tick()
                 
             if (self.counter % 3) == 0:
-                logging.debug('Heartbeat-{}'.format(self.counter))
+                self.log_heartbeat()
             if (self.counter % self.interval) == 0:
-                self.start_collection_time = datetime.datetime.now()
-                self.start_data_collection(pipe_end_1)
+                self.start_data_collection_and_timer(pipe_end_1)
             if pipe_end_2.poll(0):
-                logging.info('Data available:')
-                self.end_collection_time = datetime.datetime.now()
-                self.reached = False
-                logging.info('Data retrieval including parsing took {}'.format(
-                    self.end_collection_time - self.start_collection_time))
-                self.old_weatherdata, self.wd = self.wd, pipe_end_2.recv()
-                logging.info(pprint.pformat(self.wd))
-                if self.wd.get('error', False):
-                    error_state = True
-                else:
-                    if error_state:
-                        self.old_weatherdata = None
-                        self.counter = 0
-                        error_state = False
+                self.retrieve_data(pipe_end_2)
+                error_state = self.handle_errors(error_state)
             if self.wd:
-                if self.old_weatherdata and not error_state:
-                    wd = self.interpolate(self.old_weatherdata, self.wd, self.interval)
-                    self.interface.send(wd)
-                else:
-                    self.interface.send(self.wd)
+                self.send_data(error_state)
             self.counter += 1
             time.sleep(self.sleep_time)
+
+    def send_data(self, error_state):
+        if self.old_weatherdata and not error_state:
+            wd = self.interpolate(self.old_weatherdata, self.wd, self.interval)
+            self.interface.send(wd)
+        else:
+            self.interface.send(self.wd)
+
+    def handle_errors(self, error_state):
+        try:
+            error_state = self.wd.get('error')
+        except KeyError:
+            error_state = True
+        if error_state:
+            self.wd = self.old_weatherdata
+            self.old_weatherdata = None
+            self.counter = 0
+            error_state = True
+        return error_state
+
+    def retrieve_data(self, pipe_end_2):
+        logging.info('Data available:')
+        self.end_collection_time = datetime.datetime.now()
+        self.reached = False
+        logging.info('Data retrieval including parsing took {}'.format(
+            self.end_collection_time - self.start_collection_time))
+        self.old_weatherdata, self.wd = self.wd, pipe_end_2.recv()
+        logging.info(pprint.pformat(self.wd))
+
+    def start_data_collection_and_timer(self, pipe_end_1):
+        self.start_collection_time = datetime.datetime.now()
+        self.start_data_collection(pipe_end_1)
+
+    def log_heartbeat(self):
+        logging.debug('Heartbeat-{}'.format(self.counter))
 
     def set_logger(self):
         weathervane_logger = logging.getLogger('')
@@ -141,7 +159,6 @@ class WeatherVane(object):
         formatter = logging.Formatter("%(asctime)s:%(levelname)s:%(module)s:%(message)s")
         handler.setFormatter(formatter)
         weathervane_logger.addHandler(handler)
-        # weathervane_logger.addHandler(logging.StreamHandler())
 
     def interpolate(self, old_weatherdata, new_weatherdata, interval):
         if self.counter >= interval - 1:
@@ -151,7 +168,7 @@ class WeatherVane(object):
 
         for key, old_value in list(old_weatherdata.items()):
             new_value = new_weatherdata[key]
-            if key not in ['error', 'wind_direction', 'wind_direction', 'rain', 'float(weather_data.string)barometric_trend'] and not self.reached:
+            if key not in ['error', 'wind_direction', 'wind_direction', 'rain', 'barometric_trend'] and not self.reached:
                 try:
                     interpolated_value = float(old_value) + (self.counter * (float(new_value) - float(old_value)) / interval)
                     interpolated_wd[key] = interpolated_value

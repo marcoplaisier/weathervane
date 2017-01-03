@@ -4,3 +4,4 @@ bitstring
 hypothesis
 behave
 nose
+pytest

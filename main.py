@@ -123,7 +123,7 @@ class WeatherVane(object):
 
     def handle_errors(self, error_state):
         try:
-            error_state = self.wd.get('error')
+            error_state = self.wd['error']
         except KeyError:
             error_state = True
         if error_state:

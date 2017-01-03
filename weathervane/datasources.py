@@ -15,6 +15,12 @@ def retrieve_xml(url):
         data = response.read()
     except HTTPError as e:
         logging.error('HTTP Error')
+        try:
+            logging.error(e.code)
+            logging.error(e.reason)
+        except AttributeError:
+            logging.warning("e.code and e.reason don't work")
+            logging.error(e)
         raise DataSourceError('HTTP Error: Data connection failed', e)
     except URLError as e:
         logging.error('URL Error')

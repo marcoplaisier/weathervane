@@ -20,3 +20,5 @@
 
 # Log files should not be committed
 *.log
+
+.cache/

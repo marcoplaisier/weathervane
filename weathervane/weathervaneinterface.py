@@ -168,30 +168,31 @@ class WeatherVaneInterface(object):
 class Display(object):
     def __init__(self, interface, **configuration):
         self.wv_interface = interface
-        self.enabled = configuration.get('auto-turn-off', False)
+        self.auto_disable_display = configuration.get('auto-turn-off', False)
         start_time = configuration.get('start-time', '6:30')
-        self.start_at_minutes = self.__convert_to_elapsed_minutes__(start_time)
+        self.start_at_minutes = Display.convert_to_minutes(start_time)
         end_time = configuration.get('end-time', '22:00')
-        self.end_at_minutes = self.__convert_to_elapsed_minutes__(end_time)
+        self.end_at_minutes = Display.convert_to_minutes(end_time)
         self.pin = configuration.get('pin', 4)
         
-    def __convert_to_elapsed_minutes__(self, time_text):
+    @staticmethod
+    def convert_to_minutes(time_text):
         time_array = [int(time_element) for time_element in time_text.split(':')]
         minutes = time_array[0] * 60
         minutes += time_array[1]
         return minutes
     
-    def is_active(self, current_minute, start_time, end_time):
-        if start_time < end_time:
+    def is_active(self, current_minute):
+        if self.start_at_minutes < self.end_at_minutes:
             return self.start_at_minutes < current_minute < self.end_at_minutes
         else:
             return self.end_at_minutes < current_minute < self.start_at_minutes
     
     def tick(self):
-        if self.enabled:
-            t = time.localtime()
-            current_minute = (t.tm_hour * 60) + t.tm_min
-            if self.is_active(current_minute, self.start_at_minutes, self.end_at_minutes):
+        if self.auto_disable_display:
+            time_text = time.strftime("%H:%M")
+            current_minute = Display.convert_to_minutes(time_text)
+            if self.is_active(current_minute):
                 self.wv_interface.gpio.write_pin(self.pin, 1)
             else:
                 self.wv_interface.gpio.write_pin(self.pin, 0)

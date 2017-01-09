@@ -41,7 +41,6 @@ class testParser(unittest.TestCase):
                 datetime(2015, 5, 14, 13, 50, 00): 1000
             }
             self.weather_data = bp.parse(raw_xml=data, **config)
-            print(self.weather_data)
 
     def test_wind_speed_parse(self):
         wind_speed = self.weather_data['wind_speed']
@@ -58,17 +57,12 @@ class testParser(unittest.TestCase):
     def test_barometric_trend(self):
         self.assertEqual(1, self.weather_data['barometric_trend'])
 
+    def test_wind_chill(self):
+        with open(os.path.join(os.getcwd(), 'tests', 'testdata_windchill.csv'), 'rU') as f:
+            data = csv.DictReader(f)
+            for line in data:
+                wind_speed = float(line['windspeed'])
+                temperature = float(line['temperature'])
+                expected_apparent_temperature = float(line['wind chill'])
+                assert Weather.wind_chill(wind_speed, temperature) == expected_apparent_temperature
 
-def test_wind_chill():
-    with open(os.path.join(os.getcwd(), 'tests', 'testdata.csv'), 'rU') as f:
-        data = csv.DictReader(f)
-        for line in data:
-            wind_speed = float(line['windspeed'])
-            temperature = float(line['temperature'])
-            expected_apparent_temperature = float(line['wind chill'])
-            yield check_heat_index, wind_speed, temperature, expected_apparent_temperature, 0
-
-
-def check_heat_index(wind_speed, temperature, expected, places):
-    heat_index = Weather.wind_chill(wind_speed, temperature)
-    assert round(abs(expected - heat_index), places) == 0

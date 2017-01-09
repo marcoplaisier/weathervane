@@ -33,8 +33,6 @@ class TestFetchWeatherData(TestCase):
                 time.sleep(0.1)
 
         expected = 'success'
-        print(expected)
-        print(observed)
         pass
 
     @patch('weathervane.datasources.retrieve_xml')

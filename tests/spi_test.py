@@ -76,7 +76,6 @@ class SpiTests(unittest.TestCase):
         spi = GPIO(channel=0, frequency=25000, library='wiringPi')
         spi.handle.wiringPiSPIDataRW = MagicMock()
         spi.handle.wiringPiSPIDataRW.return_value = 0
-        print(spi.handle.wiringPiSPIDataRW.called)
         data = [1]
         spi.send_data(data)
         assert spi.handle.wiringPiSPIDataRW.called

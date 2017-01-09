@@ -62,8 +62,6 @@ with open(os.path.join(os.getcwd(), 'tests', 'buienradar.xml'), 'rU') as f:
     bp = BuienradarParser(**a)
     wd = bp.parse(raw_xml=data, **a)
 
-print(wd)
-
 bits = a['bits']
 fmt = ''
 for i, data in enumerate(bits):

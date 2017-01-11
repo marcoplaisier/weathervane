@@ -43,9 +43,9 @@ class Weather(object):
             return None
         if wind_speed < 0:
             raise ValueError("Wind speed must be a positive number")
-        if wind_speed < 1.3:
-            return temperature
         wind_chill = 13.12 + 0.6215 * temperature - 13.96 * wind_speed ** 0.16 + 0.4867 * temperature * wind_speed ** 0.16
+        if temperature < wind_chill:
+            return round(temperature, 1)
         return round(wind_chill, 1)
 
     @staticmethod

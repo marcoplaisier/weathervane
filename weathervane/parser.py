@@ -168,7 +168,11 @@ class BuienradarParser(object):
                     logging.info('Field {} without valid data. Returning 0'.format(field_name))
                     return 0
             if field_name == 'datum':
-                return datetime.datetime.strptime(weather_data.string, '%m/%d/%Y %H:%M:%S')
+                try:
+                    date = datetime.datetime.strptime(weather_data.string, '%m-%d-%Y %H:%M:%S')
+                except ValueError:
+                    date = datetime.datetime.strptime(weather_data.string, '%m/%d/%Y %H:%M:%S')
+                return date
             if weather_data is None:
                 return weather_data
             else:
@@ -195,11 +199,11 @@ class BuienradarParser(object):
         current_time = self.get_data('datum')
         three_hours_ago = current_time - datetime.timedelta(hours=3)
         barometric_pressure_three_hours_ago = self.historic_data.get(three_hours_ago)
-        if barometric_pressure_three_hours_ago is not None:
+        if barometric_pressure_three_hours_ago:
             difference = barometric_pressure - barometric_pressure_three_hours_ago
-            if difference < -1:
+            if difference < 0:
                 barometric_trend = -1
-            elif difference > 1:
+            elif difference > 0:
                 barometric_trend = 1
             else:
                 barometric_trend = 0

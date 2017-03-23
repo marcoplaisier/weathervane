@@ -5,6 +5,10 @@ Status
 -----------
 .. image:: https://travis-ci.org/marcoplaisier/weathervane.svg?branch=master
     :target: https://travis-ci.org/marcoplaisier/weathervane
+    
+.. image:: https://landscape.io/github/marcoplaisier/weathervane/master/landscape.svg?style=flat
+   :target: https://landscape.io/github/marcoplaisier/weathervane/master
+   :alt: Code Health
 
 Requirements
 -----------

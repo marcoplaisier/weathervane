@@ -84,6 +84,7 @@ class BuienradarParser(object):
         'latitude': 'lat',
         'longitude': 'lon',
         'rain': 'regenMMPU',
+        'rain_mm_per_hour': 'regenMMPU',
         'random': 'random',
         'sight_distance': 'zichtmeters',
         'temperature': 'temperatuurGC',

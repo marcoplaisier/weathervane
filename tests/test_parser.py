@@ -9,7 +9,8 @@ from weathervane.weather import Weather
 
 class testParser(unittest.TestCase):
     def setUp(self):
-        with open(os.path.join(os.getcwd(), 'tests', 'buienradar.xml'), 'rU') as f:
+        file_path = os.path.join(os.getcwd(), 'tests', 'buienradar.xml')
+        with open(file_path, 'rU', encoding='UTF-8') as f:
             data = f.read()
             config = {
                 'stations':

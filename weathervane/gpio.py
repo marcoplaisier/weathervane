@@ -1,7 +1,6 @@
-from contextlib import contextmanager
-from ctypes import cdll, c_ubyte, util
 import logging
-from time import sleep
+from ctypes import cdll, c_ubyte, util
+
 from mock import Mock
 
 
@@ -59,7 +58,7 @@ class GPIO(object):
                 raise
         else:
             self.handle = Mock()
-            self.read_pin = Mock(return_value=[1,1])
+            self.read_pin = Mock(return_value=[1, 1])
 
     @staticmethod
     def load_library_by_name(library):
@@ -197,6 +196,7 @@ class TestInterface(object):
                 """
         return self.gpio.data
 
+
 def binary_format(sequence, bytes_per_line=4):
     """Format a sequence as binary bytes
 
@@ -211,6 +211,6 @@ def binary_format(sequence, bytes_per_line=4):
     test = []
     for index, item in enumerate(array):
         if index % bytes_per_line == 0:
-            test.append('\n{:2} - {:2} '.format(index, index+3))
+            test.append('\n{:2} - {:2} '.format(index, index + 3))
         test.append('{:#010b}'.format(item)[2:])
     return '|'.join(test) + '|'

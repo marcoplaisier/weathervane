@@ -8,6 +8,8 @@ import os
 import datetime
 import time
 
+from raven import Client
+
 from weathervane.gpio import TestInterface
 from weathervane.datasources import fetch_weather_data
 from weathervane.parser import WeathervaneConfigParser
@@ -182,18 +184,27 @@ class WeatherVane(object):
         return interpolated_wd
 
 
+def get_configuration(args):
+    config_file = args.config
+    config_file_location = os.path.join(os.getcwd(), config_file)
+
+    config_parser = WeathervaneConfigParser()
+    config_parser.read(config_file_location)
+    config = config_parser.parse_config()
+    return config
+
+
 if __name__ == "__main__":
+    client = Client()
+
     parser = argparse.ArgumentParser(description="Get weather data from a provider and send it through SPI")
     parser.add_argument('-c', '--config', action='store', default='config.ini',
                         help="get the configuration from a specific configuration file")
-    supplied_args = parser.parse_args()
+    args = parser.parse_args()
+    logging.info(args)
 
-    config_parser = WeathervaneConfigParser()
-    config_file_location = os.path.join(os.getcwd(), supplied_args.config)
-    config_parser.read(config_file_location)
-    config = config_parser.parse_config()
-
-    wv = WeatherVane(**config)
+    wv_config = get_configuration(args)
+    wv = WeatherVane(**wv_config)
     wv.set_logger()
-    logging.info(supplied_args)
+
     wv.main()

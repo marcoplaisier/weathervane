@@ -3,5 +3,6 @@ Mock
 bitstring
 hypothesis
 behave
+git+https://github.com/behave/behave
 nose
 pytest

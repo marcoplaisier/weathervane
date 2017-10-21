@@ -80,41 +80,18 @@ class WeatherVane(object):
             logging.info("New station selected: {}".format(station_id))
         return station_id
 
-    def start_data_collection(self, pipe_end_1):
+    def start_data_collection(self, pipe_end):
         """Side effect: reset counter to 0
 
         @param pipe_end_1:
         @return:
         """
         self.counter = 0
-        arguments = [pipe_end_1]
+        arguments = [pipe_end]
         arguments.extend(self.args)
         p = Process(target=fetch_weather_data, args=arguments, kwargs=self.configuration)
         p.start()
         logging.debug('Retrieving data')
-
-    def main(self):
-        """
-
-
-        """
-        pipe_end_1, pipe_end_2 = Pipe()
-        error_state = False
-
-        while True:
-            self.display.tick()
-                
-            if (self.counter % 3) == 0:
-                self.log_heartbeat()
-            if (self.counter % self.interval) == 0:
-                self.start_data_collection_and_timer(pipe_end_1)
-            if pipe_end_2.poll(0):
-                self.retrieve_data(pipe_end_2)
-                error_state = self.handle_errors(error_state)
-            if self.wd:
-                self.send_data(error_state)
-            self.counter += 1
-            time.sleep(self.sleep_time)
 
     def send_data(self, error_state):
         if self.old_weatherdata and not error_state:
@@ -170,9 +147,11 @@ class WeatherVane(object):
 
         for key, old_value in list(old_weatherdata.items()):
             new_value = new_weatherdata[key]
-            if key not in ['error', 'wind_direction', 'wind_direction', 'rain', 'barometric_trend'] and not self.reached:
+            if key not in ['error', 'wind_direction', 'wind_direction', 'rain',
+                           'barometric_trend'] and not self.reached:
                 try:
-                    interpolated_value = float(old_value) + (self.counter * (float(new_value) - float(old_value)) / interval)
+                    interpolated_value = float(old_value) + (
+                    self.counter * (float(new_value) - float(old_value)) / interval)
                     interpolated_wd[key] = interpolated_value
                 except ValueError:
                     interpolated_wd[key] = new_value
@@ -183,6 +162,29 @@ class WeatherVane(object):
 
         return interpolated_wd
 
+    def main(self):
+        """
+
+
+        """
+        pipe_end_1, pipe_end_2 = Pipe()
+        error_state = False
+
+        while True:
+            self.display.tick()
+
+            if (self.counter % 3) == 0:
+                self.log_heartbeat()
+            if (self.counter % self.interval) == 0:
+                self.start_data_collection_and_timer(pipe_end_1)
+            if pipe_end_2.poll(0):
+                self.retrieve_data(pipe_end_2)
+                error_state = self.handle_errors(error_state)
+            if self.wd:
+                self.send_data(error_state)
+            self.counter += 1
+            time.sleep(self.sleep_time)
+            
 
 def get_configuration(args):
     config_file = args.config

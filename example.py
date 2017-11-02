@@ -57,12 +57,12 @@ a = {'bits': {'0': {'key': 'wind_direction', 'length': '4'},
                   7: '6316'}
      }
 
-file_path = os.path.join(os.getcwd(), 'tests', 'buienradar.xml')
+file_path = os.path.join(os.getcwd(), 'tests', 'buienradar.json')
 
 with open(file_path, 'rU', encoding='utf-8') as f:  # rU opens file with line endings from different platforms correctly
     data = f.read()
     bp = BuienradarParser(**a)
-    wd = bp.parse(raw_xml=data, **a)
+    wd = bp.parse(data=data, **a)
 
 bits = a['bits']
 fmt = ''

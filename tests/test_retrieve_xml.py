@@ -9,7 +9,7 @@ from urllib.error import URLError
 
 from mock import patch, Mock, call
 
-from weathervane.datasources import fetch_weather_data, DataSourceError
+from weathervane.datasources import fetch_weather_data
 from weathervane import datasources
 from tests.test_config import config
 

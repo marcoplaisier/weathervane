@@ -1,0 +1,1712 @@
+{
+  "buienradarnl": {
+    "weergegevens": {
+      "titel": "www.buienradar.nl - actuele weersinformatie",
+      "link": "http://www.buienradar.nl",
+      "omschrijving": "Publieke weersinformatie feed",
+      "language": "nl-nl",
+      "copyright": "(C)opyright 2005 - 2017 Buienradar B.V. Alle rechten voorbehouden",
+      "gebruik": "Deze feed mag vrij worden gebruikt onder voorwaarde van bronvermelding buienradar.nl inclusief een hyperlink naar https://www.buienradar.nl. Aan de feed kunnen door gebruikers of andere personen geen rechten worden ontleend.",
+      "image": {
+        "titel": "buienradar.nl",
+        "link": "http://www.buienradar.nl/",
+        "url": "http://www.buienradar.nl/resources/images/logor.svg",
+        "width": "950",
+        "height": "78"
+      },
+      "actueel_weer": {
+        "weerstations": {
+          "weerstation": [
+            {
+              "@id": "6391",
+              "stationcode": "6391",
+              "stationnaam": {
+                "@regio": "Venlo",
+                "#text": "Meetstation Arcen"
+              },
+              "lat": "51.50",
+              "lon": "6.20",
+              "datum": "11/02/2017 19:30:00",
+              "luchtvochtigheid": "92",
+              "temperatuurGC": "10.9",
+              "windsnelheidMS": "1.6",
+              "windsnelheidBF": "1",
+              "windrichtingGR": "228",
+              "windrichting": "ZW",
+              "luchtdruk": "-",
+              "zichtmeters": "-",
+              "windstotenMS": "2.6",
+              "regenMMPU": "-",
+              "zonintensiteitWM2": "-",
+              "icoonactueel": {
+                "@ID": "cc",
+                "@zin": "Zwaar bewolkt",
+                "#text": "https://www.buienradar.nl/resources/images/icons/weather/30x30/cc.png"
+              },
+              "temperatuur10cm": "10.5",
+              "url": "http://www.buienradar.nl/nederland/weerbericht/weergrafieken/6391",
+              "latGraden": "51.83",
+              "lonGraden": "6.33"
+            },
+            {
+              "@id": "6275",
+              "stationcode": "6275",
+              "stationnaam": {
+                "@regio": "Arnhem",
+                "#text": "Meetstation Arnhem"
+              },
+              "lat": "52.07",
+              "lon": "5.88",
+              "datum": "11/02/2017 19:30:00",
+              "luchtvochtigheid": "96",
+              "temperatuurGC": "10.0",
+              "windsnelheidMS": "0.7",
+              "windsnelheidBF": "1",
+              "windrichtingGR": "352",
+              "windrichting": "N",
+              "luchtdruk": "1015.34",
+              "zichtmeters": "5130",
+              "windstotenMS": "1.1",
+              "regenMMPU": "-",
+              "zonintensiteitWM2": "-",
+              "icoonactueel": {
+                "@ID": "cc",
+                "@zin": "Zwaar bewolkt",
+                "#text": "https://www.buienradar.nl/resources/images/icons/weather/30x30/cc.png"
+              },
+              "temperatuur10cm": "9.2",
+              "url": "http://www.buienradar.nl/nederland/weerbericht/weergrafieken/6275",
+              "latGraden": "52.11",
+              "lonGraden": "6.47"
+            },
+            {
+              "@id": "6249",
+              "stationcode": "6249",
+              "stationnaam": {
+                "@regio": "Berkhout",
+                "#text": "Meetstation Berkhout"
+              },
+              "lat": "52.65",
+              "lon": "4.98",
+              "datum": "11/02/2017 19:30:00",
+              "luchtvochtigheid": "90",
+              "temperatuurGC": "7.7",
+              "windsnelheidMS": "2.41",
+              "windsnelheidBF": "2",
+              "windrichtingGR": "286",
+              "windrichting": "WNW",
+              "luchtdruk": "-",
+              "zichtmeters": "37300",
+              "windstotenMS": "2.9",
+              "regenMMPU": "-",
+              "zonintensiteitWM2": "-",
+              "icoonactueel": {
+                "@ID": "cc",
+                "@zin": "Zwaar bewolkt",
+                "#text": "https://www.buienradar.nl/resources/images/icons/weather/30x30/cc.png"
+              },
+              "temperatuur10cm": "7.1",
+              "url": "http://www.buienradar.nl/nederland/weerbericht/weergrafieken/6249",
+              "latGraden": "53.08",
+              "lonGraden": "5.64"
+            },
+            {
+              "@id": "6308",
+              "stationcode": "6308",
+              "stationnaam": {
+                "@regio": "Cadzand",
+                "#text": "Meetstation Cadzand"
+              },
+              "lat": "51.38",
+              "lon": "3.38",
+              "datum": "11/02/2017 19:30:00",
+              "luchtvochtigheid": "-",
+              "temperatuurGC": "-",
+              "windsnelheidMS": "6.59",
+              "windsnelheidBF": "4",
+              "windrichtingGR": "262",
+              "windrichting": "-",
+              "luchtdruk": "-",
+              "zichtmeters": "-",
+              "windstotenMS": "-",
+              "regenMMPU": "-",
+              "zonintensiteitWM2": "-",
+              "icoonactueel": {
+                "@ID": "cc",
+                "@zin": "Zwaar bewolkt",
+                "#text": "https://www.buienradar.nl/resources/images/icons/weather/30x30/cc.png"
+              },
+              "temperatuur10cm": "-",
+              "url": "http://www.buienradar.nl/nederland/weerbericht/weergrafieken/6308",
+              "latGraden": "51.64",
+              "lonGraden": "3.64"
+            },
+            {
+              "@id": "6260",
+              "stationcode": "6260",
+              "stationnaam": {
+                "@regio": "Utrecht",
+                "#text": "Meetstation De Bilt"
+              },
+              "lat": "52.10",
+              "lon": "5.18",
+              "datum": "11/02/2017 19:30:00",
+              "luchtvochtigheid": "84",
+              "temperatuurGC": "11.4",
+              "windsnelheidMS": "1.19",
+              "windsnelheidBF": "1",
+              "windrichtingGR": "343",
+              "windrichting": "NNW",
+              "luchtdruk": "1015.43",
+              "zichtmeters": "30600",
+              "windstotenMS": "3.6",
+              "regenMMPU": "-",
+              "zonintensiteitWM2": "-",
+              "icoonactueel": {
+                "@ID": "cc",
+                "@zin": "Zwaar bewolkt",
+                "#text": "https://www.buienradar.nl/resources/images/icons/weather/30x30/cc.png"
+              },
+              "temperatuur10cm": "10.7",
+              "url": "http://www.buienradar.nl/nederland/weerbericht/weergrafieken/6260",
+              "latGraden": "52.17",
+              "lonGraden": "5.31"
+            },
+            {
+              "@id": "6235",
+              "stationcode": "6235",
+              "stationnaam": {
+                "@regio": "Den Helder",
+                "#text": "Meetstation Den Helder"
+              },
+              "lat": "52.92",
+              "lon": "4.78",
+              "datum": "11/02/2017 19:30:00",
+              "luchtvochtigheid": "78",
+              "temperatuurGC": "10.6",
+              "windsnelheidMS": "2.04",
+              "windsnelheidBF": "2",
+              "windrichtingGR": "274",
+              "windrichting": "W",
+              "luchtdruk": "1014.84",
+              "zichtmeters": "39300",
+              "windstotenMS": "3",
+              "regenMMPU": "-",
+              "zonintensiteitWM2": "-",
+              "icoonactueel": {
+                "@ID": "cc",
+                "@zin": "Zwaar bewolkt",
+                "#text": "https://www.buienradar.nl/resources/images/icons/weather/30x30/cc.png"
+              },
+              "temperatuur10cm": "9.7",
+              "url": "http://www.buienradar.nl/nederland/weerbericht/weergrafieken/6235",
+              "latGraden": "53.53",
+              "lonGraden": "5.31"
+            },
+            {
+              "@id": "6370",
+              "stationcode": "6370",
+              "stationnaam": {
+                "@regio": "Eindhoven",
+                "#text": "Meetstation Eindhoven"
+              },
+              "lat": "51.45",
+              "lon": "5.42",
+              "datum": "11/02/2017 19:30:00",
+              "luchtvochtigheid": "94",
+              "temperatuurGC": "10.9",
+              "windsnelheidMS": "2.51",
+              "windsnelheidBF": "2",
+              "windrichtingGR": "224",
+              "windrichting": "ZW",
+              "luchtdruk": "1015.84",
+              "zichtmeters": "4760",
+              "windstotenMS": "4.5",
+              "regenMMPU": "-",
+              "zonintensiteitWM2": "-",
+              "icoonactueel": {
+                "@ID": "cc",
+                "@zin": "Zwaar bewolkt",
+                "#text": "https://www.buienradar.nl/resources/images/icons/weather/30x30/cc.png"
+              },
+              "temperatuur10cm": "10.7",
+              "url": "http://www.buienradar.nl/nederland/weerbericht/weergrafieken/6370",
+              "latGraden": "51.75",
+              "lonGraden": "5.69"
+            },
+            {
+              "@id": "6377",
+              "stationcode": "6377",
+              "stationnaam": {
+                "@regio": "Weert",
+                "#text": "Meetstation Ell"
+              },
+              "lat": "51.20",
+              "lon": "5.77",
+              "datum": "11/02/2017 19:30:00",
+              "luchtvochtigheid": "92",
+              "temperatuurGC": "10.6",
+              "windsnelheidMS": "2.84",
+              "windsnelheidBF": "2",
+              "windrichtingGR": "244",
+              "windrichting": "WZW",
+              "luchtdruk": "-",
+              "zichtmeters": "4580",
+              "windstotenMS": "3.8",
+              "regenMMPU": "0.2",
+              "zonintensiteitWM2": "-",
+              "icoonactueel": {
+                "@ID": "qq",
+                "@zin": "Zwaar bewolkt en regen",
+                "#text": "https://www.buienradar.nl/resources/images/icons/weather/30x30/qq.png"
+              },
+              "temperatuur10cm": "10.4",
+              "url": "http://www.buienradar.nl/nederland/weerbericht/weergrafieken/6377",
+              "latGraden": "51.33",
+              "lonGraden": "6.28"
+            },
+            {
+              "@id": "6321",
+              "stationcode": "6321",
+              "stationnaam": {
+                "@regio": "Noordzee",
+                "#text": "Meetstation Euro platform"
+              },
+              "lat": "52.00",
+              "lon": "3.28",
+              "datum": "11/02/2017 19:30:00",
+              "luchtvochtigheid": "-",
+              "temperatuurGC": "-",
+              "windsnelheidMS": "9.21",
+              "windsnelheidBF": "5",
+              "windrichtingGR": "217",
+              "windrichting": "-",
+              "luchtdruk": "-",
+              "zichtmeters": "-",
+              "windstotenMS": "-",
+              "regenMMPU": "-",
+              "zonintensiteitWM2": "-",
+              "icoonactueel": {
+                "@ID": "cc",
+                "@zin": "Zwaar bewolkt",
+                "#text": "https://www.buienradar.nl/resources/images/icons/weather/30x30/cc.png"
+              },
+              "temperatuur10cm": "-",
+              "url": "http://www.buienradar.nl/nederland/weerbericht/weergrafieken/6321",
+              "latGraden": "52.00",
+              "lonGraden": "3.47"
+            },
+            {
+              "@id": "6350",
+              "stationcode": "6350",
+              "stationnaam": {
+                "@regio": "Gilze Rijen",
+                "#text": "Meetstation Gilze Rijen"
+              },
+              "lat": "51.57",
+              "lon": "4.93",
+              "datum": "11/02/2017 19:30:00",
+              "luchtvochtigheid": "95",
+              "temperatuurGC": "10.9",
+              "windsnelheidMS": "1.44",
+              "windsnelheidBF": "1",
+              "windrichtingGR": "230",
+              "windrichting": "ZW",
+              "luchtdruk": "1015.86",
+              "zichtmeters": "5700",
+              "windstotenMS": "2.6",
+              "regenMMPU": "-",
+              "zonintensiteitWM2": "-",
+              "icoonactueel": {
+                "@ID": "cc",
+                "@zin": "Zwaar bewolkt",
+                "#text": "https://www.buienradar.nl/resources/images/icons/weather/30x30/cc.png"
+              },
+              "temperatuur10cm": "10.5",
+              "url": "http://www.buienradar.nl/nederland/weerbericht/weergrafieken/6350",
+              "latGraden": "51.94",
+              "lonGraden": "5.56"
+            },
+            {
+              "@id": "6283",
+              "stationcode": "6283",
+              "stationnaam": {
+                "@regio": "Oost-Overijssel",
+                "#text": "Meetstation Groenlo-Hupsel"
+              },
+              "lat": "52.07",
+              "lon": "6.65",
+              "datum": "11/02/2017 19:30:00",
+              "luchtvochtigheid": "96",
+              "temperatuurGC": "9.5",
+              "windsnelheidMS": "1.44",
+              "windsnelheidBF": "1",
+              "windrichtingGR": "246",
+              "windrichting": "WZW",
+              "luchtdruk": "-",
+              "zichtmeters": "-",
+              "windstotenMS": "2.3",
+              "regenMMPU": "-",
+              "zonintensiteitWM2": "-",
+              "icoonactueel": {
+                "@ID": "cc",
+                "@zin": "Zwaar bewolkt",
+                "#text": "https://www.buienradar.nl/resources/images/icons/weather/30x30/cc.png"
+              },
+              "temperatuur10cm": "8.9",
+              "url": "http://www.buienradar.nl/nederland/weerbericht/weergrafieken/6283",
+              "latGraden": "52.11",
+              "lonGraden": "7.08"
+            },
+            {
+              "@id": "6280",
+              "stationcode": "6280",
+              "stationnaam": {
+                "@regio": "Groningen",
+                "#text": "Meetstation Groningen"
+              },
+              "lat": "53.13",
+              "lon": "6.58",
+              "datum": "11/02/2017 19:30:00",
+              "luchtvochtigheid": "88",
+              "temperatuurGC": "10.0",
+              "windsnelheidMS": "2.57",
+              "windsnelheidBF": "2",
+              "windrichtingGR": "317",
+              "windrichting": "NW",
+              "luchtdruk": "1014.49",
+              "zichtmeters": "38100",
+              "windstotenMS": "3.9",
+              "regenMMPU": "-",
+              "zonintensiteitWM2": "-",
+              "icoonactueel": {
+                "@ID": "cc",
+                "@zin": "Zwaar bewolkt",
+                "#text": "https://www.buienradar.nl/resources/images/icons/weather/30x30/cc.png"
+              },
+              "temperatuur10cm": "9.5",
+              "url": "http://www.buienradar.nl/nederland/weerbericht/weergrafieken/6280",
+              "latGraden": "53.22",
+              "lonGraden": "6.97"
+            },
+            {
+              "@id": "6315",
+              "stationcode": "6315",
+              "stationnaam": {
+                "@regio": "Oost-Zeeland",
+                "#text": "Meetstation Hansweert"
+              },
+              "lat": "51.45",
+              "lon": "4.00",
+              "datum": "11/02/2017 19:30:00",
+              "luchtvochtigheid": "-",
+              "temperatuurGC": "-",
+              "windsnelheidMS": "7.96",
+              "windsnelheidBF": "4",
+              "windrichtingGR": "218",
+              "windrichting": "-",
+              "luchtdruk": "-",
+              "zichtmeters": "-",
+              "windstotenMS": "-",
+              "regenMMPU": "-",
+              "zonintensiteitWM2": "-",
+              "icoonactueel": {
+                "@ID": "cc",
+                "@zin": "Zwaar bewolkt",
+                "#text": "https://www.buienradar.nl/resources/images/icons/weather/30x30/cc.png"
+              },
+              "temperatuur10cm": "-",
+              "url": "http://www.buienradar.nl/nederland/weerbericht/weergrafieken/6315",
+              "latGraden": "51.75",
+              "lonGraden": "4.00"
+            },
+            {
+              "@id": "6278",
+              "stationcode": "6278",
+              "stationnaam": {
+                "@regio": "Zwolle",
+                "#text": "Meetstation Heino"
+              },
+              "lat": "52.43",
+              "lon": "6.27",
+              "datum": "11/02/2017 19:30:00",
+              "luchtvochtigheid": "98",
+              "temperatuurGC": "7.7",
+              "windsnelheidMS": "1.34",
+              "windsnelheidBF": "1",
+              "windrichtingGR": "234",
+              "windrichting": "ZW",
+              "luchtdruk": "-",
+              "zichtmeters": "-",
+              "windstotenMS": "1.7",
+              "regenMMPU": "-",
+              "zonintensiteitWM2": "-",
+              "icoonactueel": {
+                "@ID": "cc",
+                "@zin": "Zwaar bewolkt",
+                "#text": "https://www.buienradar.nl/resources/images/icons/weather/30x30/cc.png"
+              },
+              "temperatuur10cm": "4.7",
+              "url": "http://www.buienradar.nl/nederland/weerbericht/weergrafieken/6278",
+              "latGraden": "52.72",
+              "lonGraden": "6.44"
+            },
+            {
+              "@id": "6356",
+              "stationcode": "6356",
+              "stationnaam": {
+                "@regio": "Gorinchem",
+                "#text": "Meetstation Herwijnen"
+              },
+              "lat": "51.87",
+              "lon": "5.15",
+              "datum": "11/02/2017 19:30:00",
+              "luchtvochtigheid": "97",
+              "temperatuurGC": "11.0",
+              "windsnelheidMS": "2.26",
+              "windsnelheidBF": "2",
+              "windrichtingGR": "261",
+              "windrichting": "W",
+              "luchtdruk": "1015.52",
+              "zichtmeters": "-",
+              "windstotenMS": "3.1",
+              "regenMMPU": "-",
+              "zonintensiteitWM2": "-",
+              "icoonactueel": {
+                "@ID": "cc",
+                "@zin": "Zwaar bewolkt",
+                "#text": "https://www.buienradar.nl/resources/images/icons/weather/30x30/cc.png"
+              },
+              "temperatuur10cm": "10.6",
+              "url": "http://www.buienradar.nl/nederland/weerbericht/weergrafieken/6356",
+              "latGraden": "52.44",
+              "lonGraden": "5.25"
+            },
+            {
+              "@id": "6330",
+              "stationcode": "6330",
+              "stationnaam": {
+                "@regio": "Hoek van Holland",
+                "#text": "Meetstation Hoek van Holland"
+              },
+              "lat": "51.98",
+              "lon": "4.10",
+              "datum": "11/02/2017 19:30:00",
+              "luchtvochtigheid": "84",
+              "temperatuurGC": "11.4",
+              "windsnelheidMS": "6.35",
+              "windsnelheidBF": "4",
+              "windrichtingGR": "345",
+              "windrichting": "NNW",
+              "luchtdruk": "1016.02",
+              "zichtmeters": "-",
+              "windstotenMS": "7.4",
+              "regenMMPU": "-",
+              "zonintensiteitWM2": "-",
+              "icoonactueel": {
+                "@ID": "cc",
+                "@zin": "Zwaar bewolkt",
+                "#text": "https://www.buienradar.nl/resources/images/icons/weather/30x30/cc.png"
+              },
+              "temperatuur10cm": "11.0",
+              "url": "http://www.buienradar.nl/nederland/weerbericht/weergrafieken/6330",
+              "latGraden": "52.64",
+              "lonGraden": "4.17"
+            },
+            {
+              "@id": "6279",
+              "stationcode": "6279",
+              "stationnaam": {
+                "@regio": "Hoogeveen",
+                "#text": "Meetstation Hoogeveen"
+              },
+              "lat": "52.73",
+              "lon": "6.52",
+              "datum": "11/02/2017 19:30:00",
+              "luchtvochtigheid": "94",
+              "temperatuurGC": "9.6",
+              "windsnelheidMS": "1.69",
+              "windsnelheidBF": "2",
+              "windrichtingGR": "300",
+              "windrichting": "WNW",
+              "luchtdruk": "1014.74",
+              "zichtmeters": "24900",
+              "windstotenMS": "3.3",
+              "regenMMPU": "-",
+              "zonintensiteitWM2": "-",
+              "icoonactueel": {
+                "@ID": "cc",
+                "@zin": "Zwaar bewolkt",
+                "#text": "https://www.buienradar.nl/resources/images/icons/weather/30x30/cc.png"
+              },
+              "temperatuur10cm": "8.8",
+              "url": "http://www.buienradar.nl/nederland/weerbericht/weergrafieken/6279",
+              "latGraden": "53.22",
+              "lonGraden": "6.86"
+            },
+            {
+              "@id": "6251",
+              "stationcode": "6251",
+              "stationnaam": {
+                "@regio": "Wadden",
+                "#text": "Meetstation Hoorn Terschelling"
+              },
+              "lat": "53.38",
+              "lon": "5.35",
+              "datum": "11/02/2017 19:30:00",
+              "luchtvochtigheid": "83",
+              "temperatuurGC": "10.3",
+              "windsnelheidMS": "2.14",
+              "windsnelheidBF": "2",
+              "windrichtingGR": "12",
+              "windrichting": "NNO",
+              "luchtdruk": "1014.48",
+              "zichtmeters": "32000",
+              "windstotenMS": "3.5",
+              "regenMMPU": "-",
+              "zonintensiteitWM2": "-",
+              "icoonactueel": {
+                "@ID": "cc",
+                "@zin": "Zwaar bewolkt",
+                "#text": "https://www.buienradar.nl/resources/images/icons/weather/30x30/cc.png"
+              },
+              "temperatuur10cm": "9.3",
+              "url": "http://www.buienradar.nl/nederland/weerbericht/weergrafieken/6251",
+              "latGraden": "53.64",
+              "lonGraden": "5.58"
+            },
+            {
+              "@id": "6258",
+              "stationcode": "6258",
+              "stationnaam": {
+                "@regio": "Enkhuizen-Lelystad",
+                "#text": "Meetstation Houtribdijk"
+              },
+              "lat": "52.65",
+              "lon": "5.40",
+              "datum": "11/02/2017 19:30:00",
+              "luchtvochtigheid": "-",
+              "temperatuurGC": "-",
+              "windsnelheidMS": "2.88",
+              "windsnelheidBF": "2",
+              "windrichtingGR": "328",
+              "windrichting": "NNW",
+              "luchtdruk": "-",
+              "zichtmeters": "-",
+              "windstotenMS": "4.8",
+              "regenMMPU": "-",
+              "zonintensiteitWM2": "-",
+              "icoonactueel": {
+                "@ID": "cc",
+                "@zin": "Zwaar bewolkt",
+                "#text": "https://www.buienradar.nl/resources/images/icons/weather/30x30/cc.png"
+              },
+              "temperatuur10cm": "-",
+              "url": "http://www.buienradar.nl/nederland/weerbericht/weergrafieken/6258",
+              "latGraden": "53.08",
+              "lonGraden": "5.67"
+            },
+            {
+              "@id": "6285",
+              "stationcode": "6285",
+              "stationnaam": {
+                "@regio": "Schiermonnikoog",
+                "#text": "Meetstation Huibertgat"
+              },
+              "lat": "53.57",
+              "lon": "6.40",
+              "datum": "11/02/2017 19:30:00",
+              "luchtvochtigheid": "-",
+              "temperatuurGC": "-",
+              "windsnelheidMS": "-",
+              "windsnelheidBF": "0",
+              "windrichtingGR": "0",
+              "windrichting": "-",
+              "luchtdruk": "-",
+              "zichtmeters": "-",
+              "windstotenMS": "-",
+              "regenMMPU": "-",
+              "zonintensiteitWM2": "-",
+              "icoonactueel": {
+                "@ID": "cc",
+                "@zin": "Zwaar bewolkt",
+                "#text": "https://www.buienradar.nl/resources/images/icons/weather/30x30/cc.png"
+              },
+              "temperatuur10cm": "-",
+              "url": "http://www.buienradar.nl/nederland/weerbericht/weergrafieken/6285",
+              "latGraden": "53.94",
+              "lonGraden": "6.67"
+            },
+            {
+              "@id": "6209",
+              "stationcode": "6209",
+              "stationnaam": {
+                "@regio": "IJmond",
+                "#text": "Meetstation IJmond"
+              },
+              "lat": "52.47",
+              "lon": "4.52",
+              "datum": "11/02/2017 19:30:00",
+              "luchtvochtigheid": "-",
+              "temperatuurGC": "-",
+              "windsnelheidMS": "9.46",
+              "windsnelheidBF": "5",
+              "windrichtingGR": "229",
+              "windrichting": "-",
+              "luchtdruk": "-",
+              "zichtmeters": "-",
+              "windstotenMS": "-",
+              "regenMMPU": "-",
+              "zonintensiteitWM2": "-",
+              "icoonactueel": {
+                "@ID": "cc",
+                "@zin": "Zwaar bewolkt",
+                "#text": "https://www.buienradar.nl/resources/images/icons/weather/30x30/cc.png"
+              },
+              "temperatuur10cm": "-",
+              "url": "http://www.buienradar.nl/nederland/weerbericht/weergrafieken/6209",
+              "latGraden": "52.78",
+              "lonGraden": "4.86"
+            },
+            {
+              "@id": "6225",
+              "stationcode": "6225",
+              "stationnaam": {
+                "@regio": "IJmuiden",
+                "#text": "Meetstation IJmuiden"
+              },
+              "lat": "52.47",
+              "lon": "4.57",
+              "datum": "11/02/2017 19:30:00",
+              "luchtvochtigheid": "-",
+              "temperatuurGC": "-",
+              "windsnelheidMS": "5.48",
+              "windsnelheidBF": "3",
+              "windrichtingGR": "321",
+              "windrichting": "NW",
+              "luchtdruk": "-",
+              "zichtmeters": "-",
+              "windstotenMS": "6.8",
+              "regenMMPU": "-",
+              "zonintensiteitWM2": "-",
+              "icoonactueel": {
+                "@ID": "cc",
+                "@zin": "Zwaar bewolkt",
+                "#text": "https://www.buienradar.nl/resources/images/icons/weather/30x30/cc.png"
+              },
+              "temperatuur10cm": "-",
+              "url": "http://www.buienradar.nl/nederland/weerbericht/weergrafieken/6225",
+              "latGraden": "52.78",
+              "lonGraden": "4.94"
+            },
+            {
+              "@id": "6277",
+              "stationcode": "6277",
+              "stationnaam": {
+                "@regio": "Noord-Groningen",
+                "#text": "Meetstation Lauwersoog"
+              },
+              "lat": "53.42",
+              "lon": "6.20",
+              "datum": "11/02/2017 19:30:00",
+              "luchtvochtigheid": "86",
+              "temperatuurGC": "10.4",
+              "windsnelheidMS": "3.56",
+              "windsnelheidBF": "3",
+              "windrichtingGR": "259",
+              "windrichting": "W",
+              "luchtdruk": "-",
+              "zichtmeters": "-",
+              "windstotenMS": "5",
+              "regenMMPU": "-",
+              "zonintensiteitWM2": "-",
+              "icoonactueel": {
+                "@ID": "cc",
+                "@zin": "Zwaar bewolkt",
+                "#text": "https://www.buienradar.nl/resources/images/icons/weather/30x30/cc.png"
+              },
+              "temperatuur10cm": "9.8",
+              "url": "http://www.buienradar.nl/nederland/weerbericht/weergrafieken/6277",
+              "latGraden": "53.69",
+              "lonGraden": "6.33"
+            },
+            {
+              "@id": "6320",
+              "stationcode": "6320",
+              "stationnaam": {
+                "@regio": "Goeree",
+                "#text": "Meetstation LE Goeree"
+              },
+              "lat": "51.93",
+              "lon": "3.67",
+              "datum": "11/02/2017 19:30:00",
+              "luchtvochtigheid": "-",
+              "temperatuurGC": "-",
+              "windsnelheidMS": "9.55",
+              "windsnelheidBF": "5",
+              "windrichtingGR": "231",
+              "windrichting": "-",
+              "luchtdruk": "-",
+              "zichtmeters": "-",
+              "windstotenMS": "-",
+              "regenMMPU": "-",
+              "zonintensiteitWM2": "-",
+              "icoonactueel": {
+                "@ID": "cc",
+                "@zin": "Zwaar bewolkt",
+                "#text": "https://www.buienradar.nl/resources/images/icons/weather/30x30/cc.png"
+              },
+              "temperatuur10cm": "-",
+              "url": "http://www.buienradar.nl/nederland/weerbericht/weergrafieken/6320",
+              "latGraden": "52.56",
+              "lonGraden": "4.11"
+            },
+            {
+              "@id": "6270",
+              "stationcode": "6270",
+              "stationnaam": {
+                "@regio": "Leeuwarden",
+                "#text": "Meetstation Leeuwarden"
+              },
+              "lat": "53.22",
+              "lon": "5.77",
+              "datum": "11/02/2017 19:30:00",
+              "luchtvochtigheid": "96",
+              "temperatuurGC": "7.4",
+              "windsnelheidMS": "0.41",
+              "windsnelheidBF": "1",
+              "windrichtingGR": "232",
+              "windrichting": "ZW",
+              "luchtdruk": "1014.42",
+              "zichtmeters": "26600",
+              "windstotenMS": "0.8",
+              "regenMMPU": "-",
+              "zonintensiteitWM2": "-",
+              "icoonactueel": {
+                "@ID": "cc",
+                "@zin": "Zwaar bewolkt",
+                "#text": "https://www.buienradar.nl/resources/images/icons/weather/30x30/cc.png"
+              },
+              "temperatuur10cm": "6.1",
+              "url": "http://www.buienradar.nl/nederland/weerbericht/weergrafieken/6270",
+              "latGraden": "53.36",
+              "lonGraden": "6.28"
+            },
+            {
+              "@id": "6269",
+              "stationcode": "6269",
+              "stationnaam": {
+                "@regio": "Lelystad",
+                "#text": "Meetstation Lelystad"
+              },
+              "lat": "52.45",
+              "lon": "5.53",
+              "datum": "11/02/2017 19:30:00",
+              "luchtvochtigheid": "85",
+              "temperatuurGC": "9.9",
+              "windsnelheidMS": "2.57",
+              "windsnelheidBF": "2",
+              "windrichtingGR": "296",
+              "windrichting": "WNW",
+              "luchtdruk": "1015.12",
+              "zichtmeters": "27500",
+              "windstotenMS": "6.3",
+              "regenMMPU": "-",
+              "zonintensiteitWM2": "-",
+              "icoonactueel": {
+                "@ID": "aa",
+                "@zin": "Vrijwel onbewolkt (zonnig/helder)",
+                "#text": "https://www.buienradar.nl/resources/images/icons/weather/30x30/aa.png"
+              },
+              "temperatuur10cm": "7.1",
+              "url": "http://www.buienradar.nl/nederland/weerbericht/weergrafieken/6269",
+              "latGraden": "52.75",
+              "lonGraden": "5.89"
+            },
+            {
+              "@id": "6348",
+              "stationcode": "6348",
+              "stationnaam": {
+                "@regio": "West-Utrecht",
+                "#text": "Meetstation Lopik-Cabauw"
+              },
+              "lat": "51.97",
+              "lon": "4.93",
+              "datum": "11/02/2017 19:30:00",
+              "luchtvochtigheid": "88",
+              "temperatuurGC": "11.5",
+              "windsnelheidMS": "2.41",
+              "windsnelheidBF": "2",
+              "windrichtingGR": "306",
+              "windrichting": "NW",
+              "luchtdruk": "1015.61",
+              "zichtmeters": "25200",
+              "windstotenMS": "3.6",
+              "regenMMPU": "-",
+              "zonintensiteitWM2": "-",
+              "icoonactueel": {
+                "@ID": "cc",
+                "@zin": "Zwaar bewolkt",
+                "#text": "https://www.buienradar.nl/resources/images/icons/weather/30x30/cc.png"
+              },
+              "temperatuur10cm": "10.8",
+              "url": "http://www.buienradar.nl/nederland/weerbericht/weergrafieken/6348",
+              "latGraden": "52.61",
+              "lonGraden": "5.56"
+            },
+            {
+              "@id": "6380",
+              "stationcode": "6380",
+              "stationnaam": {
+                "@regio": "Maastricht",
+                "#text": "Meetstation Maastricht"
+              },
+              "lat": "50.92",
+              "lon": "5.78",
+              "datum": "11/02/2017 19:30:00",
+              "luchtvochtigheid": "88",
+              "temperatuurGC": "9.5",
+              "windsnelheidMS": "2.92",
+              "windsnelheidBF": "2",
+              "windrichtingGR": "230",
+              "windrichting": "ZW",
+              "luchtdruk": "1016.58",
+              "zichtmeters": "7610",
+              "windstotenMS": "3.8",
+              "regenMMPU": "-",
+              "zonintensiteitWM2": "-",
+              "icoonactueel": {
+                "@ID": "cc",
+                "@zin": "Zwaar bewolkt",
+                "#text": "https://www.buienradar.nl/resources/images/icons/weather/30x30/cc.png"
+              },
+              "temperatuur10cm": "8.8",
+              "url": "http://www.buienradar.nl/nederland/weerbericht/weergrafieken/6380",
+              "latGraden": "51.53",
+              "lonGraden": "6.31"
+            },
+            {
+              "@id": "6273",
+              "stationcode": "6273",
+              "stationnaam": {
+                "@regio": "Noordoostpolder",
+                "#text": "Meetstation Marknesse"
+              },
+              "lat": "52.70",
+              "lon": "5.88",
+              "datum": "11/02/2017 19:30:00",
+              "luchtvochtigheid": "88",
+              "temperatuurGC": "8.8",
+              "windsnelheidMS": "2.35",
+              "windsnelheidBF": "2",
+              "windrichtingGR": "292",
+              "windrichting": "WNW",
+              "luchtdruk": "-",
+              "zichtmeters": "26300",
+              "windstotenMS": "3.2",
+              "regenMMPU": "-",
+              "zonintensiteitWM2": "-",
+              "icoonactueel": {
+                "@ID": "cc",
+                "@zin": "Zwaar bewolkt",
+                "#text": "https://www.buienradar.nl/resources/images/icons/weather/30x30/cc.png"
+              },
+              "temperatuur10cm": "6.4",
+              "url": "http://www.buienradar.nl/nederland/weerbericht/weergrafieken/6273",
+              "latGraden": "53.17",
+              "lonGraden": "6.47"
+            },
+            {
+              "@id": "6286",
+              "stationcode": "6286",
+              "stationnaam": {
+                "@regio": "Oost-Groningen",
+                "#text": "Meetstation Nieuw Beerta"
+              },
+              "lat": "53.20",
+              "lon": "7.15",
+              "datum": "11/02/2017 19:30:00",
+              "luchtvochtigheid": "95",
+              "temperatuurGC": "8.2",
+              "windsnelheidMS": "2.66",
+              "windsnelheidBF": "2",
+              "windrichtingGR": "235",
+              "windrichting": "ZW",
+              "luchtdruk": "-",
+              "zichtmeters": "-",
+              "windstotenMS": "2.9",
+              "regenMMPU": "-",
+              "zonintensiteitWM2": "-",
+              "icoonactueel": {
+                "@ID": "cc",
+                "@zin": "Zwaar bewolkt",
+                "#text": "https://www.buienradar.nl/resources/images/icons/weather/30x30/cc.png"
+              },
+              "temperatuur10cm": "7.0",
+              "url": "http://www.buienradar.nl/nederland/weerbericht/weergrafieken/6286",
+              "latGraden": "53.33",
+              "lonGraden": "7.25"
+            },
+            {
+              "@id": "6312",
+              "stationcode": "6312",
+              "stationnaam": {
+                "@regio": "Oosterschelde",
+                "#text": "Meetstation Oosterschelde"
+              },
+              "lat": "51.77",
+              "lon": "3.62",
+              "datum": "11/02/2017 19:30:00",
+              "luchtvochtigheid": "-",
+              "temperatuurGC": "-",
+              "windsnelheidMS": "9.44",
+              "windsnelheidBF": "5",
+              "windrichtingGR": "221",
+              "windrichting": "-",
+              "luchtdruk": "-",
+              "zichtmeters": "-",
+              "windstotenMS": "-",
+              "regenMMPU": "-",
+              "zonintensiteitWM2": "-",
+              "icoonactueel": {
+                "@ID": "cc",
+                "@zin": "Zwaar bewolkt",
+                "#text": "https://www.buienradar.nl/resources/images/icons/weather/30x30/cc.png"
+              },
+              "temperatuur10cm": "-",
+              "url": "http://www.buienradar.nl/nederland/weerbericht/weergrafieken/6312",
+              "latGraden": "52.28",
+              "lonGraden": "4.03"
+            },
+            {
+              "@id": "6344",
+              "stationcode": "6344",
+              "stationnaam": {
+                "@regio": "Rotterdam",
+                "#text": "Meetstation Rotterdam"
+              },
+              "lat": "51.95",
+              "lon": "4.45",
+              "datum": "11/02/2017 19:30:00",
+              "luchtvochtigheid": "92",
+              "temperatuurGC": "10.6",
+              "windsnelheidMS": "1.73",
+              "windsnelheidBF": "2",
+              "windrichtingGR": "354",
+              "windrichting": "N",
+              "luchtdruk": "1015.64",
+              "zichtmeters": "35200",
+              "windstotenMS": "2.4",
+              "regenMMPU": "-",
+              "zonintensiteitWM2": "-",
+              "icoonactueel": {
+                "@ID": "cc",
+                "@zin": "Zwaar bewolkt",
+                "#text": "https://www.buienradar.nl/resources/images/icons/weather/30x30/cc.png"
+              },
+              "temperatuur10cm": "10.1",
+              "url": "http://www.buienradar.nl/nederland/weerbericht/weergrafieken/6344",
+              "latGraden": "52.58",
+              "lonGraden": "4.75"
+            },
+            {
+              "@id": "6343",
+              "stationcode": "6343",
+              "stationnaam": {
+                "@regio": "Rotterdam Haven",
+                "#text": "Meetstation Rotterdam Geulhaven"
+              },
+              "lat": "51.88",
+              "lon": "4.32",
+              "datum": "11/02/2017 19:30:00",
+              "luchtvochtigheid": "-",
+              "temperatuurGC": "-",
+              "windsnelheidMS": "2.74",
+              "windsnelheidBF": "2",
+              "windrichtingGR": "326",
+              "windrichting": "NNW",
+              "luchtdruk": "-",
+              "zichtmeters": "-",
+              "windstotenMS": "3.5",
+              "regenMMPU": "-",
+              "zonintensiteitWM2": "-",
+              "icoonactueel": {
+                "@ID": "cc",
+                "@zin": "Zwaar bewolkt",
+                "#text": "https://www.buienradar.nl/resources/images/icons/weather/30x30/cc.png"
+              },
+              "temperatuur10cm": "-",
+              "url": "http://www.buienradar.nl/nederland/weerbericht/weergrafieken/6343",
+              "latGraden": "52.47",
+              "lonGraden": "4.53"
+            },
+            {
+              "@id": "6316",
+              "stationcode": "6316",
+              "stationnaam": {
+                "@regio": "Schaar",
+                "#text": "Meetstation Schaar"
+              },
+              "lat": "51.65",
+              "lon": "3.70",
+              "datum": "11/02/2017 19:30:00",
+              "luchtvochtigheid": "-",
+              "temperatuurGC": "-",
+              "windsnelheidMS": "7.27",
+              "windsnelheidBF": "4",
+              "windrichtingGR": "220",
+              "windrichting": "-",
+              "luchtdruk": "-",
+              "zichtmeters": "-",
+              "windstotenMS": "-",
+              "regenMMPU": "-",
+              "zonintensiteitWM2": "-",
+              "icoonactueel": {
+                "@ID": "cc",
+                "@zin": "Zwaar bewolkt",
+                "#text": "https://www.buienradar.nl/resources/images/icons/weather/30x30/cc.png"
+              },
+              "temperatuur10cm": "-",
+              "url": "http://www.buienradar.nl/nederland/weerbericht/weergrafieken/6316",
+              "latGraden": "52.08",
+              "lonGraden": "4.17"
+            },
+            {
+              "@id": "6240",
+              "stationcode": "6240",
+              "stationnaam": {
+                "@regio": "Amsterdam",
+                "#text": "Meetstation Schiphol"
+              },
+              "lat": "52.30",
+              "lon": "4.77",
+              "datum": "11/02/2017 19:30:00",
+              "luchtvochtigheid": "82",
+              "temperatuurGC": "9.5",
+              "windsnelheidMS": "2.28",
+              "windsnelheidBF": "2",
+              "windrichtingGR": "315",
+              "windrichting": "NW",
+              "luchtdruk": "1015.4",
+              "zichtmeters": "39800",
+              "windstotenMS": "5.4",
+              "regenMMPU": "-",
+              "zonintensiteitWM2": "-",
+              "icoonactueel": {
+                "@ID": "aa",
+                "@zin": "Vrijwel onbewolkt (zonnig/helder)",
+                "#text": "https://www.buienradar.nl/resources/images/icons/weather/30x30/aa.png"
+              },
+              "temperatuur10cm": "6.0",
+              "url": "http://www.buienradar.nl/nederland/weerbericht/weergrafieken/6240",
+              "latGraden": "52.50",
+              "lonGraden": "5.28"
+            },
+            {
+              "@id": "6324",
+              "stationcode": "6324",
+              "stationnaam": {
+                "@regio": "Midden-Zeeland",
+                "#text": "Meetstation Stavenisse"
+              },
+              "lat": "51.60",
+              "lon": "4.00",
+              "datum": "11/02/2017 19:30:00",
+              "luchtvochtigheid": "-",
+              "temperatuurGC": "-",
+              "windsnelheidMS": "7.06",
+              "windsnelheidBF": "4",
+              "windrichtingGR": "286",
+              "windrichting": "-",
+              "luchtdruk": "-",
+              "zichtmeters": "-",
+              "windstotenMS": "-",
+              "regenMMPU": "-",
+              "zonintensiteitWM2": "-",
+              "icoonactueel": {
+                "@ID": "cc",
+                "@zin": "Zwaar bewolkt",
+                "#text": "https://www.buienradar.nl/resources/images/icons/weather/30x30/cc.png"
+              },
+              "temperatuur10cm": "-",
+              "url": "http://www.buienradar.nl/nederland/weerbericht/weergrafieken/6324",
+              "latGraden": "52.00",
+              "lonGraden": "4.00"
+            },
+            {
+              "@id": "6267",
+              "stationcode": "6267",
+              "stationnaam": {
+                "@regio": "West-Friesland",
+                "#text": "Meetstation Stavoren"
+              },
+              "lat": "52.88",
+              "lon": "5.38",
+              "datum": "11/02/2017 19:30:00",
+              "luchtvochtigheid": "92",
+              "temperatuurGC": "9.1",
+              "windsnelheidMS": "3.79",
+              "windsnelheidBF": "3",
+              "windrichtingGR": "244",
+              "windrichting": "WZW",
+              "luchtdruk": "-",
+              "zichtmeters": "43700",
+              "windstotenMS": "4.6",
+              "regenMMPU": "-",
+              "zonintensiteitWM2": "-",
+              "icoonactueel": {
+                "@ID": "aa",
+                "@zin": "Vrijwel onbewolkt (zonnig/helder)",
+                "#text": "https://www.buienradar.nl/resources/images/icons/weather/30x30/aa.png"
+              },
+              "temperatuur10cm": "6.9",
+              "url": "http://www.buienradar.nl/nederland/weerbericht/weergrafieken/6267",
+              "latGraden": "53.47",
+              "lonGraden": "5.64"
+            },
+            {
+              "@id": "6331",
+              "stationcode": "6331",
+              "stationnaam": {
+                "@regio": "Tholen",
+                "#text": "Meetstation Tholen"
+              },
+              "lat": "51.52",
+              "lon": "4.13",
+              "datum": "11/02/2017 19:30:00",
+              "luchtvochtigheid": "-",
+              "temperatuurGC": "-",
+              "windsnelheidMS": "7.66",
+              "windsnelheidBF": "4",
+              "windrichtingGR": "228",
+              "windrichting": "-",
+              "luchtdruk": "-",
+              "zichtmeters": "-",
+              "windstotenMS": "-",
+              "regenMMPU": "-",
+              "zonintensiteitWM2": "-",
+              "icoonactueel": {
+                "@ID": "cc",
+                "@zin": "Zwaar bewolkt",
+                "#text": "https://www.buienradar.nl/resources/images/icons/weather/30x30/cc.png"
+              },
+              "temperatuur10cm": "-",
+              "url": "http://www.buienradar.nl/nederland/weerbericht/weergrafieken/6331",
+              "latGraden": "51.86",
+              "lonGraden": "4.22"
+            },
+            {
+              "@id": "6290",
+              "stationcode": "6290",
+              "stationnaam": {
+                "@regio": "Twente",
+                "#text": "Meetstation Twente"
+              },
+              "lat": "52.27",
+              "lon": "6.90",
+              "datum": "11/02/2017 19:30:00",
+              "luchtvochtigheid": "99",
+              "temperatuurGC": "8.4",
+              "windsnelheidMS": "0.99",
+              "windsnelheidBF": "1",
+              "windrichtingGR": "190",
+              "windrichting": "Z",
+              "luchtdruk": "1015.05",
+              "zichtmeters": "6610",
+              "windstotenMS": "1.4",
+              "regenMMPU": "-",
+              "zonintensiteitWM2": "-",
+              "icoonactueel": {
+                "@ID": "cc",
+                "@zin": "Zwaar bewolkt",
+                "#text": "https://www.buienradar.nl/resources/images/icons/weather/30x30/cc.png"
+              },
+              "temperatuur10cm": "6.6",
+              "url": "http://www.buienradar.nl/nederland/weerbericht/weergrafieken/6290",
+              "latGraden": "52.44",
+              "lonGraden": "7.50"
+            },
+            {
+              "@id": "6313",
+              "stationcode": "6313",
+              "stationnaam": {
+                "@regio": "West-Zeeland",
+                "#text": "Meetstation Vlakte aan de Raan"
+              },
+              "lat": "51.50",
+              "lon": "3.25",
+              "datum": "11/02/2017 19:30:00",
+              "luchtvochtigheid": "-",
+              "temperatuurGC": "-",
+              "windsnelheidMS": "9.07",
+              "windsnelheidBF": "5",
+              "windrichtingGR": "217",
+              "windrichting": "-",
+              "luchtdruk": "-",
+              "zichtmeters": "-",
+              "windstotenMS": "-",
+              "regenMMPU": "-",
+              "zonintensiteitWM2": "-",
+              "icoonactueel": {
+                "@ID": "cc",
+                "@zin": "Zwaar bewolkt",
+                "#text": "https://www.buienradar.nl/resources/images/icons/weather/30x30/cc.png"
+              },
+              "temperatuur10cm": "-",
+              "url": "http://www.buienradar.nl/nederland/weerbericht/weergrafieken/6313",
+              "latGraden": "51.83",
+              "lonGraden": "3.42"
+            },
+            {
+              "@id": "6242",
+              "stationcode": "6242",
+              "stationnaam": {
+                "@regio": "Vlieland",
+                "#text": "Meetstation Vlieland"
+              },
+              "lat": "53.25",
+              "lon": "4.92",
+              "datum": "11/02/2017 19:30:00",
+              "luchtvochtigheid": "71",
+              "temperatuurGC": "11.6",
+              "windsnelheidMS": "4.95",
+              "windsnelheidBF": "3",
+              "windrichtingGR": "329",
+              "windrichting": "NNW",
+              "luchtdruk": "1014.47",
+              "zichtmeters": "18200",
+              "windstotenMS": "6.4",
+              "regenMMPU": "-",
+              "zonintensiteitWM2": "-",
+              "icoonactueel": {
+                "@ID": "cc",
+                "@zin": "Zwaar bewolkt",
+                "#text": "https://www.buienradar.nl/resources/images/icons/weather/30x30/cc.png"
+              },
+              "temperatuur10cm": "10.8",
+              "url": "http://www.buienradar.nl/nederland/weerbericht/weergrafieken/6242",
+              "latGraden": "53.42",
+              "lonGraden": "5.53"
+            },
+            {
+              "@id": "6310",
+              "stationcode": "6310",
+              "stationnaam": {
+                "@regio": "Vlissingen",
+                "#text": "Meetstation Vlissingen"
+              },
+              "lat": "51.45",
+              "lon": "3.60",
+              "datum": "11/02/2017 19:30:00",
+              "luchtvochtigheid": "86",
+              "temperatuurGC": "12.5",
+              "windsnelheidMS": "3.67",
+              "windsnelheidBF": "3",
+              "windrichtingGR": "289",
+              "windrichting": "WNW",
+              "luchtdruk": "1016.08",
+              "zichtmeters": "24800",
+              "windstotenMS": "5.2",
+              "regenMMPU": "-",
+              "zonintensiteitWM2": "-",
+              "icoonactueel": {
+                "@ID": "cc",
+                "@zin": "Zwaar bewolkt",
+                "#text": "https://www.buienradar.nl/resources/images/icons/weather/30x30/cc.png"
+              },
+              "temperatuur10cm": "12.0",
+              "url": "http://www.buienradar.nl/nederland/weerbericht/weergrafieken/6310",
+              "latGraden": "51.75",
+              "lonGraden": "4.00"
+            },
+            {
+              "@id": "6375",
+              "stationcode": "6375",
+              "stationnaam": {
+                "@regio": "Uden",
+                "#text": "Meetstation Volkel"
+              },
+              "lat": "51.65",
+              "lon": "5.70",
+              "datum": "11/02/2017 19:30:00",
+              "luchtvochtigheid": "96",
+              "temperatuurGC": "10.5",
+              "windsnelheidMS": "2.59",
+              "windsnelheidBF": "2",
+              "windrichtingGR": "230",
+              "windrichting": "ZW",
+              "luchtdruk": "1015.64",
+              "zichtmeters": "5050",
+              "windstotenMS": "3.2",
+              "regenMMPU": "-",
+              "zonintensiteitWM2": "-",
+              "icoonactueel": {
+                "@ID": "cc",
+                "@zin": "Zwaar bewolkt",
+                "#text": "https://www.buienradar.nl/resources/images/icons/weather/30x30/cc.png"
+              },
+              "temperatuur10cm": "10.1",
+              "url": "http://www.buienradar.nl/nederland/weerbericht/weergrafieken/6375",
+              "latGraden": "52.08",
+              "lonGraden": "6.17"
+            },
+            {
+              "@id": "6215",
+              "stationcode": "6215",
+              "stationnaam": {
+                "@regio": "Voorschoten",
+                "#text": "Meetstation Voorschoten"
+              },
+              "lat": "52.12",
+              "lon": "4.43",
+              "datum": "11/02/2017 19:30:00",
+              "luchtvochtigheid": "79",
+              "temperatuurGC": "10.5",
+              "windsnelheidMS": "2.8",
+              "windsnelheidBF": "2",
+              "windrichtingGR": "330",
+              "windrichting": "NNW",
+              "luchtdruk": "1015.55",
+              "zichtmeters": "46000",
+              "windstotenMS": "3.6",
+              "regenMMPU": "-",
+              "zonintensiteitWM2": "-",
+              "icoonactueel": {
+                "@ID": "cc",
+                "@zin": "Zwaar bewolkt",
+                "#text": "https://www.buienradar.nl/resources/images/icons/weather/30x30/cc.png"
+              },
+              "temperatuur10cm": "9.8",
+              "url": "http://www.buienradar.nl/nederland/weerbericht/weergrafieken/6215",
+              "latGraden": "52.19",
+              "lonGraden": "4.72"
+            },
+            {
+              "@id": "6319",
+              "stationcode": "6319",
+              "stationnaam": {
+                "@regio": "Terneuzen",
+                "#text": "Meetstation Westdorpe"
+              },
+              "lat": "51.23",
+              "lon": "3.83",
+              "datum": "11/02/2017 19:30:00",
+              "luchtvochtigheid": "93",
+              "temperatuurGC": "10.3",
+              "windsnelheidMS": "1.91",
+              "windsnelheidBF": "2",
+              "windrichtingGR": "242",
+              "windrichting": "WZW",
+              "luchtdruk": "1016.28",
+              "zichtmeters": "12000",
+              "windstotenMS": "2.4",
+              "regenMMPU": "-",
+              "zonintensiteitWM2": "-",
+              "icoonactueel": {
+                "@ID": "cc",
+                "@zin": "Zwaar bewolkt",
+                "#text": "https://www.buienradar.nl/resources/images/icons/weather/30x30/cc.png"
+              },
+              "temperatuur10cm": "9.6",
+              "url": "http://www.buienradar.nl/nederland/weerbericht/weergrafieken/6319",
+              "latGraden": "51.39",
+              "lonGraden": "4.39"
+            },
+            {
+              "@id": "6248",
+              "stationcode": "6248",
+              "stationnaam": {
+                "@regio": "Hoorn",
+                "#text": "Meetstation Wijdenes"
+              },
+              "lat": "52.63",
+              "lon": "5.17",
+              "datum": "11/02/2017 19:30:00",
+              "luchtvochtigheid": "-",
+              "temperatuurGC": "-",
+              "windsnelheidMS": "0.96",
+              "windsnelheidBF": "1",
+              "windrichtingGR": "273",
+              "windrichting": "W",
+              "luchtdruk": "-",
+              "zichtmeters": "-",
+              "windstotenMS": "1.7",
+              "regenMMPU": "-",
+              "zonintensiteitWM2": "-",
+              "icoonactueel": {
+                "@ID": "cc",
+                "@zin": "Zwaar bewolkt",
+                "#text": "https://www.buienradar.nl/resources/images/icons/weather/30x30/cc.png"
+              },
+              "temperatuur10cm": "-",
+              "url": "http://www.buienradar.nl/nederland/weerbericht/weergrafieken/6248",
+              "latGraden": "53.06",
+              "lonGraden": "5.28"
+            },
+            {
+              "@id": "6257",
+              "stationcode": "6257",
+              "stationnaam": {
+                "@regio": "Wijk aan Zee",
+                "#text": "Meetstation Wijk aan Zee"
+              },
+              "lat": "52.50",
+              "lon": "4.60",
+              "datum": "11/02/2017 19:30:00",
+              "luchtvochtigheid": "66",
+              "temperatuurGC": "11.7",
+              "windsnelheidMS": "-",
+              "windsnelheidBF": "0",
+              "windrichtingGR": "0",
+              "windrichting": "-",
+              "luchtdruk": "-",
+              "zichtmeters": "-",
+              "windstotenMS": "-",
+              "regenMMPU": "-",
+              "zonintensiteitWM2": "-",
+              "icoonactueel": {
+                "@ID": "cc",
+                "@zin": "Zwaar bewolkt",
+                "#text": "https://www.buienradar.nl/resources/images/icons/weather/30x30/cc.png"
+              },
+              "temperatuur10cm": "11.2",
+              "url": "http://www.buienradar.nl/nederland/weerbericht/weergrafieken/6257",
+              "latGraden": "52.83",
+              "lonGraden": "5.00"
+            },
+            {
+              "@id": "6340",
+              "stationcode": "6340",
+              "stationnaam": {
+                "@regio": "Woensdrecht",
+                "#text": "Meetstation Woensdrecht"
+              },
+              "lat": "51.45",
+              "lon": "4.33",
+              "datum": "11/02/2017 19:30:00",
+              "luchtvochtigheid": "94",
+              "temperatuurGC": "10.9",
+              "windsnelheidMS": "2.7",
+              "windsnelheidBF": "2",
+              "windrichtingGR": "248",
+              "windrichting": "WZW",
+              "luchtdruk": "1016.04",
+              "zichtmeters": "12400",
+              "windstotenMS": "3.4",
+              "regenMMPU": "-",
+              "zonintensiteitWM2": "-",
+              "icoonactueel": {
+                "@ID": "cc",
+                "@zin": "Zwaar bewolkt",
+                "#text": "https://www.buienradar.nl/resources/images/icons/weather/30x30/cc.png"
+              },
+              "temperatuur10cm": "10.4",
+              "url": "http://www.buienradar.nl/nederland/weerbericht/weergrafieken/6340",
+              "latGraden": "51.75",
+              "lonGraden": "4.56"
+            },
+            {
+              "@id": "6239",
+              "stationcode": "6239",
+              "stationnaam": {
+                "@regio": "Noordzee",
+                "#text": "Meetstation Zeeplatform F-3"
+              },
+              "lat": "54.85",
+              "lon": "4.73",
+              "datum": "11/02/2017 19:30:00",
+              "luchtvochtigheid": "72",
+              "temperatuurGC": "11.1",
+              "windsnelheidMS": "4.76",
+              "windsnelheidBF": "3",
+              "windrichtingGR": "0",
+              "windrichting": "-",
+              "luchtdruk": "1014.02",
+              "zichtmeters": "36500",
+              "windstotenMS": "8.4",
+              "regenMMPU": "-",
+              "zonintensiteitWM2": "-",
+              "icoonactueel": {
+                "@ID": "cc",
+                "@zin": "Zwaar bewolkt",
+                "#text": "https://www.buienradar.nl/resources/images/icons/weather/30x30/cc.png"
+              },
+              "temperatuur10cm": "-",
+              "url": "http://www.buienradar.nl/nederland/weerbericht/weergrafieken/6239",
+              "latGraden": "55.42",
+              "lonGraden": "5.22"
+            },
+            {
+              "@id": "6252",
+              "stationcode": "6252",
+              "stationnaam": {
+                "@regio": "Noordzee",
+                "#text": "Meetstation Zeeplatform K13"
+              },
+              "lat": "53.22",
+              "lon": "3.22",
+              "datum": "11/02/2017 19:30:00",
+              "luchtvochtigheid": "-",
+              "temperatuurGC": "-",
+              "windsnelheidMS": "8.58",
+              "windsnelheidBF": "5",
+              "windrichtingGR": "268",
+              "windrichting": "-",
+              "luchtdruk": "-",
+              "zichtmeters": "-",
+              "windstotenMS": "-",
+              "regenMMPU": "-",
+              "zonintensiteitWM2": "-",
+              "icoonactueel": {
+                "@ID": "cc",
+                "@zin": "Zwaar bewolkt",
+                "#text": "https://www.buienradar.nl/resources/images/icons/weather/30x30/cc.png"
+              },
+              "temperatuur10cm": "-",
+              "url": "http://www.buienradar.nl/nederland/weerbericht/weergrafieken/6252",
+              "latGraden": "53.36",
+              "lonGraden": "3.36"
+            }
+          ]
+        },
+        "buienindex": {
+          "waardepercentage": "3",
+          "datum": "11/02/2017 19:45:00"
+        },
+        "buienradar": {
+          "url": {
+            "#cdata-section": "<iframe src=\"http://www.buienradar.nl/xmlradar.aspx\" width=\"400\" height=\"70\" marginwidth=\"0\" marginheight=\"0\" hspace=\"0\" vspace=\"0\" frameborder=\"0\" scrolling=\"no\"></iframe>"
+          },
+          "urlbackup": {
+            "#cdata-section": "<iframe src=\"http://www.buienradar.nl/xmlradar.aspx\" width=\"400\" height=\"70\" marginwidth=\"0\" marginheight=\"0\" hspace=\"0\" vspace=\"0\" frameborder=\"0\" scrolling=\"no\"></iframe>"
+          },
+          "icoonactueel": {
+            "@ID": "cc",
+            "@zin": "Zwaar bewolkt",
+            "#text": "https://www.buienradar.nl/resources/images/icons/weather/30x30/cc.png"
+          },
+          "zonopkomst": "11/02/2017 07:35:00",
+          "zononder": "11/02/2017 17:10:00",
+          "aantalonweer": "0",
+          "aantalhagel": "0"
+        }
+      },
+      "verwachting_meerdaags": {
+        "url": "http://www.buienradar.nl/nederland/verwachtingen/5-daagse-verwachting",
+        "urlbackup": "http://www.buienradar.nl/nederland/verwachtingen/5-daagse-verwachting",
+        "tekst_middellang": {
+          "@periode": "vrijdag 3 november 2017 tot dinsdag 7 november 2017",
+          "#text": "In het weekeinde vrij veel bewolking met af en toe regen, na het weekeinde droog en geleidelijk meer zon. Zaterdag nog vrij zacht maar vanaf zondag geleidelijk wat kouder."
+        },
+        "tekst_lang": {
+          "@periode": "woensdag 8 november 2017 tot zondag 12 november 2017",
+          "#text": "De kans op een rustig en droog weertype bedraagt ca. 60%, de kans op een wisselvalliger weertype bedraagt ca. 40%. De temperaturen liggen over het algemeen rond of iets onder normaal."
+        },
+        "dag-plus1": {
+          "datum": "vrijdag 3 nov 2017",
+          "dagweek": "vr",
+          "kanszon": "20",
+          "kansregen": "20",
+          "minmmregen": "0",
+          "maxmmregen": "0",
+          "mintemp": "3",
+          "mintempmax": "3",
+          "maxtemp": "12",
+          "maxtempmax": "12",
+          "windrichting": "Z",
+          "windkracht": "3",
+          "icoon": {
+            "@ID": "c",
+            "#text": "https://www.buienradar.nl/resources/images/icons/weather/30x30/c.png"
+          },
+          "sneeuwcms": "0"
+        },
+        "dag-plus2": {
+          "datum": "zaterdag 4 nov 2017",
+          "dagweek": "za",
+          "kanszon": "10",
+          "kansregen": "80",
+          "minmmregen": "1",
+          "maxmmregen": "5",
+          "mintemp": "6",
+          "mintempmax": "8",
+          "maxtemp": "13",
+          "maxtempmax": "14",
+          "windrichting": "Z",
+          "windkracht": "3",
+          "icoon": {
+            "@ID": "q",
+            "#text": "https://www.buienradar.nl/resources/images/icons/weather/30x30/q.png"
+          },
+          "sneeuwcms": "0"
+        },
+        "dag-plus3": {
+          "datum": "zondag 5 nov 2017",
+          "dagweek": "zo",
+          "kanszon": "30",
+          "kansregen": "80",
+          "minmmregen": "3",
+          "maxmmregen": "7",
+          "mintemp": "7",
+          "mintempmax": "9",
+          "maxtemp": "9",
+          "maxtempmax": "10",
+          "windrichting": "NW",
+          "windkracht": "4",
+          "icoon": {
+            "@ID": "f",
+            "#text": "https://www.buienradar.nl/resources/images/icons/weather/30x30/f.png"
+          },
+          "sneeuwcms": "0"
+        },
+        "dag-plus4": {
+          "datum": "maandag 6 nov 2017",
+          "dagweek": "ma",
+          "kanszon": "40",
+          "kansregen": "20",
+          "minmmregen": "0",
+          "maxmmregen": "0",
+          "mintemp": "3",
+          "mintempmax": "6",
+          "maxtemp": "10",
+          "maxtempmax": "11",
+          "windrichting": "N",
+          "windkracht": "3",
+          "icoon": {
+            "@ID": "b",
+            "#text": "https://www.buienradar.nl/resources/images/icons/weather/30x30/b.png"
+          },
+          "sneeuwcms": "0"
+        },
+        "dag-plus5": {
+          "datum": "dinsdag 7 nov 2017",
+          "dagweek": "di",
+          "kanszon": "40",
+          "kansregen": "20",
+          "minmmregen": "0",
+          "maxmmregen": "0",
+          "mintemp": "1",
+          "mintempmax": "3",
+          "maxtemp": "8",
+          "maxtempmax": "10",
+          "windrichting": "ZO",
+          "windkracht": "3",
+          "icoon": {
+            "@ID": "b",
+            "#text": "https://www.buienradar.nl/resources/images/icons/weather/30x30/b.png"
+          },
+          "sneeuwcms": "0"
+        }
+      },
+      "verwachting_vandaag": {
+        "url": "http://www.buienradar.nl/nederland/weerbericht",
+        "urlbackup": "http://www.buienradar.nl/nederland/weerbericht",
+        "titel": "Mist en vorst aan de grond",
+        "tijdweerbericht": "Opgesteld op donderdag 2 nov 2017 om 05:00",
+        "samenvatting": "Het is nog even rustig herfstweer met vannacht en morgen lokaal hardnekkige mist. Plaatselijk kan het aan de grond zelfs licht gaan vriezen. In het weekend krijgen we weer een andere kant van de herfst te zien.",
+        "tekst": "Het is nog even rustig herfstweer met vannacht en morgen lokaal hardnekkige mist. Plaatselijk kan het aan de grond zelfs licht gaan vriezen. In het weekend krijgen we weer een andere kant van de herfst te zien.Vanavond valt er eerst in het zuidoosten nog wat lichte regen. Verder is het droog en klaart het op steeds meer plaatsen breed op. Het koelt snel af waardoor er lokaal mist ontstaat. Het zicht kan vannacht plaatselijk minder dan 200 meter zijn en dan is er sprake van dichte mist. De temperatuur daalt tot rond 3 graden in het binnenland en blijft een graad of 9 langs de kust. In het binnenland is kans op vorst aan de grond.Morgen begint de dag grijs met vooral in het oosten en zuiden hardnekkige mist waar het verkeer last van kan ondervinden. De mist kan plaatselijk tot ver in de ochtend blijven hangen. Verder is het wisselend bewolkt met af en toe zon. Het blijft op de meeste plaatsen droog, al kan er in de kustgebieden wel een buitje vallen. De middagtemperatuur komt uit op ongeveer 12 graden en er waait een tot zwakke tot matige zuidenwind. De dagen daarna wordt het tijdelijk wisselvalliger en later ook kouder. Zaterdag gaat het in de loop van de dag regenen en wordt het nog zo'n 14 graden. Zondag vallen geregeld buien waarbij het nog slechts een graad of 10 wordt. De nieuwe week begint met rustig en droog herfstweer. De nachten verlopen koud met op uitgebreide schaal kans op vorst aan de grond en een risico op mist.",
+        "formattedtekst": "Het is nog even rustig herfstweer met vannacht en morgen lokaal hardnekkige mist. Plaatselijk kan het aan de grond zelfs licht gaan vriezen. In het weekend krijgen we weer een andere kant van de herfst te zien.Vanavond valt er eerst in het zuidoosten nog wat lichte regen. Verder is het droog en klaart het op steeds meer plaatsen breed op. Het koelt snel af waardoor er lokaal mist ontstaat. Het zicht kan vannacht plaatselijk minder dan 200 meter zijn en dan is er sprake van dichte mist. De temperatuur daalt tot rond 3 graden in het binnenland en blijft een graad of 9 langs de kust. In het binnenland is kans op vorst aan de grond.Morgen begint de dag grijs met vooral in het oosten en zuiden hardnekkige mist waar het verkeer last van kan ondervinden. De mist kan plaatselijk tot ver in de ochtend blijven hangen. Verder is het wisselend bewolkt met af en toe zon. Het blijft op de meeste plaatsen droog, al kan er in de kustgebieden wel een buitje vallen. De middagtemperatuur komt uit op ongeveer 12 graden en er waait een tot zwakke tot matige zuidenwind. De dagen daarna wordt het tijdelijk wisselvalliger en later ook kouder. Zaterdag gaat het in de loop van de dag regenen en wordt het nog zo'n 14 graden. Zondag vallen geregeld buien waarbij het nog slechts een graad of 10 wordt. De nieuwe week begint met rustig en droog herfstweer. De nachten verlopen koud met op uitgebreide schaal kans op vorst aan de grond en een risico op mist."
+      }
+    }
+  }
+}

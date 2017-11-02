@@ -2,12 +2,12 @@ import datetime
 import logging
 from configparser import ConfigParser
 
-from bs4 import BeautifulSoup
-
 from weathervane.weather import Weather
 
 
 class WeathervaneConfigParser(ConfigParser):
+    DEFAULT_STATIONS = [6260, 6370]
+
     def __init__(self):
         super(WeathervaneConfigParser, self).__init__()
 
@@ -33,16 +33,21 @@ class WeathervaneConfigParser(ConfigParser):
         return bits
 
     def parse_station_numbers(self):
-        station_numbers = self.options('Stations')
+        try:
+            station_numbers = self['Stations']
+        except KeyError:
+            logging.error('Stations sections in config is formatted incorrectly. Using default stations')
+            return self.DEFAULT_STATIONS
 
-        station_config = {}
-        for number in station_numbers:
+        stations = []
+        for i in range(len(station_numbers)):
             try:
-                number = int(number)
-                station_config[number] = self.get('Stations', str(number))
-            except ValueError:
-                logging.info("Option {} not recognized".format(number))
-        return station_config
+                station_id = self['Stations'][str(i)]
+            except KeyError:
+                pass
+            if station_id:
+                stations.append(station_id)
+        return stations
 
     def parse_config(self):
         """Takes a configuration parser and returns the configuration as a dictionary
@@ -111,26 +116,29 @@ class BuienradarParser(object):
     def __init__(self, *args, **kwargs):
         self.historic_data = dict()
         self.raw_xml = None
-        default_stations = [6260, 6370]
-        self.station = kwargs.get('stations', default_stations)[0]
-        self.fallback = kwargs.get('stations', default_stations)[1]
+        self.stations = kwargs['stations']
         self.fallback_used = None
 
-    def get_fallback_station(self, stations):
-        i = list(stations.values()).index(self.station)
-        return stations[(i + 1) % len(stations)]
-
-    def parse(self, raw_xml, *args, **kwargs):
+    def parse(self, data, *args, **kwargs):
         self.fallback_used = 0
-        self.raw_xml = raw_xml
-        self.get_data = self.get_parser_func()
+        self.data = data
         field_names = self.extract_field_names(kwargs['bits'])
-        data = {}
+        data = data['buienradarnl']['weergegevens']['actueel_weer']['weerstations']['weerstation']
+
+        # TODO: how to get the relevant data
+        parsed_data = {}
+        for station in data:
+            if station["@id"] in self.stations:
+                parsed_data[station["@id"]] = self.parse_it(station)
+
+        weather_data = self.merge(parsed_data)
+
         for english_name, dutch_name in BuienradarParser.FIELD_MAPPING.items():
             if english_name in field_names:
                 data[english_name] = self.get_data(dutch_name)
-        data['data_from_fallback'] = self.fallback_used
-        return data
+
+        weather_data['data_from_fallback'] = self.fallback_used
+        return weather_data
 
     def extract_field_names(self, bits_dict):
         result = []
@@ -218,7 +226,3 @@ class BuienradarParser(object):
         temperature = get_data('temperatuurGC')
         humidity = get_data('luchtvochtigheid')
         return Weather.apparent_temperature(windspeed=windspeed, temperature=temperature, humidity=humidity)
-
-    def get_parser_func(self):
-        soup = BeautifulSoup(self.raw_xml, "html.parser")
-        return self.get_data_from_station(soup, False)

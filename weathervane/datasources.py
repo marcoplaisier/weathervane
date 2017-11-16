@@ -23,15 +23,14 @@ DEFAULT_WEATHER_DATA = {
 
 def fetch_weather_data(conn, *args, **kwargs):
     r = requests.get("https://api.buienradar.nl/data/public/1.1/jsonfeed")
-    weather_data_dict = r.json()
 
-    if weather_data_dict.status_code != 200:
+    if r.status_code != 200:
         logging.warning('Retrieving data failed with status code {} after {} ms'.format(r.status_code, r.elapsed))
         wd = DEFAULT_WEATHER_DATA
     else:
         logging.info('Weather data retrieved in {} ms'.format(r.elapsed))
         bp = BuienradarParser(*args, **kwargs)
-        wd = bp.parse(weather_data_dict, *args, **kwargs)
+        wd = bp.parse(r.text)
 
     conn.send(wd)
     conn.close()

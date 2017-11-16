@@ -9,13 +9,11 @@ from weathervane.weather import Weather
 
 class testParser(unittest.TestCase):
     def setUp(self):
-        file_path = os.path.join(os.getcwd(), 'tests', 'buienradar.xml')
+        file_path = os.path.join(os.getcwd(), 'tests', 'buienradar.json')
         with open(file_path, 'rU', encoding='UTF-8') as f:
             data = f.read()
             config = {
-                'stations':
-                    {0: 6275,
-                     1: 6203},
+                'stations': [6275, 6203],
                 'bits': {
                     '0': {'key': 'wind_direction'},
                     '1': {'key': 'wind_speed'},
@@ -38,10 +36,7 @@ class testParser(unittest.TestCase):
                 }
             }
             bp = BuienradarParser(**config)
-            bp.historic_data = {
-                datetime(2015, 5, 14, 13, 50, 00): 1000
-            }
-            self.weather_data = bp.parse(raw_xml=data, **config)
+            self.weather_data = bp.parse(data=data)
 
     def test_wind_speed_parse(self):
         wind_speed = self.weather_data['wind_speed']
@@ -58,9 +53,6 @@ class testParser(unittest.TestCase):
     def test_apparent_temperature_parse(self):
         apparent_temperature = self.weather_data['apparent_temperature']
         self.assertAlmostEqual(15.2, apparent_temperature, 0)
-
-    def test_barometric_trend(self):
-        self.assertEqual(1, self.weather_data['barometric_trend'])
 
     def test_wind_chill(self):
         with open(os.path.join(os.getcwd(), 'tests', 'testdata_windchill.csv'), 'rU') as f:

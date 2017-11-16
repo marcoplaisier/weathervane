@@ -175,14 +175,15 @@ class BuienradarParser(object):
     def merge(self, weather_data, stations):
         primary_station = stations[0]
         weather_data[primary_station]['data_from_fallback'] = False
+        weather_data[primary_station]['error'] = False
         assert primary_station
         secondary_stations = stations[1:]
         if not secondary_stations:
             return weather_data[primary_station]
-        for key, value in weather_data[primary_station]:
-            if not value:
+        for key, value in weather_data[primary_station].items():
+            if not value and key not in self.DERIVED_FIELDS:
                 for secondary_station in secondary_stations:
-                    if weather_data[secondary_station][key]:
+                    if weather_data.get(secondary_station, {}).get(key, None):
                         weather_data[primary_station][key] = weather_data[secondary_station][key]
                         weather_data[primary_station]['data_from_fallback'] = self.fallback_used
                         break

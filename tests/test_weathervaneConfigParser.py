@@ -25,7 +25,7 @@ class TestWeathervaneConfigParser(TestCase):
         cp = WeathervaneConfigParser()
         cp.read(config_file)
         stations = cp.parse_station_numbers()
-        assert stations == ['6320', '6308']
+        assert stations == [6320, 6308]
 
     def test_rain_config(self):
         'Tests if rain configuration is correctly picked up. E.g. bit_13=rain_mm_per_hour,10,0,99.9,0.1'

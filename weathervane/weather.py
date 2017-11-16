@@ -3,6 +3,8 @@ class Weather(object):
 
     @staticmethod
     def apparent_temperature(windspeed=None, temperature=None, humidity=None):
+        if temperature is None:
+            return None
         if windspeed is None and humidity is None:
             return temperature
         if temperature < 10:

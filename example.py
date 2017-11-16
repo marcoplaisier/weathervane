@@ -1,3 +1,4 @@
+import json
 import os
 
 from weathervane.parser import BuienradarParser
@@ -47,22 +48,15 @@ a = {'bits': {'0': {'key': 'wind_direction', 'length': '4'},
      'interval': 300,
      'library': 'wiringPi',
      'source': 'buienradar',
-     'stations': {0: '6320',
-                  1: '6321',
-                  2: '6310',
-                  3: '6312',
-                  4: '6308',
-                  5: '6311',
-                  6: '6331',
-                  7: '6316'}
+     'stations': [6320, 6321, 6310, 6312, 6308, 6311, 6331, 6316]
      }
 
-file_path = os.path.join(os.getcwd(), 'tests', 'buienradar.xml')
+file_path = os.path.join(os.getcwd(), 'tests', 'buienradar.json')
 
 with open(file_path, 'rU', encoding='utf-8') as f:  # rU opens file with line endings from different platforms correctly
     data = f.read()
     bp = BuienradarParser(**a)
-    wd = bp.parse(raw_xml=data, **a)
+    wd = bp.parse(data=data)
 
 bits = a['bits']
 fmt = ''
@@ -71,18 +65,3 @@ for i, data in enumerate(bits):
     s = "hex:{0}, ".format(formatting['length'])
     fmt += s
 hexstring = fmt[:-1]
-import bitstring
-
-result = {}
-index = 0
-for key, value in list(bits.items()):
-    fmt = value
-    value = wd.get(fmt['key'], 0)
-    if type(value) != str:
-        value -= float(fmt.get('min', 0))
-        value /= float(fmt.get('step', 1))
-        value = int(value)
-    else:
-        value = WeatherVaneInterface.WIND_DIRECTIONS[value]
-    result[fmt['key']] = value
-    index += 1

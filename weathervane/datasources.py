@@ -1,55 +1,36 @@
 import logging
-from urllib.request import urlopen
-from urllib.error import URLError, HTTPError
+import requests
 
 from weathervane.parser import BuienradarParser
 
-
-class DataSourceError(RuntimeError):
-    pass
-
-
-def retrieve_xml(url):
-    try:
-        response = urlopen(url)
-        data = response.read()
-    except HTTPError as e:
-        logging.error('HTTP Error')
-        try:
-            logging.error(e.code)
-            logging.error(e.reason)
-        except AttributeError:
-            logging.warning("e.code and e.reason don't work")
-            logging.error(e)
-        raise DataSourceError('HTTP Error: Data connection failed', e)
-    except URLError as e:
-        logging.error('URL Error')
-        raise DataSourceError('URL Error: Data connection failed', e)
-    return data
+DEFAULT_WEATHER_DATA = {
+    'error': True,
+    'air_pressure': 900,
+    'humidity': 0,
+    'rain': True,
+    'random': 0,
+    'temperature': -39.9,
+    'temperature_10_cm': -39.9,
+    'apparent_temperature': 0,
+    'wind_direction': 'N',
+    'wind_direction_code': 'N',
+    'wind_direction_degrees': 0,
+    'wind_speed': 0,
+    'wind_speed_max': 0,
+    'wind_speed_bft': 0
+}
 
 
 def fetch_weather_data(conn, *args, **kwargs):
-    try:
-        data = retrieve_xml("http://xml.buienradar.nl")
+    r = requests.get("https://api.buienradar.nl/data/public/1.1/jsonfeed")
+
+    if r.status_code != 200:
+        logging.warning('Retrieving data failed with status code {} after {} ms'.format(r.status_code, r.elapsed))
+        wd = DEFAULT_WEATHER_DATA
+    else:
+        logging.info('Weather data retrieved in {} ms'.format(r.elapsed))
         bp = BuienradarParser(*args, **kwargs)
-        wd = bp.parse(data, *args, **kwargs)
-    except DataSourceError as e:
-        logging.error('Problem with data collection')
-        wd = {
-            'error': True,
-            'air_pressure': 900,
-            'humidity': 0,
-            'rain': True,
-            'random': 0,
-            'temperature': -39.9,
-            'temperature_10_cm': -39.9,
-            'apparent_temperature': 0,
-            'wind_direction': 'N',
-            'wind_direction_code': 'N',
-            'wind_direction_degrees': 0,
-            'wind_speed': 0,
-            'wind_speed_max': 0,
-            'wind_speed_bft': 0
-        }
+        wd = bp.parse(r.text)
+
     conn.send(wd)
     conn.close()

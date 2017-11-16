@@ -1,3 +1,4 @@
+import json
 import os
 
 from weathervane.parser import BuienradarParser
@@ -47,22 +48,16 @@ a = {'bits': {'0': {'key': 'wind_direction', 'length': '4'},
      'interval': 300,
      'library': 'wiringPi',
      'source': 'buienradar',
-     'stations': {0: '6320',
-                  1: '6321',
-                  2: '6310',
-                  3: '6312',
-                  4: '6308',
-                  5: '6311',
-                  6: '6331',
-                  7: '6316'}
+     'stations': ['6320', '6321', '6310', '6312', '6308', '6311', '6331', '6316']
      }
 
 file_path = os.path.join(os.getcwd(), 'tests', 'buienradar.json')
 
 with open(file_path, 'rU', encoding='utf-8') as f:  # rU opens file with line endings from different platforms correctly
     data = f.read()
+    weather_data_json = json.loads(data)
     bp = BuienradarParser(**a)
-    wd = bp.parse(data=data, **a)
+    wd = bp.parse(data=weather_data_json, **a)
 
 bits = a['bits']
 fmt = ''

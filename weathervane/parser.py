@@ -1,8 +1,46 @@
 import datetime
 import logging
+from json import JSONDecoder
 from configparser import ConfigParser
 
 from weathervane.weather import Weather
+
+
+class BuienradarJSONDecoder(JSONDecoder):
+    INVALID_DATA = ['-', '', None]
+
+    def __init__(self):
+        JSONDecoder.__init__(self, object_hook=self.dict_to_object)
+
+    def dict_to_object(self, s):
+        if type(s) == dict:
+            for key, value in s.items():
+                try:
+                    if type(value) != dict and type(value) != list:
+                        s[key] = datetime.datetime.strptime(value, '%m-%d-%Y %H:%M:%S')
+                except ValueError:
+                    try:
+                        if type(value) != dict and type(value) != list:
+                            s[key] = datetime.datetime.strptime(value, '%m/%d/%Y %H:%M:%S')
+                    except (ValueError, TypeError):
+                        pass
+
+                if value in self.INVALID_DATA:
+                    s[key] = None
+                    continue
+
+                try:
+                    s[key] = int(value)
+                    continue
+                except (ValueError, TypeError):
+                    pass
+
+                try:
+                    s[key] = float(value)
+                    continue
+                except (ValueError, TypeError):
+                    pass
+        return s
 
 
 class WeathervaneConfigParser(ConfigParser):
@@ -40,9 +78,10 @@ class WeathervaneConfigParser(ConfigParser):
             return self.DEFAULT_STATIONS
 
         stations = []
+        station_id = None
         for i in range(len(station_numbers)):
             try:
-                station_id = self['Stations'][str(i)]
+                station_id = int(self['Stations'][str(i)])
             except KeyError:
                 pass
             if station_id:
@@ -81,7 +120,7 @@ class WeathervaneConfigParser(ConfigParser):
 
 
 class BuienradarParser(object):
-    INVALID_DATA = ['-', '', None]
+    DERIVED_FIELDS = ['error', 'DUMMY_BYTE', 'barometric_trend', 'data_from_fallback', 'random', 'apparent_temperature']
     FIELD_MAPPING = {
         'air_pressure': 'luchtdruk',
         'date': 'datum',
@@ -106,6 +145,7 @@ class BuienradarParser(object):
         'barometric_trend': 'barometric_trend',
         'error': 'error',
         'DUMMY_BYTE': 'DUMMY_BYTE',
+        'service_byte': 'service_byte'
     }
     TREND_MAPPING = {
         -1: 2,
@@ -115,30 +155,9 @@ class BuienradarParser(object):
 
     def __init__(self, *args, **kwargs):
         self.historic_data = dict()
-        self.raw_xml = None
-        self.stations = kwargs['stations']
         self.fallback_used = None
-
-    def parse(self, data, *args, **kwargs):
-        self.fallback_used = 0
-        self.data = data
-        field_names = self.extract_field_names(kwargs['bits'])
-        data = data['buienradarnl']['weergegevens']['actueel_weer']['weerstations']['weerstation']
-
-        # TODO: how to get the relevant data
-        parsed_data = {}
-        for station in data:
-            if station["@id"] in self.stations:
-                parsed_data[station["@id"]] = self.parse_it(station)
-
-        weather_data = self.merge(parsed_data)
-
-        for english_name, dutch_name in BuienradarParser.FIELD_MAPPING.items():
-            if english_name in field_names:
-                data[english_name] = self.get_data(dutch_name)
-
-        weather_data['data_from_fallback'] = self.fallback_used
-        return weather_data
+        self.stations = kwargs['stations']
+        self.fields = self.extract_field_names(kwargs['bits'])
 
     def extract_field_names(self, bits_dict):
         result = []
@@ -147,82 +166,57 @@ class BuienradarParser(object):
 
         return result
 
-    def get_data_from_station(self, soup, fallback=False):
-        def get_data(field_name):
-            if fallback:
-                station = self.fallback
-            else:
-                station = self.station
+    def enrich(self, weather_data):
+        weather_data['apparent_temperature'] = self.calculate_temperature(weather_data)
+        # TODO: store data in sqlite db for trend mapping
+        weather_data['barometric_trend'] = 4
+        return weather_data
 
-            # skip these fields
-            if field_name in ['data_from_fallback', 'DUMMY_BYTE', 'random', 'error']:
-                return 0
-            if field_name == 'apparent_temperature':
-                return self.calculate_temperature(soup, fallback)
-            if field_name == 'barometric_trend':
-                return self.calculate_barometric_trend()
-
-            station_data = soup.find(id=station)
-            weather_data = station_data.find(field_name.lower())
-
-            if data_is_invalid(weather_data):
-                if field_name == 'regenMMPU':
-                    return 0.0
-                if not fallback:
-                    logging.info('Returning {} from fallback'.format(field_name))
-                    get_data_from_fallback = self.get_data_from_station(soup, True)
-                    self.fallback_used = 1
-                    return get_data_from_fallback(field_name)
+    def merge(self, weather_data, stations):
+        primary_station = stations[0]
+        weather_data[primary_station]['data_from_fallback'] = False
+        assert primary_station
+        secondary_stations = stations[1:]
+        if not secondary_stations:
+            return weather_data[primary_station]
+        for key, value in weather_data[primary_station]:
+            if not value:
+                for secondary_station in secondary_stations:
+                    if weather_data[secondary_station][key]:
+                        weather_data[primary_station][key] = weather_data[secondary_station][key]
+                        weather_data[primary_station]['data_from_fallback'] = self.fallback_used
+                        break
                 else:
-                    logging.info('Field {} without valid data. Returning 0'.format(field_name))
-                    return 0
-            if field_name == 'datum':
-                try:
-                    date = datetime.datetime.strptime(weather_data.string, '%m-%d-%Y %H:%M:%S')
-                except ValueError:
-                    date = datetime.datetime.strptime(weather_data.string, '%m/%d/%Y %H:%M:%S')
-                return date
-            if weather_data is None:
-                return weather_data
-            else:
-                try:
-                    data = weather_data.string
-                    if field_name == 'windsnelheidBF':
-                        return int(data)
-                    else:
-                        weather_data = float(weather_data.string)
-                        if field_name == 'luchtdruk':
-                            self.historic_data[self.get_data('datum')] = weather_data
-                        return weather_data
-                except ValueError:
-                    return str(weather_data.string)
+                    logging.warning('No backup value found')
+                    weather_data[primary_station]['error'] = True
+        return weather_data[primary_station]
 
-        def data_is_invalid(weather_data):
-            return (weather_data in BuienradarParser.INVALID_DATA or
-                    weather_data.string in BuienradarParser.INVALID_DATA)
+    def parse(self, data):
+        assert type(data) == str
+        decoder = BuienradarJSONDecoder()
+        raw_weather_data = decoder.decode(data)
+        raw_stations_weather_data = self._to_dict(
+            raw_weather_data['buienradarnl']['weergegevens']['actueel_weer']['weerstations'][
+                'weerstation'])
+        raw_primary_station_data = self.merge(raw_stations_weather_data, self.stations)
+        station_weather_data = self.enrich(raw_primary_station_data)
+        weather_data = self.map(station_weather_data, self.fields)
+        return weather_data
 
-        return get_data
-
-    def calculate_barometric_trend(self):
-        barometric_pressure = self.get_data('luchtdruk')
-        current_time = self.get_data('datum')
-        three_hours_ago = current_time - datetime.timedelta(hours=3)
-        barometric_pressure_three_hours_ago = self.historic_data.get(three_hours_ago)
-        if barometric_pressure_three_hours_ago:
-            difference = barometric_pressure - barometric_pressure_three_hours_ago
-            if difference < 0:
-                barometric_trend = -1
-            elif difference > 0:
-                barometric_trend = 1
-            else:
-                barometric_trend = 0
-        else:
-            barometric_trend = 0
-        return self.TREND_MAPPING[barometric_trend]
-
-    def calculate_temperature(self, soup, fallback=None):
-        get_data = self.get_data_from_station(soup, fallback)
-        windspeed = get_data('windsnelheidMS')
-        temperature = get_data('temperatuurGC')
-        humidity = get_data('luchtvochtigheid')
+    @staticmethod
+    def calculate_temperature(weather_data):
+        windspeed = weather_data['windsnelheidMS']
+        temperature = weather_data['temperatuurGC']
+        humidity = weather_data['luchtvochtigheid']
         return Weather.apparent_temperature(windspeed=windspeed, temperature=temperature, humidity=humidity)
+
+    def _to_dict(self, stations_weather_data):
+        return {station_data['@id']: station_data for station_data in stations_weather_data}
+
+    def map(self, weather_data, fields):
+        r = {}
+        for field in fields:
+            r[field] = weather_data.get(self.FIELD_MAPPING[field], None)
+            if field == 'station_name':
+                r[field] = r['station_name']['#text']
+        return r

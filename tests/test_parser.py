@@ -62,4 +62,3 @@ class testParser(unittest.TestCase):
                 temperature = float(line['temperature'])
                 expected_apparent_temperature = float(line['wind chill'])
                 assert Weather.wind_chill(wind_speed, temperature) == expected_apparent_temperature
-

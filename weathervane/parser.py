@@ -154,10 +154,9 @@ class BuienradarParser(object):
     }
 
     def __init__(self, *args, **kwargs):
-        self.historic_data = dict()
         self.fallback_used = None
-        self.stations = kwargs['stations']
-        self.fields = self.extract_field_names(kwargs['bits'])
+        self.stations = kwargs.get('stations', None)
+        self.bits = kwargs.get('bits', None)
 
     def parse(self, data):
         assert type(data) == str
@@ -168,7 +167,9 @@ class BuienradarParser(object):
         )
         raw_primary_station_data = self.merge(raw_stations_weather_data, self.stations)
         station_weather_data = self.enrich(raw_primary_station_data)
-        weather_data = self.map(station_weather_data, self.fields)
+
+        fields = self.extract_field_names(self.bits)
+        weather_data = self.map(station_weather_data, fields)
         return weather_data
 
     @staticmethod

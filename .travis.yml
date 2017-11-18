@@ -9,6 +9,3 @@ install: "pip install -r requirements.txt"
 script:
 - pytest
 - behave tests/scenarios
-
-after_success:
-  - coveralls

@@ -159,20 +159,35 @@ class BuienradarParser(object):
         self.stations = kwargs['stations']
         self.fields = self.extract_field_names(kwargs['bits'])
 
-    def extract_field_names(self, bits_dict):
+    def parse(self, data):
+        assert type(data) == str
+        decoder = BuienradarJSONDecoder()
+        raw_weather_data = decoder.decode(data)
+        raw_stations_weather_data = self._to_dict(
+            raw_weather_data['buienradarnl']['weergegevens']['actueel_weer']['weerstations']['weerstation']
+        )
+        raw_primary_station_data = self.merge(raw_stations_weather_data, self.stations)
+        station_weather_data = self.enrich(raw_primary_station_data)
+        weather_data = self.map(station_weather_data, self.fields)
+        return weather_data
+
+    @staticmethod
+    def extract_field_names(bits_dict):
         result = []
         for v in bits_dict.values():
             result.append(v['key'])
 
         return result
 
-    def enrich(self, weather_data):
-        weather_data['apparent_temperature'] = self.calculate_temperature(weather_data)
+    @staticmethod
+    def enrich(weather_data):
+        weather_data['apparent_temperature'] = BuienradarParser.calculate_temperature(weather_data)
         # TODO: store data in sqlite db for trend mapping
         weather_data['barometric_trend'] = 4
         return weather_data
 
-    def merge(self, weather_data, stations):
+    @staticmethod
+    def merge(weather_data, stations):
         primary_station = stations[0]
         weather_data[primary_station]['data_from_fallback'] = False
         weather_data[primary_station]['error'] = False
@@ -181,28 +196,16 @@ class BuienradarParser(object):
         if not secondary_stations:
             return weather_data[primary_station]
         for key, value in weather_data[primary_station].items():
-            if not value and key not in self.DERIVED_FIELDS:
+            if not value and key not in BuienradarParser.DERIVED_FIELDS:
                 for secondary_station in secondary_stations:
                     if weather_data.get(secondary_station, {}).get(key, None):
                         weather_data[primary_station][key] = weather_data[secondary_station][key]
-                        weather_data[primary_station]['data_from_fallback'] = self.fallback_used
+                        weather_data[primary_station]['data_from_fallback'] = True
                         break
                 else:
                     logging.warning('No backup value found')
                     weather_data[primary_station]['error'] = True
         return weather_data[primary_station]
-
-    def parse(self, data):
-        assert type(data) == str
-        decoder = BuienradarJSONDecoder()
-        raw_weather_data = decoder.decode(data)
-        raw_stations_weather_data = self._to_dict(
-            raw_weather_data['buienradarnl']['weergegevens']['actueel_weer']['weerstations'][
-                'weerstation'])
-        raw_primary_station_data = self.merge(raw_stations_weather_data, self.stations)
-        station_weather_data = self.enrich(raw_primary_station_data)
-        weather_data = self.map(station_weather_data, self.fields)
-        return weather_data
 
     @staticmethod
     def calculate_temperature(weather_data):
@@ -211,13 +214,15 @@ class BuienradarParser(object):
         humidity = weather_data['luchtvochtigheid']
         return Weather.apparent_temperature(windspeed=windspeed, temperature=temperature, humidity=humidity)
 
-    def _to_dict(self, stations_weather_data):
+    @staticmethod
+    def _to_dict(stations_weather_data):
         return {station_data['@id']: station_data for station_data in stations_weather_data}
 
-    def map(self, weather_data, fields):
+    @staticmethod
+    def map(weather_data, fields):
         r = {}
         for field in fields:
-            r[field] = weather_data.get(self.FIELD_MAPPING[field], None)
+            r[field] = weather_data.get(BuienradarParser.FIELD_MAPPING[field], None)
             if field == 'station_name':
                 r[field] = r['station_name']['#text']
         return r

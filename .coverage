@@ -1,11 +1,12 @@
-[run]
-omit =
-    */tests*
+language: python
+python:
+  - "3.5"
+  - "3.6"
 
-[report]
-exclude_lines =
-    pragma: no cover
-    def __repr__
-    raise NotImplementedError
-    if __name__ == .__main__.:
-    def parse_args
+install: "pip install -r requirements.txt"
+
+script:
+- py.test coveralls/tests.py --doctest-modules --pep8 coveralls -v --cov coveralls --cov-report term-missing
+
+after_success:
+  - coveralls

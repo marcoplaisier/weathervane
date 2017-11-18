@@ -6,3 +6,4 @@ nose
 pytest
 raven
 requests
+python-coveralls

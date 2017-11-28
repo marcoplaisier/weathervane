@@ -93,7 +93,7 @@ class WeatherVane(object):
         p.start()
         logging.debug('Retrieving data')
 
-    def send_data(self, error_state):
+    def send_data(self):
         if self.old_weatherdata:
             wd = self.interpolate(self.old_weatherdata, self.wd, self.interval)
             self.interface.send(wd)

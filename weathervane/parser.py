@@ -28,7 +28,8 @@ class BuienradarJSONDecoder(JSONDecoder):
                 if value in self.INVALID_DATA:
                     if key in ['regenMMPU', 'zonintensiteitWM2']:
                         s[key] = 0
-                    s[key] = None
+                    else:
+                        s[key] = None
                     continue
 
                 try:

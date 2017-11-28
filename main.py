@@ -94,23 +94,11 @@ class WeatherVane(object):
         logging.debug('Retrieving data')
 
     def send_data(self, error_state):
-        if self.old_weatherdata and not error_state:
+        if self.old_weatherdata:
             wd = self.interpolate(self.old_weatherdata, self.wd, self.interval)
             self.interface.send(wd)
         else:
             self.interface.send(self.wd)
-
-    def handle_errors(self, error_state):
-        try:
-            error_state = self.wd['error']
-        except KeyError:
-            error_state = True
-        if error_state:
-            self.wd = self.old_weatherdata
-            self.old_weatherdata = None
-            self.counter = 0
-            error_state = True
-        return error_state
 
     def retrieve_data(self, pipe_end_2):
         logging.info('Data available:')
@@ -168,7 +156,6 @@ class WeatherVane(object):
 
         """
         pipe_end_1, pipe_end_2 = Pipe()
-        error_state = False
 
         while True:
             self.display.tick()
@@ -179,9 +166,8 @@ class WeatherVane(object):
                 self.start_data_collection_and_timer(pipe_end_1)
             if pipe_end_2.poll(0):
                 self.retrieve_data(pipe_end_2)
-                error_state = self.handle_errors(error_state)
             if self.wd:
-                self.send_data(error_state)
+                self.send_data()
             self.counter += 1
             time.sleep(self.sleep_time)
             

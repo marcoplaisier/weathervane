@@ -142,7 +142,7 @@ class WeatherVaneInterface(object):
             if not value or value < min_value:
                 logging.debug('Value {} for {} is smaller than minimum {}'.format(value, measurement_name, min_value))
                 value = min_value
-            if not value or max_value < value:
+            if max_value < value:
                 logging.debug('Value {} for {} is larger than maximum {}'.format(value, measurement_name, max_value))
                 value = max_value
 

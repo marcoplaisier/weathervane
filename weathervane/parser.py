@@ -207,7 +207,7 @@ class BuienradarParser(object):
                         weather_data[primary_station]['data_from_fallback'] = True
                         break
                 else:
-                    logging.warning('No backup value found')
+                    logging.warning('No backup value found for {}'.format(key))
                     weather_data[primary_station]['error'] = True
         return weather_data[primary_station]
 

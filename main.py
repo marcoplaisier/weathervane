@@ -187,11 +187,9 @@ class WeatherVane(object):
             
 
 def get_configuration(args):
-    config_file = args.config
-    config_file_location = os.path.join(os.getcwd(), config_file)
-
     config_parser = WeathervaneConfigParser()
-    config_parser.read(config_file_location)
+    config_file = args.config
+    config_parser.read(config_file)
     config = config_parser.parse_config()
     return config
 

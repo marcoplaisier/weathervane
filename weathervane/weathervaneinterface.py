@@ -130,7 +130,7 @@ class WeatherVaneInterface(object):
                 logging.debug('Wind direction {} not found. Using North as substitute.'.format(value))
                 return 0
         elif measurement_name == 'rain':
-            if value > 0:
+            if value and value > 0:
                 return 1
             else:
                 return 0
@@ -139,10 +139,10 @@ class WeatherVaneInterface(object):
             min_value = float(fmt.get('min', 0))
             max_value = float(fmt.get('max', 255))
 
-            if value < min_value:
+            if not value or value < min_value:
                 logging.debug('Value {} for {} is smaller than minimum {}'.format(value, measurement_name, min_value))
                 value = min_value
-            if max_value < value:
+            if not value or max_value < value:
                 logging.debug('Value {} for {} is larger than maximum {}'.format(value, measurement_name, max_value))
                 value = max_value
 

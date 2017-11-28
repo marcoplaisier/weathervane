@@ -26,7 +26,10 @@ class BuienradarJSONDecoder(JSONDecoder):
                         pass
 
                 if value in self.INVALID_DATA:
-                    s[key] = None
+                    if key in ['regenMMPU', 'zonintensiteitWM2']:
+                        s[key] = 0
+                    else:
+                        s[key] = None
                     continue
 
                 try:
@@ -197,14 +200,14 @@ class BuienradarParser(object):
         if not secondary_stations:
             return weather_data[primary_station]
         for key, value in weather_data[primary_station].items():
-            if not value and key not in BuienradarParser.DERIVED_FIELDS:
+            if value is None and key not in BuienradarParser.DERIVED_FIELDS:
                 for secondary_station in secondary_stations:
                     if weather_data.get(secondary_station, {}).get(key, None):
                         weather_data[primary_station][key] = weather_data[secondary_station][key]
                         weather_data[primary_station]['data_from_fallback'] = True
                         break
                 else:
-                    logging.warning('No backup value found')
+                    logging.warning('No backup value found for {}'.format(key))
                     weather_data[primary_station]['error'] = True
         return weather_data[primary_station]
 

@@ -200,7 +200,7 @@ class BuienradarParser(object):
         if not secondary_stations:
             return weather_data[primary_station]
         for key, value in weather_data[primary_station].items():
-            if not value and key not in BuienradarParser.DERIVED_FIELDS:
+            if value is None and key not in BuienradarParser.DERIVED_FIELDS:
                 for secondary_station in secondary_stations:
                     if weather_data.get(secondary_station, {}).get(key, None):
                         weather_data[primary_station][key] = weather_data[secondary_station][key]

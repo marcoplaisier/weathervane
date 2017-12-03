@@ -26,7 +26,7 @@ class BuienradarJSONDecoder(JSONDecoder):
                         pass
 
                 if value in self.INVALID_DATA:
-                    if key in ['regenMMPU', 'zonintensiteitWM2']:
+                    if key in ['regenMMPU', 'zonintensiteitWM2', 'zichtmeters']:
                         s[key] = 0
                     else:
                         s[key] = None
@@ -205,6 +205,7 @@ class BuienradarParser(object):
                     if weather_data.get(secondary_station, {}).get(key, None):
                         weather_data[primary_station][key] = weather_data[secondary_station][key]
                         weather_data[primary_station]['data_from_fallback'] = True
+                        logging.info('Setting fallback, because {} is missing'.format(key))
                         break
                 else:
                     logging.warning('No backup value found for {}'.format(key))

@@ -22,3 +22,6 @@
 *.log
 
 .cache/
+
+# virtual environment
+/venv/

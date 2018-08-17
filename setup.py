@@ -16,7 +16,7 @@ class Install(install):
         if 'windows' in operating_system.lower():
             sys.exit('Cannot install on Windows')
         print('Installing WiringPi...')
-        if not os.system('gpio -v'):
+        if os.system('gpio -v') > 0:
             os.system('git clone git://git.drogon.net/wiringPi')
             os.system('./wiringPi/build')
         else:

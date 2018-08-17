@@ -10,25 +10,6 @@ def long_description():
         return f.read()
 
 
-class Run(Command):
-    user_options = []
-
-    @staticmethod
-    def status(s):
-        """Prints things in bold."""
-        print('\033[1m{0}\033[0m'.format(s))
-
-    def initialize_options(self):
-        pass
-
-    def finalize_options(self):
-        pass
-
-    def run(self):
-        import main
-        main.run()
-
-
 class Install(install):
     def run(self):
         operating_system = os.environ.get('OS', 'unknown')
@@ -59,5 +40,11 @@ setup(name='weathervane',
           'Programming Language :: Python :: 3',
           'Topic :: Home Automation'
       ],
-      cmdclass={'install': Install, 'run': Run}
-      )
+      entry_points={
+          'console_scripts': [
+              'wv = main.run'
+          ]
+      },
+      cmdclass={
+          'install': Install
+      })

@@ -4,6 +4,5 @@ hypothesis
 git+https://github.com/behave/behave
 nose
 pytest
-raven
 requests
 

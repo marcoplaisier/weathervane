@@ -12,7 +12,7 @@ def long_description():
 
 class Install(install):
     def run(self):
-        operating_system = os.environ['OS']
+        operating_system = os.environ.get('OS', 'unknown')
         if 'windows' in operating_system.lower():
             sys.exit('Cannot install on Windows')
         print('Installing WiringPi...')

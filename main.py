@@ -130,6 +130,8 @@ class WeatherVane(object):
     def interpolate(self, old_weatherdata, new_weatherdata, interval):
         if self.counter >= interval - 1:
             self.reached = True
+        if new_weatherdata['error']:
+            return new_weatherdata
 
         interpolated_wd = {}
 

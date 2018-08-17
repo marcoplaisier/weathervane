@@ -18,7 +18,8 @@ class Install(install):
         print('Installing WiringPi...')
         if os.system('gpio -v') > 0:
             os.system('git clone git://git.drogon.net/wiringPi')
-            os.system('./wiringPi/build')
+            os.chdir('./wiringPi')
+            os.system('./build')
         else:
             print('WiringPi already installed; skipping.')
 

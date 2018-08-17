@@ -1,17 +1,14 @@
 #!/usr/bin/env python
 import argparse
+import datetime
 import logging
 import logging.handlers
 import pprint
-from multiprocessing import Process, Pipe
-import os
-import datetime
 import time
+from multiprocessing import Process, Pipe
 
-from raven import Client
-
-from weathervane.gpio import TestInterface
 from weathervane.datasources import fetch_weather_data
+from weathervane.gpio import TestInterface
 from weathervane.parser import WeathervaneConfigParser
 from weathervane.weathervaneinterface import WeatherVaneInterface, Display
 
@@ -141,7 +138,7 @@ class WeatherVane(object):
                            'barometric_trend'] and not self.reached:
                 try:
                     interpolated_value = float(old_value) + (
-                    self.counter * (float(new_value) - float(old_value)) / interval)
+                            self.counter * (float(new_value) - float(old_value)) / interval)
                     interpolated_wd[key] = interpolated_value
                 except ValueError:
                     interpolated_wd[key] = new_value
@@ -153,10 +150,6 @@ class WeatherVane(object):
         return interpolated_wd
 
     def main(self):
-        """
-
-
-        """
         pipe_end_1, pipe_end_2 = Pipe()
 
         while True:
@@ -172,7 +165,7 @@ class WeatherVane(object):
                 self.send_data()
             self.counter += 1
             time.sleep(self.sleep_time)
-            
+
 
 def get_configuration(args):
     config_parser = WeathervaneConfigParser()
@@ -182,9 +175,7 @@ def get_configuration(args):
     return config
 
 
-if __name__ == "__main__":
-    client = Client()
-
+def run():
     parser = argparse.ArgumentParser(description="Get weather data from a provider and send it through SPI")
     parser.add_argument('-c', '--config', action='store', default='config.ini',
                         help="get the configuration from a specific configuration file")
@@ -196,3 +187,7 @@ if __name__ == "__main__":
     wv.set_logger()
 
     wv.main()
+
+
+if __name__ == "__main__":
+    run()

@@ -42,7 +42,7 @@ setup(name='weathervane',
       ],
       entry_points={
           'console_scripts': [
-              'wv = main.run'
+              'wv = main:run'
           ]
       },
       cmdclass={

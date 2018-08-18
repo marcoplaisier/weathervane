@@ -1,4 +1,6 @@
 import logging
+import time
+
 import requests
 
 from weathervane.parser import BuienradarParser
@@ -21,17 +23,36 @@ DEFAULT_WEATHER_DATA = {
 }
 
 
-def fetch_weather_data(conn, *args, **kwargs):
-    wd = None
+def get_weather_string_with_retries(max_retries=3, retry_interval=5):
+    while max_retries > 0:
+        try:
+            r = requests.get("https://api.buienradar.nl/data/public/1.1/jsonfeed", timeout=10)
+            if r.status_code == 200:
+                logging.info('Weather data retrieved in {} ms'.format(r.elapsed))
+                return r.text
+            else:
+                logging.warning('Got response, but unhandleable status code {}'.format(r.status_code))
+        except (ConnectionError, TimeoutError):
+            if max_retries > 0:
+                logging.warning('Retrieving data failed. Retrying after {} seconds'.format(retry_interval))
+                time.sleep(retry_interval)
+                max_retries -= 1
+                retry_interval *= 2
+    return None
 
-    try:
-        r = requests.get("https://api.buienradar.nl/data/public/1.1/jsonfeed", timeout=10)
-        if r.status_code == 200:
-            logging.info('Weather data retrieved in {} ms'.format(r.elapsed))
-            bp = BuienradarParser(*args, **kwargs)
-            wd = bp.parse(r.text)
-    except (ConnectionError, TimeoutError):
-        logging.warning('Retrieving data failed. Setting error.')
+
+def fetch_weather_data(conn, *args, **kwargs):
+    data = get_weather_string_with_retries()
+
+    if data:
+        bp = BuienradarParser(*args, **kwargs)
+        try:
+            wd = bp.parse(data)
+        except:
+            logging.error('Data parsing failed. Cannot send good data. Setting error.')
+            wd = DEFAULT_WEATHER_DATA
+    else:
+        logging.error('Retrieving data failed several times. Setting error.')
         wd = DEFAULT_WEATHER_DATA
 
     conn.send(wd)

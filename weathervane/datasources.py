@@ -34,15 +34,15 @@ def get_weather_string_with_retries(max_retries=5, retry_interval=5):
             else:
                 logging.warning('Got response, but unhandleable status code {}'.format(r.status_code))
         except (ConnectionError, TimeoutError):
-            if max_retries == 1:
-                # if it still doesn't work, then attempt to get a new IP address. Maybe it is the Internet connection
-                logging.info('Attempting to reset the internet connection')
-                os.system('sudo /etc/init.d/networking restart')
             if max_retries > 0:
                 logging.warning('Retrieving data failed. Retrying after {} seconds'.format(retry_interval))
                 time.sleep(retry_interval)
                 max_retries -= 1
                 retry_interval *= 2
+            if max_retries == 2:
+                # if it still doesn't work, then attempt to get a new IP address. Maybe it is the Internet connection
+                logging.info('Attempting to reset the internet connection')
+                os.system('sudo /etc/init.d/networking restart')
     return None
 
 

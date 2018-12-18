@@ -25,8 +25,8 @@ class WeatherVane(object):
         self.counter = 0
         self.interval = configuration['interval']
         self.sleep_time = configuration['sleep-time']
-        self.start_collection_time = 0
-        self.end_collection_time = 0
+        self.start_collection_time = datetime.datetime.now()
+        self.end_collection_time = datetime.datetime.now()
         self.reached = False
 
     def test_mode(self):

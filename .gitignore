@@ -25,3 +25,6 @@
 
 # virtual environment
 /venv/
+
+# private and public key files
+*.pem

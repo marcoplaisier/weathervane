@@ -18,7 +18,7 @@ class BuienradarJSONDecoder(JSONDecoder):
                 try:
                     if type(value) != dict and type(value) != list:
                         s[key] = datetime.datetime.strptime(value, '%m-%d-%Y %H:%M:%S')
-                except ValueError:
+                except (ValueError, TypeError):
                     try:
                         if type(value) != dict and type(value) != list:
                             s[key] = datetime.datetime.strptime(value, '%m/%d/%Y %H:%M:%S')

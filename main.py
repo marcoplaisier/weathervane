@@ -133,7 +133,10 @@ class WeatherVane(object):
         interpolated_wd = {}
 
         for key, old_value in list(old_weatherdata.items()):
-            new_value = new_weatherdata[key]
+            new_value = new_weatherdata.get(key, None)
+            if not new_value:
+                continue
+
             if key not in ['error', 'wind_direction', 'wind_direction', 'rain',
                            'barometric_trend'] and not self.reached:
                 try:

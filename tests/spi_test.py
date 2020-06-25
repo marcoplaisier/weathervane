@@ -56,8 +56,8 @@ def test_pack_with_iterable(mock_class):
     spi = GPIO(channel=0, frequency=25000, library='wiringPi')
     it = list(range(0, 10))
     data_packet, length = spi.pack(data=it)
-    self.assertEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], list(data_packet))
-    self.assertEqual(len(it), length)
+    assert [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] == list(data_packet)
+    assert len(it) == length
 
 
 @patch('weathervane.gpio.GPIO.load_library_by_name')

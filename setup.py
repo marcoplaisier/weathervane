@@ -33,7 +33,4 @@ setup(name='weathervane',
           'console_scripts': [
               'wv = main:run'
           ]
-      },
-      cmdclass={
-          'install': Install
       })

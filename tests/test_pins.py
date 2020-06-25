@@ -2,7 +2,7 @@ __author__ = 'marcoplaisier'
 
 import unittest
 
-from mock import patch, call
+from unittest.mock import patch, call
 
 from weathervane.gpio import GPIO
 

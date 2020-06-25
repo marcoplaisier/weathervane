@@ -10,7 +10,7 @@ from weathervane.weather import Weather
 class testParser(unittest.TestCase):
     def setUp(self):
         file_path = os.path.join(os.getcwd(), 'tests', 'buienradar.json')
-        with open(file_path, 'rU', encoding='UTF-8') as f:
+        with open(file_path, 'r', encoding='UTF-8') as f:
             data = f.read()
             config = {
                 'stations': [6275, 6203],
@@ -55,7 +55,7 @@ class testParser(unittest.TestCase):
         self.assertAlmostEqual(15.2, apparent_temperature, 0)
 
     def test_wind_chill(self):
-        with open(os.path.join(os.getcwd(), 'tests', 'testdata_windchill.csv'), 'rU') as f:
+        with open(os.path.join(os.getcwd(), 'tests', 'testdata_windchill.csv'), 'r') as f:
             data = csv.DictReader(f)
             for line in data:
                 wind_speed = float(line['windspeed'])

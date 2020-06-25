@@ -3,17 +3,6 @@ bitstring
 requests
 
 # Testing related
-Mock
-nose
 pytest
 hypothesis
-git+https://github.com/behave/behave
-
-# Setup related
-werkzeug
-
-# Cloud libraries
-google-api-python-client==1.7.4
-google-auth-httplib2==0.0.3
-google-auth==1.5.1
-google-cloud==0.34.0
+behave

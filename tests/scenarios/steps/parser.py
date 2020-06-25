@@ -43,7 +43,7 @@ def step_impl(context):
     """
     file_path = os.path.join(os.getcwd(), 'tests', 'buienradar.json')
 
-    with open(file_path, 'rU', encoding='utf-8') as f:
+    with open(file_path, 'r', encoding='utf-8') as f:
         data = f.read()
         context.weather_data_json = data
 

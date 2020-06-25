@@ -53,7 +53,7 @@ a = {'bits': {'0': {'key': 'wind_direction', 'length': '4'},
 
 file_path = os.path.join(os.getcwd(), 'tests', 'buienradar.json')
 
-with open(file_path, 'rU', encoding='utf-8') as f:  # rU opens file with line endings from different platforms correctly
+with open(file_path, 'r', encoding='utf-8') as f:  # rU opens file with line endings from different platforms correctly
     data = f.read()
     bp = BuienradarParser(**a)
     wd = bp.parse(data=data)

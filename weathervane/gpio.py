@@ -1,7 +1,7 @@
 import logging
 from ctypes import cdll, c_ubyte, util
 
-from mock import Mock
+from unittest.mock import Mock
 
 
 class SPISetupException(Exception):

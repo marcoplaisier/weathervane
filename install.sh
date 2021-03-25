@@ -4,7 +4,7 @@
 ## python 3
 echo "Validating requirements..."
 
-echo "Running on Raspberry PI?"
+echo "Running on Raspberry Pi?"
 is_pi() {
   ARCH=$(dpkg --print-architecture) >/dev/null 2>&1
 
@@ -24,7 +24,7 @@ fi
 
 echo "Checking python version..."
 py_version=$(python3 --version) >/dev/null 2>&1
-if [[ "$py_version" =~ Python ]]; then
+if [ "$py_version" =~ Python ]; then
   echo "Python 3 found"
 else
   echo "Error: No valid Python interpreter found"
@@ -34,7 +34,7 @@ fi
 
 echo "Checking Python 3 pip presence"
 py_pip=$(python3.7 -m pip --version) >/dev/null 2>&1
-if [[ "$py_pip" =~ pip ]]; then
+if [ "$py_pip" =~ pip ]; then
   sudo apt-get install python3-pip -y
 fi
 

@@ -59,20 +59,25 @@ sudo apt-get install git-all -y
 echo "Validating requirements done"
 echo "Requirements satisfied"
 
+echo "Installing weathervane"
 # clone repository
 git clone https://github.com/marcoplaisier/weathervane.git
 cd weathervane || exit
 git checkout weathervane-39
 cd /home/pi || exit
 # install requirements. Done
+echo "Weathervane retrieved"
 
+echo "Installing weathervane as a service..."
 # install as service
-cp /home/pi/weathervane/weathervane.service /etc/systemd/system/weathervane.service
+sudo cp /home/pi/weathervane/weathervane.service /etc/systemd/system/weathervane.service
 sudo systemctl daemon-reload
 
+echo "Starting service"
 # start service
 sudo systemctl enable weathervane.service
 sudo systemctl start weathervane.service
+echo "Weathervane installed."
 
 # ask for stations
 # ask for start and end time

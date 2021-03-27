@@ -3,8 +3,8 @@ Description=Weathervane Service
 After=network.target
 
 [Service]
-ExecStart=python3 /home/pi/weathervane/main.py
-WorkingDirectory=/home/pi/
+WorkingDirectory=/home/pi/weathervane
+ExecStart=python3 main.py
 StandardOutput=inherit
 StandardError=inherit
 Restart=always

@@ -64,7 +64,7 @@ git clone https://github.com/marcoplaisier/weathervane.git
 # install requirements. Done
 
 # install as service
-cp weathervane/weathervane.service /etc/systemd/system/weathervane.service
+cp /home/pi/weathervane/weathervane.service /etc/systemd/system/weathervane.service
 sudo systemctl daemon-reload
 
 # start service

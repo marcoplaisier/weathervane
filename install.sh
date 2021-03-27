@@ -1,7 +1,6 @@
-#!/bin/sh
+#!/bin/bash
 
 # verify requirements
-## python 3
 echo "Validating requirements..."
 
 echo "Running on Raspberry Pi?"
@@ -24,7 +23,7 @@ fi
 
 echo "Checking python version..."
 py_version=$(python3 --version) >/dev/null 2>&1
-if [ "$py_version" =~ Python ]; then
+if [  "$py_version"  ]; then
   echo "Python 3 found"
 else
   echo "Error: No valid Python interpreter found"
@@ -34,11 +33,11 @@ fi
 
 echo "Checking Python 3 pip presence"
 py_pip=$(python3.7 -m pip --version) >/dev/null 2>&1
-if [ "$py_pip" =~ pip ]; then
+if [ ! "$py_pip" ]; then
   sudo apt-get install python3-pip -y
 fi
 
-## expanded disk
+# expanded disk
 can_expand=raspi-config nonint get_can_expand >/dev/null 2>&1
 if [ "$can_expand" ]; then
   raspi-config nonint do_expand_rootfs
@@ -46,25 +45,32 @@ fi
 
 # enable SPI
 spi_enabled = raspi-config nonint do_spi 0
+
 # install wiringpi
 gpio_version=$(gpio -v) >/dev/null 2>&1
 if [ ! "$gpio_version" ]; then
   echo "Installing wiringPi..."
-  wget https://project-downloads.drogon.net/wiringpi-latest.deb -o /tmp/wiringpi.deb
-  sudo dpkg -i /tmp/wiringpi-latest.deb
-  rm /tmp/wiringpi.deb
+  sudo apt-get install wiringpi
   echo "Installation done."
 fi
+
+sudo apt-get install git-all -y
 
 echo "Validating requirements done"
 echo "Requirements satisfied"
 
 # clone repository
 git clone https://github.com/marcoplaisier/weathervane.git
-# install requirements
-cd weathervane
-sudo python3 main.py
+# install requirements. Done
+
+# install as service
+cp weathervane/weathervane.service /etc/systemd/system/weathervane.service
+sudo systemctl daemon-reload
+
+# start service
+sudo systemctl enable weathervane.service
+sudo systemctl start weathervane.service
+
 # ask for stations
 # ask for start and end time
-# install as service
-# start service
+

@@ -1,0 +1,14 @@
+[Unit]
+Description=Weathervane Service
+After=network.target
+
+[Service]
+ExecStart=python3 /home/pi/weathervane/main.py
+WorkingDirectory=/home/pi/
+StandardOutput=inherit
+StandardError=inherit
+Restart=always
+RestartSec=300
+
+[Install]
+WantedBy=multi-user.target

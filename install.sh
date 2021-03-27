@@ -61,7 +61,9 @@ echo "Requirements satisfied"
 
 # clone repository
 git clone https://github.com/marcoplaisier/weathervane.git
+cd weathervane || exit
 git checkout weathervane-39
+cd /home/pi || exit
 # install requirements. Done
 
 # install as service

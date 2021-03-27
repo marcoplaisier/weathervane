@@ -44,7 +44,7 @@ if [ "$can_expand" ]; then
 fi
 
 # enable SPI
-spi_enabled = raspi-config nonint do_spi 0
+raspi-config nonint do_spi 0
 
 # install wiringpi
 gpio_version=$(gpio -v) >/dev/null 2>&1
@@ -54,7 +54,10 @@ if [ ! "$gpio_version" ]; then
   echo "Installation done."
 fi
 
-sudo apt-get install git-all -y
+has_git = $(git --version) >/dev/null 2>&1
+if [ ! "$has_git" ]; then
+  sudo apt-get install git-all -y
+fi
 
 echo "Validating requirements done"
 echo "Requirements satisfied"
@@ -62,11 +65,6 @@ echo "Requirements satisfied"
 echo "Installing weathervane"
 # clone repository
 git clone https://github.com/marcoplaisier/weathervane.git
-cd weathervane || exit
-git checkout weathervane-39
-cd /home/pi || exit
-# install requirements. Done
-echo "Weathervane retrieved"
 
 echo "Installing weathervane as a service..."
 # install as service

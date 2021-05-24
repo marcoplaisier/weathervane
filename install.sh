@@ -55,7 +55,7 @@ fi
 
 has_git = $(git --version) >/dev/null 2>&1
 if [ ! "$has_git" ]; then
-  sudo apt-get install git-all -y
+  sudo apt-get install git -y
 fi
 
 echo "Validating requirements done"

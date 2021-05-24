@@ -1,5 +1,9 @@
 #!/bin/bash
 
+echo "Updating & upgrading"
+sudo apt-get update -y
+sudo apt-get upgrade -y
+
 # verify requirements
 echo "Validating requirements..."
 
@@ -37,14 +41,9 @@ if [ ! "$py_pip" ]; then
   sudo apt-get install python3-pip -y
 fi
 
-# expanded disk
-can_expand=raspi-config nonint get_can_expand >/dev/null 2>&1
-if [ "$can_expand" ]; then
-  raspi-config nonint do_expand_rootfs
-fi
-
 # enable SPI
-spi_enabled = raspi-config nonint do_spi 0
+echo "Enabling SPI"
+raspi-config nonint do_spi 0
 
 # install wiringpi
 gpio_version=$(gpio -v) >/dev/null 2>&1
@@ -54,7 +53,10 @@ if [ ! "$gpio_version" ]; then
   echo "Installation done."
 fi
 
-sudo apt-get install git-all -y
+has_git = $(git --version) >/dev/null 2>&1
+if [ ! "$has_git" ]; then
+  sudo apt-get install git -y
+fi
 
 echo "Validating requirements done"
 echo "Requirements satisfied"
@@ -62,11 +64,6 @@ echo "Requirements satisfied"
 echo "Installing weathervane"
 # clone repository
 git clone https://github.com/marcoplaisier/weathervane.git
-cd weathervane || exit
-git checkout weathervane-39
-cd /home/pi || exit
-# install requirements. Done
-echo "Weathervane retrieved"
 
 echo "Installing weathervane as a service..."
 # install as service
@@ -78,7 +75,7 @@ echo "Starting service"
 sudo systemctl enable weathervane.service
 sudo systemctl start weathervane.service
 echo "Weathervane installed."
-
+sudo reboot
 # ask for stations
 # ask for start and end time
 

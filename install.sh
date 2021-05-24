@@ -1,5 +1,9 @@
 #!/bin/bash
 
+echo "Updating & upgrading"
+sudo apt-get update -y
+sudo apt-get upgrade -y
+
 # verify requirements
 echo "Validating requirements..."
 
@@ -37,13 +41,8 @@ if [ ! "$py_pip" ]; then
   sudo apt-get install python3-pip -y
 fi
 
-# expanded disk
-can_expand=raspi-config nonint get_can_expand >/dev/null 2>&1
-if [ "$can_expand" ]; then
-  raspi-config nonint do_expand_rootfs
-fi
-
 # enable SPI
+echo "Enabling SPI"
 raspi-config nonint do_spi 0
 
 # install wiringpi
@@ -76,7 +75,7 @@ echo "Starting service"
 sudo systemctl enable weathervane.service
 sudo systemctl start weathervane.service
 echo "Weathervane installed."
-
+sudo reboot
 # ask for stations
 # ask for start and end time
 

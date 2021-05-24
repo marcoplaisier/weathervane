@@ -64,7 +64,7 @@ echo "Requirements satisfied"
 echo "Installing weathervane"
 # clone repository
 git clone https://github.com/marcoplaisier/weathervane.git
-
+sudo pip3 install -r weathervane/requirements.txt
 echo "Installing weathervane as a service..."
 # install as service
 sudo cp /home/pi/weathervane/weathervane.service /etc/systemd/system/weathervane.service

@@ -186,7 +186,6 @@ class BuienradarParser(object):
     @staticmethod
     def enrich(weather_data):
         weather_data['apparent_temperature'] = BuienradarParser.calculate_temperature(weather_data)
-        # TODO: store data in sqlite db for trend mapping
         weather_data['barometric_trend'] = 4
         return weather_data
 

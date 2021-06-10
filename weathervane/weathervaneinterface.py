@@ -17,8 +17,6 @@ class WeatherVaneInterface(object):
         self.channel = kwargs['channel']
         self.frequency = kwargs['frequency']
         self.gpio = GPIO(**kwargs)
-        # self.gpio.__init__(channel=self.channel, frequency=self.frequency)
-        # TODO: check why I put the call to __init__ separately initially
         self.old_bit_string = None
         self.new_bit_string = None
         self.weather_data = {}
@@ -60,7 +58,7 @@ class WeatherVaneInterface(object):
             bit_length = int(formatting['length'])
             bit_key = formatting['key']
             bit_value = t_data[bit_key]
-            padding_string = '#0{0}b'.format(bit_length + 2)  # don't forget to account for '0b' in the length
+            padding_string = '#0{0}b'.format(bit_length + 2)  # account for '0b' in the length
             padded_bit_value = format(bit_value, padding_string)
             if s is not None:
                 s += bitstring.pack("bin:{}={}".format(bit_length, padded_bit_value))

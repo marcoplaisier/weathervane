@@ -12,7 +12,7 @@ class BuienradarJSONDecoder(JSONDecoder):
     def __init__(self):
         JSONDecoder.__init__(self, object_hook=self.dict_to_object)
 
-    def dict_to_object(self, s):
+    def dict_to_object(self, s: dict) -> dict:
         if type(s) == dict:
             for key, value in s.items():
                 try:
@@ -46,6 +46,10 @@ class BuienradarJSONDecoder(JSONDecoder):
         return s
 
 
+class InvalidConfigException(Exception):
+    pass
+
+
 class WeathervaneConfigParser(ConfigParser):
     DEFAULT_STATIONS = [6260, 6370]
 
@@ -54,23 +58,27 @@ class WeathervaneConfigParser(ConfigParser):
 
     def parse_bit_packing_section(self):
         bit_numbers = self.options('Bit Packing')
+        bit_numbers = sorted([int(n) for n in bit_numbers])
 
-        bits = {}
+        bits = []
         for bit_number in bit_numbers:
-            bit_config = self.get('Bit Packing', bit_number).split(',')
+            bit_config = self.get('Bit Packing', str(bit_number))
+            bit_config = bit_config.split(',')
             if len(bit_config) == 2:
-                bits[bit_number] = {
+                bits.append({
                     'key': bit_config[0],
                     'length': bit_config[1]
-                }
-            else:
-                bits[bit_number] = {
+                })
+            elif len(bit_config) == 5:
+                bits.append({
                     'key': bit_config[0],
                     'length': bit_config[1],
                     'min': bit_config[2],
                     'max': bit_config[3],
                     'step': bit_config[4]
-                }
+                })
+            else:
+                raise InvalidConfigException("")
         return bits
 
     def parse_station_numbers(self):
@@ -161,8 +169,7 @@ class BuienradarParser(object):
         self.stations = kwargs.get('stations', None)
         self.bits = kwargs.get('bits', None)
 
-    def parse(self, data):
-        assert type(data) == str
+    def parse(self, data: str) -> dict:
         decoder = BuienradarJSONDecoder()
         raw_weather_data = decoder.decode(data)
         raw_stations_weather_data = self._to_dict(
@@ -176,7 +183,7 @@ class BuienradarParser(object):
         return weather_data
 
     @staticmethod
-    def extract_field_names(bits_dict):
+    def extract_field_names(bits_dict: dict) -> list:
         result = []
         for v in bits_dict.values():
             result.append(v['key'])
@@ -184,13 +191,13 @@ class BuienradarParser(object):
         return result
 
     @staticmethod
-    def enrich(weather_data):
+    def enrich(weather_data: dict) -> dict:
         weather_data['apparent_temperature'] = BuienradarParser.calculate_temperature(weather_data)
         weather_data['barometric_trend'] = 4
         return weather_data
 
     @staticmethod
-    def merge(weather_data, stations):
+    def merge(weather_data: dict, stations: list) -> dict:
         primary_station = stations[0]
         weather_data[primary_station]['data_from_fallback'] = False
         weather_data[primary_station]['error'] = False
@@ -212,18 +219,18 @@ class BuienradarParser(object):
         return weather_data[primary_station]
 
     @staticmethod
-    def calculate_temperature(weather_data):
+    def calculate_temperature(weather_data: dict) -> float:
         windspeed = weather_data['windsnelheidMS']
         temperature = weather_data['temperatuurGC']
         humidity = weather_data['luchtvochtigheid']
         return Weather.apparent_temperature(windspeed=windspeed, temperature=temperature, humidity=humidity)
 
     @staticmethod
-    def _to_dict(stations_weather_data):
+    def _to_dict(stations_weather_data: dict) -> dict:
         return {station_data['@id']: station_data for station_data in stations_weather_data}
 
     @staticmethod
-    def map(weather_data, fields):
+    def map(weather_data: dict, fields: list) -> dict:
         r = {}
         for field in fields:
             r[field] = weather_data.get(BuienradarParser.FIELD_MAPPING[field], None)

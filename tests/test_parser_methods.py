@@ -9,7 +9,7 @@ def test_merge_with_fallback():
     }
 
     bp = BuienradarParser()
-    merged_data = bp.merge(weather_data, [1, 2])
+    merged_data = bp.merge(weather_data, [1, 2], required_fields=[{'key': 'luchtdruk'}])
     assert merged_data == {'data_from_fallback': True, 'error': False, 'luchtdruk': 1001}
 
 
@@ -21,7 +21,7 @@ def test_merge_without_fallback():
     }
 
     bp = BuienradarParser()
-    merged_data = bp.merge(weather_data, [1, 2])
+    merged_data = bp.merge(weather_data, [1, 2], required_fields=[{'key': 'luchtdruk'}])
     assert merged_data == {'data_from_fallback': False, 'error': False, 'luchtdruk': 1000}
 
 
@@ -34,5 +34,5 @@ def test_single_station():
     }
 
     bp = BuienradarParser()
-    merged_data = bp.merge(weather_data, [1])
+    merged_data = bp.merge(weather_data, [1], required_fields=[{'key': 'luchtdruk'}])
     assert merged_data == {'data_from_fallback': False, 'error': False, 'luchtdruk': None}

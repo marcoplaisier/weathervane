@@ -1,105 +1,55 @@
+import csv
 import os
-
-import pytest
+import unittest
+from datetime import datetime
 
 from weathervane.parser import BuienradarParser
 
 
-@pytest.fixture
-def complete_weather_data():
-    file_path = os.path.join(os.getcwd(), 'tests', 'buienradar.json')
-    with open(file_path, 'r', encoding='UTF-8') as f:
-        data = f.read()
-        config = {
-            'stations': [6275],
-            'bits': {
-                '0': {'key': 'winddirection'},
-                '1': {'key': 'windspeed'},
-                '2': {'key': 'windgusts'},
-                '3': {'key': 'windspeedBft'},
-                '4': {'key': 'airpressure'},
-                '5': {'key': 'temperature'},
-                '6': {'key': 'feeltemperature'},
-                '7': {'key': 'humidity'},
-                '8': {'key': 'stationname'},
-                '9': {'key': 'lat'},
-                '10': {'key': 'lon'},
-                '11': {'key': 'winddirection'},
-                '12': {'key': 'visibility'},
-                '13': {'key': 'precipitation'},
-                '14': {'key': 'groundtemperature'},
-                '15': {'key': 'barometric_trend'},
-                '16': {'key': 'data_from_fallback'},
-                '17': {'key': 'rainFallLastHour'},
-                '18': {'key': 'rainFallLast24Hour'}
+class testParser(unittest.TestCase):
+    def setUp(self):
+        file_path = os.path.join(os.getcwd(), 'tests', 'buienradar.json')
+        with open(file_path, 'r', encoding='UTF-8') as f:
+            data = f.read()
+            config = {
+                'stations': [6275, 6203],
+                'bits': {
+                    '0': {'key': 'wind_direction'},
+                    '1': {'key': 'wind_speed'},
+                    '2': {'key': 'wind_speed_max'},
+                    '3': {'key': 'wind_speed_bft'},
+                    '4': {'key': 'air_pressure'},
+                    '5': {'key': 'temperature'},
+                    '6': {'key': 'feeltemperature'},
+                    '7': {'key': 'humidity'},
+                    '8': {'key': 'station_name'},
+                    '9': {'key': 'latitude'},
+                    '10': {'key': 'longitude'},
+                    '11': {'key': 'date'},
+                    '12': {'key': 'wind_direction_code'},
+                    '13': {'key': 'sight_distance'},
+                    '14': {'key': 'precipitation'},
+                    '15': {'key': 'temperature_10_cm'},
+                    '16': {'key': 'barometric_trend'},
+                    '17': {'key': 'data_from_fallback'}
+                }
             }
-        }
-        bp = BuienradarParser(**config)
-        return {'data': bp.parse(data=data), 'config': config}
+            bp = BuienradarParser(**config)
+            self.weather_data = bp.parse(data=data)
 
+    def test_wind_speed_parse(self):
+        wind_speed = self.weather_data['windspeed']
+        assert wind_speed == 3.3
 
-@pytest.fixture
-def weather_data_with_fallback():
-    file_path = os.path.join(os.getcwd(), 'tests', 'buienradar.json')
-    with open(file_path, 'r', encoding='UTF-8') as f:
-        data = f.read()
-        config = {
-            'stations': [6308, 6275],
-            'bits': [
-                {'key': 'winddirection'},
-                {'key': 'windspeed'},
-                {'key': 'windgusts'},
-                {'key': 'windspeedBft'},
-                {'key': 'airpressure'},
-                {'key': 'temperature'},
-                {'key': 'feeltemperature'},
-                {'key': 'humidity'},
-                {'key': 'stationname'},
-                {'key': 'lat'},
-                {'key': 'lon'},
-                {'key': 'winddirection'},
-                {'key': 'visibility'},
-                {'key': 'precipitation'},
-                {'key': 'groundtemperature'},
-                {'key': 'barometric_trend'},
-                {'key': 'data_from_fallback'},
-                {'key': 'rainFallLastHour'},
-                {'key': 'rainFallLast24Hour'}
-            ]
-        }
-        bp = BuienradarParser(**config)
-        return {'data': bp.parse(data=data), 'config': config}
+    def test_rain_parse(self):
+        rain = self.weather_data['precipitation']
+        assert rain == 45.2
 
+    def test_temperature(self):
+        temperature = self.weather_data['temperature']
+        assert temperature == 20.2
 
-def test_if_all_fields_are_available(complete_weather_data):
-    for item in complete_weather_data['config']['bits'].values():
-        field_name = item['key']
-        try:
-            complete_weather_data['data'][field_name]
-        except KeyError:
-            pytest.fail(f"Field {field_name} was not present in weather data")
+    def test_feeltemperature(self):
+        apparent_temperature = self.weather_data['feeltemperature']
+        self.assertAlmostEqual(20, apparent_temperature, 0)
 
-
-def test_if_all_fields_are_available_with_fallback(weather_data_with_fallback):
-    for item in weather_data_with_fallback['config']['bits']:
-        field_name = item['key']
-        try:
-            weather_data_with_fallback['data'][field_name]
-        except KeyError:
-            pytest.fail(f"Field {field_name} was not present in weather data")
-
-
-def test_windspeed_for_station_6275(complete_weather_data):
-    windspeed = complete_weather_data['data']['windspeed']
-    assert windspeed == 3.3
-
-
-def test_feeltemperature_for_station_6275(complete_weather_data):
-    feeltemperature = complete_weather_data['data']['feeltemperature']
-    assert feeltemperature == 20.2
-
-
-def test_missing_visibility_for_station_6308(weather_data_with_fallback, complete_weather_data):
-    visibility_fallback = weather_data_with_fallback['data']['visibility']
-    visibility_complete = complete_weather_data['data']['visibility']
-    assert visibility_fallback == visibility_complete

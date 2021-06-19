@@ -88,7 +88,7 @@ class WeathervaneConfigParser(ConfigParser):
 
 
 class BuienradarParser(object):
-    DERIVED_FIELDS = ['error', 'DUMMY_BYTE', 'barometric_trend', 'data_from_fallback', 'random', 'service_byte']
+    DERIVED_FIELDS = ['error', 'DUMMY_BYTE', 'barometric_trend', 'data_from_fallback', 'random']
     TREND_MAPPING = {
         -1: 2,
         0: 4,
@@ -105,7 +105,7 @@ class BuienradarParser(object):
         raw_stations_weather_data = self._to_dict(
             raw_weather_data['actual']['stationmeasurements']
         )
-        raw_primary_station_data = self.merge(raw_stations_weather_data, self.stations, self.bits)
+        raw_primary_station_data = self.merge(raw_stations_weather_data, self.stations)
         station_weather_data = self.enrich(raw_primary_station_data)
 
         return station_weather_data
@@ -116,7 +116,7 @@ class BuienradarParser(object):
         return weather_data
 
     @staticmethod
-    def merge(weather_data: dict, stations: list, required_fields: list[dict]) -> dict:
+    def merge(weather_data: dict, stations: list) -> dict:
         primary_station = stations[0]
         weather_data[primary_station]['data_from_fallback'] = False
         weather_data[primary_station]['error'] = False
@@ -124,21 +124,16 @@ class BuienradarParser(object):
         secondary_stations = stations[1:]
         if not secondary_stations:
             return weather_data[primary_station]
-        for field_dict in required_fields:
-            field_name = field_dict['key']
-            value = weather_data[primary_station].get(field_name, None)
-            if value is None and field_name not in BuienradarParser.DERIVED_FIELDS:
+        for key, value in weather_data[primary_station].items():
+            if value is None and key not in BuienradarParser.DERIVED_FIELDS:
                 for secondary_station in secondary_stations:
-                    try:
-                        fallback_data = weather_data.get(secondary_station, {})[field_name]
-                        weather_data[primary_station][field_name] = fallback_data
+                    if weather_data.get(secondary_station, {}).get(key, None):
+                        weather_data[primary_station][key] = weather_data[secondary_station][key]
                         weather_data[primary_station]['data_from_fallback'] = True
-                        logging.info(f'Setting fallback, because {field_name} is missing')
+                        logging.info('Setting fallback, because {} is missing'.format(key))
                         break
-                    except KeyError:
-                        continue
                 else:
-                    logging.warning(f'No backup value found for {field_name}')
+                    logging.warning('No backup value found for {}'.format(key))
                     weather_data[primary_station]['error'] = True
         return weather_data[primary_station]
 

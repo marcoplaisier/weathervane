@@ -89,7 +89,7 @@ class WeatherVane(object):
             if not new_value:
                 continue
 
-            if key not in ['error', 'wind_direction', 'wind_direction', 'rain',
+            if key not in ['error', 'winddirection', 'winddirection', 'rain',
                            'barometric_trend'] and not self.reached:
                 try:
                     interpolated_value = float(old_value) + (

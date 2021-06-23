@@ -90,9 +90,9 @@ def test_if_all_fields_are_available_with_fallback(weather_data_with_fallback):
             pytest.fail(f"Field {field_name} was not present in weather data")
 
 
-def test_wind_speed_for_station_6275(complete_weather_data):
-    wind_speed = complete_weather_data['data']['windspeed']
-    assert wind_speed == 3.3
+def test_windspeed_for_station_6275(complete_weather_data):
+    windspeed = complete_weather_data['data']['windspeed']
+    assert windspeed == 3.3
 
 
 def test_feeltemperature_for_station_6275(complete_weather_data):

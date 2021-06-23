@@ -1,9 +1,6 @@
-import unittest
-import logging
-
-import bitstring
 from unittest.mock import MagicMock, patch
 
+import bitstring
 import pytest
 
 from weathervane.gpio import GPIO, SPISetupException, SPIDataTransmissionError

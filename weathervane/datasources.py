@@ -26,12 +26,12 @@ DEFAULT_WEATHER_DATA = {
 def get_weather_string_with_retries(max_retries=5, retry_interval=5):
     while max_retries > 0:
         try:
-            r = requests.get("https://api.buienradar.nl/data/public/1.1/jsonfeed", timeout=10)
+            r = requests.get("https://data.buienradar.nl/2.0/feed/json", timeout=10)
             if r.status_code == 200:
                 logging.info('Weather data retrieved in {} ms'.format(r.elapsed))
                 return r.text
             else:
-                logging.warning('Got response, but unhandleable status code {}'.format(r.status_code))
+                logging.warning('Got response, but unhandled status code {}'.format(r.status_code))
         except (ConnectionError, TimeoutError):
             if max_retries > 0:
                 logging.warning('Retrieving data failed. Retrying after {} seconds'.format(retry_interval))

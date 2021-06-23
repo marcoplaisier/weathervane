@@ -11,7 +11,7 @@ def test_fetch():
         '2': {'key': 'windgusts'},
         '3': {'key': 'windspeedBft'},
         '4': {'key': 'airpressure'}}
-    fetch_weather_data(p1, stations=[6209], bits=bits)
+    fetch_weather_data(p1, stations=[6260], bits=bits)
     p2.poll(timeout=5)
     data = p2.recv()
     assert 'winddirection' in data

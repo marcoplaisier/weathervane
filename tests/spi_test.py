@@ -11,11 +11,6 @@ def test_initialization_wrong_channel():
         g = GPIO(channel=2, frequency=25000, library='wiringPi')
 
 
-def test_initialization_non_existing_lib():
-    with pytest.raises(SPISetupException):
-        g = GPIO(library='not-existing-here', channel=0, frequency=25000)
-
-
 @patch('weathervane.gpio.GPIO.load_library_by_name')
 def test_initialization(mock_class):
     spi = GPIO(channel=0, frequency=25000, library='wiringPi')
@@ -63,15 +58,6 @@ def test_pack_with_large_bytes(mock_class):
     data = [-10, -1, 0, 255, 256, 266]
     with pytest.raises(ValueError):
         spi.pack(data=data)
-
-
-@patch('weathervane.gpio.GPIO.load_library_by_name')
-def test_pack_with_iterable(mock_class):
-    spi = GPIO(channel=0, frequency=25000, library='wiringPi')
-    data = list(range(0, 4))
-    data_packet, length = spi.pack(data)
-    assert [0, 1, 2, 3] == list(data_packet)
-    assert 4 == length
 
 
 @patch('weathervane.gpio.GPIO.load_library_by_name')

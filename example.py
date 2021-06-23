@@ -1,8 +1,6 @@
-import json
 import os
 
 from weathervane.parser import BuienradarParser
-from weathervane.weathervaneinterface import WeatherVaneInterface
 
 a = {'bits': [{'key': 'winddirection',
                'length': '4'},
@@ -66,3 +64,6 @@ for i, data in enumerate(bits):
     s = "hex:{0}, ".format(formatting['length'])
     fmt += s
 hexstring = fmt[:-1]
+
+if __name__ == '__main__':
+    print(hexstring)

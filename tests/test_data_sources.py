@@ -1,6 +1,6 @@
 from multiprocessing import Pipe
 
-from weathervane.datasources import fetch_weather_data, DEFAULT_WEATHER_DATA
+from weathervane.datasources import fetch_weather_data
 
 
 def test_fetch():

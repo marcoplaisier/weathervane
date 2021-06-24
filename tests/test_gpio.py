@@ -12,6 +12,7 @@ class TestGPIO(unittest.TestCase):
 
     def test_gpio_context_manager(self, mock_loader):
         g = GPIO(channel=0, frequency=10000, library='None', interrupt=0)
+        l = [128]
         result, length = g.pack(l)
 
         self.assertEqual(list(result), l)

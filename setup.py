@@ -1,11 +1,4 @@
-import sys
-import getpass
-import os
-
-import requests
 from setuptools import setup, find_packages
-from setuptools.command.install import install
-from werkzeug.security import generate_password_hash
 
 
 def long_description():

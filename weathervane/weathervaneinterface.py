@@ -1,17 +1,17 @@
 import logging
+import time
 from random import randint
 
 import bitstring
-import time
 
 from weathervane.gpio import GPIO
 
 
 class WeatherVaneInterface(object):
     winddirectionS = {'N': 0x00, 'NNO': 0x01, 'NO': 0x02, 'ONO': 0x03,
-                       'O': 0x04, 'OZO': 0x05, 'ZO': 0x06, 'ZZO': 0x07,
-                       'Z': 0x08, 'ZZW': 0x09, 'ZW': 0x0A, 'WZW': 0x0B,
-                       'W': 0x0C, 'WNW': 0x0D, 'NW': 0x0E, 'NNW': 0x0F}
+                      'O': 0x04, 'OZO': 0x05, 'ZO': 0x06, 'ZZO': 0x07,
+                      'Z': 0x08, 'ZZW': 0x09, 'ZW': 0x0A, 'WZW': 0x0B,
+                      'W': 0x0C, 'WNW': 0x0D, 'NW': 0x0E, 'NNW': 0x0F}
 
     def __init__(self, *args, **kwargs):
         self.channel = kwargs['channel']
@@ -172,20 +172,20 @@ class Display(object):
         end_time = configuration.get('end-time', '22:00')
         self.end_at_minutes = Display.convert_to_minutes(end_time)
         self.pin = configuration.get('pin', 4)
-        
+
     @staticmethod
     def convert_to_minutes(time_text):
         time_array = [int(time_element) for time_element in time_text.split(':')]
         minutes = time_array[0] * 60
         minutes += time_array[1]
         return minutes
-    
+
     def is_active(self, current_minute):
         if self.start_at_minutes < self.end_at_minutes:
             return self.start_at_minutes < current_minute < self.end_at_minutes
         else:
             return self.end_at_minutes < current_minute < self.start_at_minutes
-    
+
     def tick(self):
         if self.auto_disable_display:
             time_text = time.strftime("%H:%M")

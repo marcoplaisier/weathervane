@@ -1,8 +1,5 @@
-import datetime
-import json
-from pprint import pprint
-
 import os
+
 from behave import *
 
 from weathervane.parser import BuienradarParser
@@ -15,23 +12,22 @@ def step_impl(context):
     """
     :type context: behave.runner.Context
     """
-    assert context.result['winddirection'] == "ONO"
-    assert context.result['windspeed'] == 5.01
-    assert context.result['windgusts'] == 8.2
-    assert context.result['windspeedBft'] == 3
-    assert context.result['airpressure'] == 1011.560
-    assert context.result['temperature'] == 15.2
-    assert context.result['feeltemperature'] == 15.2
-    assert context.result['humidity'] == 47
-    assert context.result['date'] == datetime.datetime(2015, 5, 14, 14, 16, 50)
-    assert context.result['visibility'] == 37000
+    assert context.result['winddirection'] == "WZW"
+    assert context.result['windspeed'] == 3.3
+    assert context.result['windgusts'] == 5.5
+    assert context.result['windspeedBft'] == 2
+    assert context.result['airpressure'] == 1014.8
+    assert context.result['temperature'] == 20.2
+    assert context.result['feeltemperature'] == 20.2
+    assert context.result['humidity'] == 73.0
+    assert context.result['timestamp'] == '2021-06-19T13:40:00'
+    assert context.result['visibility'] == 18100.0
     assert context.result['precipitation'] == 45.2
-    assert context.result['groundtemperature'] == 18.0
+    assert context.result['groundtemperature'] == 21.4
     assert context.result['barometric_trend'] == 4
     assert context.result['data_from_fallback'] == False
-    assert context.result['lat'] == 52.04
-    assert context.result['lon'] == 5.53
-    assert context.result['DUMMY_BYTE'] == None
+    assert context.result['lat'] == 52.07
+    assert context.result['lon'] == 5.88
     assert context.result['stationname'] == "Meetstation Arnhem"
 
 

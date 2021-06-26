@@ -1,6 +1,7 @@
 import logging
 import time
 from random import randint
+from typing import List
 
 import bitstring
 
@@ -20,7 +21,7 @@ class WeatherVaneInterface(object):
         self.old_bit_string = None
         self.new_bit_string = None
         self.weather_data = {}
-        self.requested_data = kwargs['bits']
+        self.bits: List[dict] = kwargs['bits']
         self.stations = kwargs['stations']
 
     def __repr__(self):
@@ -51,10 +52,10 @@ class WeatherVaneInterface(object):
         @return: a bitstring with the data in bits according to the configuration
         """
         s = None
-        t_data = self.transmittable_data(weather_data, self.requested_data)
+        t_data = self.transmittable_data(weather_data, self.bits)
 
-        for i, data in enumerate(self.requested_data):
-            formatting = self.requested_data[str(i)]
+        for i, data in enumerate(self.bits):
+            formatting = self.bits[i]
             bit_length = int(formatting['length'])
             bit_key = formatting['key']
             bit_value = t_data[bit_key]
@@ -105,38 +106,37 @@ class WeatherVaneInterface(object):
 
         return self.weather_data
 
-    def transmittable_data(self, weather_data, requested_data):
+    def transmittable_data(self, weather_data, requested_data: List[dict]):
         result = {}
 
-        for key, fmt in list(requested_data.items()):
-            measurement_name = requested_data[key]['key']
-            value = weather_data.get(fmt['key'], 0)
+        for data_point in requested_data:
+            measurement_name = data_point['key']
+            value = weather_data.get(measurement_name, 0)
             if measurement_name == 'random':
-                length = int(requested_data[key]['length'])
+                length = int(data_point['length'])
                 value = randint(0, 2 ** length - 1)
 
-            result[measurement_name] = self.value_to_bits(measurement_name, value, fmt)
+            step_value = float(data_point.get('step', 1))
+            min_value = float(data_point.get('min', 0))
+            max_value = float(data_point.get('max', 255))
+            result[measurement_name] = self.value_to_bits(measurement_name, value, step_value, min_value, max_value)
             result = self.compensate_wind(result)
 
         return result
 
-    def value_to_bits(self, measurement_name, value, fmt):
+    def value_to_bits(self, measurement_name, value, step_value, min_value, max_value):
         if measurement_name == 'winddirection':
             if value in self.winddirectionS:
                 return self.winddirectionS[value]
             else:
                 logging.debug('Wind direction {} not found. Using North as substitute.'.format(value))
                 return 0
-        elif measurement_name == 'rain':
+        elif measurement_name == 'precipitation':
             if value and value > 0:
                 return 1
             else:
                 return 0
         else:
-            step_value = float(fmt.get('step', 1))
-            min_value = float(fmt.get('min', 0))
-            max_value = float(fmt.get('max', 255))
-
             if not value or value < min_value:
                 logging.debug('Value {} for {} is smaller than minimum {}'.format(value, measurement_name, min_value))
                 value = min_value

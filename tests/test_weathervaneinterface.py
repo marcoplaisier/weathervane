@@ -72,35 +72,35 @@ class WeatherVaneTest(unittest.TestCase):
 
     def test_error_winddirection(self, mock_class):
         weather_data = {'winddirection': 'A'}
-        requested_data = {'0': {'key': 'winddirection', 'length': '4'}}
+        requested_data = [{'key': 'winddirection', 'length': '4'}]
         expected = {'winddirection': 0}
         result = self.interface.transmittable_data(weather_data, requested_data)
         self.assertEqual(expected, result)
 
     def test_air_pressure(self, mock_class):
         weather_data = {'airpressure': 901}
-        requested_data = {'1': {'key': 'airpressure', 'length': '8', 'max': '1155', 'min': '900', 'step': '1'}}
+        requested_data = [{'key': 'airpressure', 'length': '8', 'max': '1155', 'min': '900', 'step': '1'}]
         expected = {'airpressure': 1}
         result = self.interface.transmittable_data(weather_data, requested_data)
         self.assertEqual(expected, result)
 
     def test_value_rounded(self, mock_class):
         weather_data = {'airpressure': 48.493}
-        requested_data = {'0': {'key': 'airpressure', 'min': '0', 'max': 63}}
+        requested_data = [{'key': 'airpressure', 'min': '0', 'max': 63}]
         expected = {'airpressure': 48}
         result = self.interface.transmittable_data(weather_data, requested_data)
         self.assertEqual(expected, result)
 
     def test_value_too_low(self, mock_class):
         weather_data = {'windspeed': -1}
-        requested_data = {'0': {'key': 'windspeed', 'min': '0', 'max': 63}}
+        requested_data = [{'key': 'windspeed', 'min': '0', 'max': 63}]
         expected = {'windspeed': 0}
         result = self.interface.transmittable_data(weather_data, requested_data)
         self.assertEqual(expected, result)
 
     def test_value_too_high(self, mock_class):
         weather_data = {'windspeed': 64}
-        requested_data = {'0': {'key': 'windspeed', 'min': '0', 'max': 63}}
+        requested_data = [{'key': 'windspeed', 'min': '0', 'max': 63}]
         expected = {'windspeed': 63}
         result = self.interface.transmittable_data(weather_data, requested_data)
         self.assertEqual(expected, result)
@@ -108,7 +108,7 @@ class WeatherVaneTest(unittest.TestCase):
     def test_winddirection(self, mock_class):
         weather_data = {'winddirection': 'WNW'}
         expected = {'winddirection': 0x0D}
-        requested_data = {'0': {'key': 'winddirection', 'length': 4}}
+        requested_data = [{'key': 'winddirection', 'length': 4}]
         result = self.interface.transmittable_data(weather_data, requested_data)
         self.assertEqual(expected, result)
 
@@ -116,8 +116,8 @@ class WeatherVaneTest(unittest.TestCase):
         windspeed = 10
         weather_data = {'windspeed': windspeed + 1, 'windgusts': windspeed}
         expected = {'windspeed': windspeed, 'windgusts': windspeed}
-        requested_data = {'0': {'key': 'windspeed', 'min': 0, 'step': 1, 'max': 63, 'length': 8},
-                          '1': {'key': 'windgusts', 'min': 0, 'step': 1, 'max': 63, 'length': 8}}
+        requested_data = [{'key': 'windspeed', 'min': 0, 'step': 1, 'max': 63, 'length': 8},
+                          {'key': 'windgusts', 'min': 0, 'step': 1, 'max': 63, 'length': 8}]
         result = self.interface.transmittable_data(weather_data, requested_data)
         self.assertEqual(expected, result)
 

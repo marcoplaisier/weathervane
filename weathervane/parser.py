@@ -1,6 +1,7 @@
 import json
 import logging
 from configparser import ConfigParser
+from typing import Sequence
 
 
 class InvalidConfigException(Exception):
@@ -116,7 +117,7 @@ class BuienradarParser(object):
         return weather_data
 
     @staticmethod
-    def merge(weather_data: dict, stations: list, required_fields: list[dict]) -> dict:
+    def merge(weather_data: dict, stations: list, required_fields: Sequence[dict]) -> dict:
         primary_station = stations[0]
         weather_data[primary_station]['data_from_fallback'] = False
         weather_data[primary_station]['error'] = False

@@ -12,27 +12,27 @@ def complete_weather_data():
         data = f.read()
         config = {
             'stations': [6275],
-            'bits': {
-                '0': {'key': 'winddirection'},
-                '1': {'key': 'windspeed'},
-                '2': {'key': 'windgusts'},
-                '3': {'key': 'windspeedBft'},
-                '4': {'key': 'airpressure'},
-                '5': {'key': 'temperature'},
-                '6': {'key': 'feeltemperature'},
-                '7': {'key': 'humidity'},
-                '8': {'key': 'stationname'},
-                '9': {'key': 'lat'},
-                '10': {'key': 'lon'},
-                '11': {'key': 'winddirection'},
-                '12': {'key': 'visibility'},
-                '13': {'key': 'precipitation'},
-                '14': {'key': 'groundtemperature'},
-                '15': {'key': 'barometric_trend'},
-                '16': {'key': 'data_from_fallback'},
-                '17': {'key': 'rainFallLastHour'},
-                '18': {'key': 'rainFallLast24Hour'}
-            }
+            'bits': [
+                {'key': 'winddirection'},
+                {'key': 'windspeed'},
+                {'key': 'windgusts'},
+                {'key': 'windspeedBft'},
+                {'key': 'airpressure'},
+                {'key': 'temperature'},
+                {'key': 'feeltemperature'},
+                {'key': 'humidity'},
+                {'key': 'stationname'},
+                {'key': 'lat'},
+                {'key': 'lon'},
+                {'key': 'winddirection'},
+                {'key': 'visibility'},
+                {'key': 'precipitation'},
+                {'key': 'groundtemperature'},
+                {'key': 'barometric_trend'},
+                {'key': 'data_from_fallback'},
+                {'key': 'rainFallLastHour'},
+                {'key': 'rainFallLast24Hour'}
+            ]
         }
         bp = BuienradarParser(**config)
         return {'data': bp.parse(data=data), 'config': config}
@@ -72,7 +72,7 @@ def weather_data_with_fallback():
 
 
 def test_if_all_fields_are_available(complete_weather_data):
-    for item in complete_weather_data['config']['bits'].values():
+    for item in complete_weather_data['config']['bits']:
         field_name = item['key']
         try:
             complete_weather_data['data'][field_name]

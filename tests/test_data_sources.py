@@ -5,12 +5,12 @@ from weathervane.datasources import fetch_weather_data
 
 def test_fetch():
     p1, p2 = Pipe()
-    bits = {
-        '0': {'key': 'winddirection'},
-        '1': {'key': 'windspeed'},
-        '2': {'key': 'windgusts'},
-        '3': {'key': 'windspeedBft'},
-        '4': {'key': 'airpressure'}}
+    bits = [
+        {'key': 'winddirection'},
+        {'key': 'windspeed'},
+        {'key': 'windgusts'},
+        {'key': 'windspeedBft'},
+        {'key': 'airpressure'}]
     fetch_weather_data(p1, stations=[6260], bits=bits)
     p2.poll(timeout=5)
     data = p2.recv()

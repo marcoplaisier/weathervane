@@ -1,8 +1,7 @@
 import os
+import time
 import unittest
 from multiprocessing import Process, Pipe
-
-import time
 
 from weathervane.datasources import fetch_weather_data
 from weathervane.parser import WeathervaneConfigParser
@@ -20,4 +19,4 @@ class RecursionTest(unittest.TestCase):
         while not p_end2.poll():
             time.sleep(0.1)
 
-        result = p_end2.recv()
+        p_end2.recv()

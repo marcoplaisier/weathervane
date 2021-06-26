@@ -1,5 +1,6 @@
 import unittest
 from unittest.mock import patch
+
 from weathervane.gpio import GPIO
 
 
@@ -7,7 +8,6 @@ from weathervane.gpio import GPIO
 class TestGPIO(unittest.TestCase):
     def test_init_both_pins_and_spi(self, mock_loader):
         gpio = GPIO(channel=0, frequency=500000, library='wiringPi')
-        # gpio.handle.wiringPiSetup.assert_called_once_with()
         gpio.handle.wiringPiSPISetup.assert_called_once_with(0, 500000)
 
     def test_gpio_context_manager(self, mock_loader):
@@ -18,8 +18,6 @@ class TestGPIO(unittest.TestCase):
         self.assertEqual(list(result), l)
 
     def test_constructor(self, mock_loader):
-        test = None
-
         g = GPIO(channel=0, frequency=0, library='wiringPi')
         self.assertTrue(g)
 

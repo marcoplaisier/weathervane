@@ -1,49 +1,11 @@
-import datetime
+import json
 import logging
-from json import JSONDecoder
 from configparser import ConfigParser
+from typing import Sequence
 
-from weathervane.weather import Weather
 
-
-class BuienradarJSONDecoder(JSONDecoder):
-    INVALID_DATA = ['-', '', None]
-
-    def __init__(self):
-        JSONDecoder.__init__(self, object_hook=self.dict_to_object)
-
-    def dict_to_object(self, s):
-        if type(s) == dict:
-            for key, value in s.items():
-                try:
-                    if type(value) != dict and type(value) != list:
-                        s[key] = datetime.datetime.strptime(value, '%m-%d-%Y %H:%M:%S')
-                except (ValueError, TypeError):
-                    try:
-                        if type(value) != dict and type(value) != list:
-                            s[key] = datetime.datetime.strptime(value, '%m/%d/%Y %H:%M:%S')
-                    except (ValueError, TypeError):
-                        pass
-
-                if value in self.INVALID_DATA:
-                    if key in ['regenMMPU', 'zonintensiteitWM2', 'zichtmeters']:
-                        s[key] = 0
-                    else:
-                        s[key] = None
-                    continue
-
-                try:
-                    s[key] = int(value)
-                    continue
-                except (ValueError, TypeError):
-                    pass
-
-                try:
-                    s[key] = float(value)
-                    continue
-                except (ValueError, TypeError):
-                    pass
-        return s
+class InvalidConfigException(Exception):
+    pass
 
 
 class WeathervaneConfigParser(ConfigParser):
@@ -54,23 +16,27 @@ class WeathervaneConfigParser(ConfigParser):
 
     def parse_bit_packing_section(self):
         bit_numbers = self.options('Bit Packing')
+        bit_numbers = sorted([int(n) for n in bit_numbers])
 
-        bits = {}
+        bits = []
         for bit_number in bit_numbers:
-            bit_config = self.get('Bit Packing', bit_number).split(',')
+            bit_config = self.get('Bit Packing', str(bit_number))
+            bit_config = bit_config.split(',')
             if len(bit_config) == 2:
-                bits[bit_number] = {
+                bits.append({
                     'key': bit_config[0],
                     'length': bit_config[1]
-                }
-            else:
-                bits[bit_number] = {
+                })
+            elif len(bit_config) == 5:
+                bits.append({
                     'key': bit_config[0],
                     'length': bit_config[1],
                     'min': bit_config[2],
                     'max': bit_config[3],
                     'step': bit_config[4]
-                }
+                })
+            else:
+                raise InvalidConfigException("")
         return bits
 
     def parse_station_numbers(self):
@@ -123,33 +89,7 @@ class WeathervaneConfigParser(ConfigParser):
 
 
 class BuienradarParser(object):
-    DERIVED_FIELDS = ['error', 'DUMMY_BYTE', 'barometric_trend', 'data_from_fallback', 'random', 'apparent_temperature']
-    FIELD_MAPPING = {
-        'air_pressure': 'luchtdruk',
-        'date': 'datum',
-        'humidity': 'luchtvochtigheid',
-        'latitude': 'lat',
-        'longitude': 'lon',
-        'rain': 'regenMMPU',
-        'rain_mm_per_hour': 'regenMMPU',
-        'random': 'random',
-        'sight_distance': 'zichtmeters',
-        'temperature': 'temperatuurGC',
-        'temperature_10_cm': 'temperatuur10cm',
-        'station_name': 'stationnaam',
-        'apparent_temperature': 'apparent_temperature',
-        'wind_direction': 'windrichting',
-        'wind_direction_code': 'windrichting',
-        'wind_direction_degrees': 'windrichtingGR',
-        'wind_speed': 'windsnelheidMS',
-        'wind_speed_max': 'windstotenMS',
-        'wind_speed_bft': 'windsnelheidBF',
-        'data_from_fallback': 'data_from_fallback',
-        'barometric_trend': 'barometric_trend',
-        'error': 'error',
-        'DUMMY_BYTE': 'DUMMY_BYTE',
-        'service_byte': 'service_byte'
-    }
+    DERIVED_FIELDS = ['error', 'DUMMY_BYTE', 'barometric_trend', 'data_from_fallback', 'random', 'service_byte']
     TREND_MAPPING = {
         -1: 2,
         0: 4,
@@ -161,37 +101,23 @@ class BuienradarParser(object):
         self.stations = kwargs.get('stations', None)
         self.bits = kwargs.get('bits', None)
 
-    def parse(self, data):
-        assert type(data) == str
-        decoder = BuienradarJSONDecoder()
-        raw_weather_data = decoder.decode(data)
+    def parse(self, data: str) -> dict:
+        raw_weather_data = json.loads(data)
         raw_stations_weather_data = self._to_dict(
-            raw_weather_data['buienradarnl']['weergegevens']['actueel_weer']['weerstations']['weerstation']
+            raw_weather_data['actual']['stationmeasurements']
         )
-        raw_primary_station_data = self.merge(raw_stations_weather_data, self.stations)
+        raw_primary_station_data = self.merge(raw_stations_weather_data, self.stations, self.bits)
         station_weather_data = self.enrich(raw_primary_station_data)
 
-        fields = self.extract_field_names(self.bits)
-        weather_data = self.map(station_weather_data, fields)
-        return weather_data
+        return station_weather_data
 
     @staticmethod
-    def extract_field_names(bits_dict):
-        result = []
-        for v in bits_dict.values():
-            result.append(v['key'])
-
-        return result
-
-    @staticmethod
-    def enrich(weather_data):
-        weather_data['apparent_temperature'] = BuienradarParser.calculate_temperature(weather_data)
-        # TODO: store data in sqlite db for trend mapping
+    def enrich(weather_data: dict) -> dict:
         weather_data['barometric_trend'] = 4
         return weather_data
 
     @staticmethod
-    def merge(weather_data, stations):
+    def merge(weather_data: dict, stations: list, required_fields: Sequence[dict]) -> dict:
         primary_station = stations[0]
         weather_data[primary_station]['data_from_fallback'] = False
         weather_data[primary_station]['error'] = False
@@ -199,35 +125,24 @@ class BuienradarParser(object):
         secondary_stations = stations[1:]
         if not secondary_stations:
             return weather_data[primary_station]
-        for key, value in weather_data[primary_station].items():
-            if value is None and key not in BuienradarParser.DERIVED_FIELDS:
+        for field_dict in required_fields:
+            field_name = field_dict['key']
+            value = weather_data[primary_station].get(field_name, None)
+            if value is None and field_name not in BuienradarParser.DERIVED_FIELDS:
                 for secondary_station in secondary_stations:
-                    if weather_data.get(secondary_station, {}).get(key, None):
-                        weather_data[primary_station][key] = weather_data[secondary_station][key]
+                    try:
+                        fallback_data = weather_data.get(secondary_station, {})[field_name]
+                        weather_data[primary_station][field_name] = fallback_data
                         weather_data[primary_station]['data_from_fallback'] = True
-                        logging.info('Setting fallback, because {} is missing'.format(key))
+                        logging.info(f'Setting fallback, because {field_name} is missing')
                         break
+                    except KeyError:
+                        continue
                 else:
-                    logging.warning('No backup value found for {}'.format(key))
+                    logging.warning(f'No backup value found for {field_name}')
                     weather_data[primary_station]['error'] = True
         return weather_data[primary_station]
 
     @staticmethod
-    def calculate_temperature(weather_data):
-        windspeed = weather_data['windsnelheidMS']
-        temperature = weather_data['temperatuurGC']
-        humidity = weather_data['luchtvochtigheid']
-        return Weather.apparent_temperature(windspeed=windspeed, temperature=temperature, humidity=humidity)
-
-    @staticmethod
-    def _to_dict(stations_weather_data):
-        return {station_data['@id']: station_data for station_data in stations_weather_data}
-
-    @staticmethod
-    def map(weather_data, fields):
-        r = {}
-        for field in fields:
-            r[field] = weather_data.get(BuienradarParser.FIELD_MAPPING[field], None)
-            if field == 'station_name':
-                r[field] = r['station_name']['#text']
-        return r
+    def _to_dict(stations_weather_data: dict) -> dict:
+        return {station_data['stationid']: station_data for station_data in stations_weather_data}

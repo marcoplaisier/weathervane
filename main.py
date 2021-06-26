@@ -29,54 +29,6 @@ class WeatherVane(object):
         self.end_collection_time = datetime.datetime.now()
         self.reached = False
 
-    def test_mode(self):
-        """
-        Test mode is used to output a predicable sequence of bytes to
-        the output pins.
-        The program will send 3 bytes every second to the pins.
-        - Byte 1: an increasing counter (modulo 255)
-        - Byte 2: a decreasing counter (idem)
-        - Byte 3: switches between 0x55 and 0xAA
-
-        """
-        logging.info("Starting test mode")
-        interface = TestInterface(channel=0, frequency=25000)
-        counter = 0
-
-        while True:
-            counter += 1
-            if counter % 2:
-                test = 0x55
-            else:
-                test = 0xAA
-
-            data = [counter % 255, (255 - counter) % 255, test]
-
-            interface.send(data)
-            time.sleep(1)
-
-    def check_selected_station(self, selected_station):
-        """Check if another station is selected and change it when it has
-
-        Determine whether the selected station has changed on the interface. If it has changed, then immediately start
-        using data from this new station and return the id of the newly selected station.
-        In the config-file you can specify a list of stations where data may be collected from. You can choose the
-        specific station by also specifying on or more pins on the raspberry that together form a bitwise number.
-        E.g you want to select one of four stations. You will need to specify 2 pins on the raspberry (2**2) that select
-        on of these four stations. If pin 0 is high and pin 1 is low, you will select station 2. If both pins are high,
-        you will select station 3, etc.
-
-        Side effect: reset counter to 0 if another station is selected
-
-        @param selected_station: the currently used station
-        @return: either the id of the new station or the id of the station already in use
-        """
-        station_id = self.interface.selected_station
-        if station_id != selected_station:  # reset if a new station is selected
-            self.counter = 0
-            logging.info("New station selected: {}".format(station_id))
-        return station_id
-
     def start_data_collection(self, pipe_end):
         """Side effect: reset counter to 0
 
@@ -137,7 +89,7 @@ class WeatherVane(object):
             if not new_value:
                 continue
 
-            if key not in ['error', 'wind_direction', 'wind_direction', 'rain',
+            if key not in ['error', 'winddirection', 'winddirection', 'rain',
                            'barometric_trend'] and not self.reached:
                 try:
                     interpolated_value = float(old_value) + (

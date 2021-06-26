@@ -1,24 +1,22 @@
 import logging
+import time
 from random import randint
 
 import bitstring
-import time
 
 from weathervane.gpio import GPIO
 
 
 class WeatherVaneInterface(object):
-    WIND_DIRECTIONS = {'N': 0x00, 'NNO': 0x01, 'NO': 0x02, 'ONO': 0x03,
-                       'O': 0x04, 'OZO': 0x05, 'ZO': 0x06, 'ZZO': 0x07,
-                       'Z': 0x08, 'ZZW': 0x09, 'ZW': 0x0A, 'WZW': 0x0B,
-                       'W': 0x0C, 'WNW': 0x0D, 'NW': 0x0E, 'NNW': 0x0F}
+    winddirectionS = {'N': 0x00, 'NNO': 0x01, 'NO': 0x02, 'ONO': 0x03,
+                      'O': 0x04, 'OZO': 0x05, 'ZO': 0x06, 'ZZO': 0x07,
+                      'Z': 0x08, 'ZZW': 0x09, 'ZW': 0x0A, 'WZW': 0x0B,
+                      'W': 0x0C, 'WNW': 0x0D, 'NW': 0x0E, 'NNW': 0x0F}
 
     def __init__(self, *args, **kwargs):
         self.channel = kwargs['channel']
         self.frequency = kwargs['frequency']
         self.gpio = GPIO(**kwargs)
-        # self.gpio.__init__(channel=self.channel, frequency=self.frequency)
-        # TODO: check why I put the call to __init__ separately initially
         self.old_bit_string = None
         self.new_bit_string = None
         self.weather_data = {}
@@ -60,7 +58,7 @@ class WeatherVaneInterface(object):
             bit_length = int(formatting['length'])
             bit_key = formatting['key']
             bit_value = t_data[bit_key]
-            padding_string = '#0{0}b'.format(bit_length + 2)  # don't forget to account for '0b' in the length
+            padding_string = '#0{0}b'.format(bit_length + 2)  # account for '0b' in the length
             padded_bit_value = format(bit_value, padding_string)
             if s is not None:
                 s += bitstring.pack("bin:{}={}".format(bit_length, padded_bit_value))
@@ -123,9 +121,9 @@ class WeatherVaneInterface(object):
         return result
 
     def value_to_bits(self, measurement_name, value, fmt):
-        if measurement_name == 'wind_direction':
-            if value in self.WIND_DIRECTIONS:
-                return self.WIND_DIRECTIONS[value]
+        if measurement_name == 'winddirection':
+            if value in self.winddirectionS:
+                return self.winddirectionS[value]
             else:
                 logging.debug('Wind direction {} not found. Using North as substitute.'.format(value))
                 return 0
@@ -156,11 +154,11 @@ class WeatherVaneInterface(object):
             return int(value)
 
     def compensate_wind(self, result):
-        wind_speed = result.get('wind_speed', 0)
-        wind_speed_max = result.get('wind_speed_max', wind_speed)
-        if wind_speed > wind_speed_max:
-            result['wind_speed'] = wind_speed_max
-            logging.debug('Wind speed {} should not exceed maximum wind speed {}'.format(wind_speed, wind_speed_max))
+        windspeed = result.get('windspeed', 0)
+        windgusts = result.get('windgusts', windspeed)
+        if windspeed > windgusts:
+            result['windspeed'] = windgusts
+            logging.debug('Wind speed {} should not exceed maximum wind speed {}'.format(windspeed, windgusts))
 
         return result
 
@@ -174,20 +172,20 @@ class Display(object):
         end_time = configuration.get('end-time', '22:00')
         self.end_at_minutes = Display.convert_to_minutes(end_time)
         self.pin = configuration.get('pin', 4)
-        
+
     @staticmethod
     def convert_to_minutes(time_text):
         time_array = [int(time_element) for time_element in time_text.split(':')]
         minutes = time_array[0] * 60
         minutes += time_array[1]
         return minutes
-    
+
     def is_active(self, current_minute):
         if self.start_at_minutes < self.end_at_minutes:
             return self.start_at_minutes < current_minute < self.end_at_minutes
         else:
             return self.end_at_minutes < current_minute < self.start_at_minutes
-    
+
     def tick(self):
         if self.auto_disable_display:
             time_text = time.strftime("%H:%M")

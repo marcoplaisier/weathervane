@@ -1,7 +1,7 @@
 import json
 import logging
 from configparser import ConfigParser
-from typing import Sequence
+from typing import Sequence, List
 
 
 class InvalidConfigException(Exception):
@@ -14,7 +14,7 @@ class WeathervaneConfigParser(ConfigParser):
     def __init__(self):
         super(WeathervaneConfigParser, self).__init__()
 
-    def parse_bit_packing_section(self):
+    def parse_bit_packing_section(self) -> List[dict]:
         bit_numbers = self.options('Bit Packing')
         bit_numbers = sorted([int(n) for n in bit_numbers])
 
@@ -63,7 +63,7 @@ class WeathervaneConfigParser(ConfigParser):
         @return: configuration as dictionary
         """
         station_config = self.parse_station_numbers()
-        bits = self.parse_bit_packing_section()
+        bits: List[dict] = self.parse_bit_packing_section()
 
         configuration = {
             'extended-error-mode': self.getboolean('General', 'extended-error-mode'),

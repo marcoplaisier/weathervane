@@ -49,7 +49,10 @@ raspi-config nonint do_spi 0
 gpio_version=$(gpio -v) >/dev/null 2>&1
 if [ ! "$gpio_version" ]; then
   echo "Installing wiringPi..."
-  sudo apt-get install wiringpi
+  cd /tmp
+  wget https://project-downloads.drogon.net/wiringpi-latest.deb
+  sudo dpkg -i wiringpi-latest.deb
+  cd ~
   echo "Installation done."
 fi
 

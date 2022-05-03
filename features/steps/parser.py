@@ -1,6 +1,6 @@
 import os
 
-from behave import *
+from behave import use_step_matcher, given, then
 
 from weathervane.parser import BuienradarParser
 

@@ -52,7 +52,7 @@ def fetch_weather_data(conn, *args, **kwargs):
         bp = BuienradarParser(*args, **kwargs)
         try:
             wd = bp.parse(data)
-        except:
+        except Exception:
             logging.error('Data parsing failed. Cannot send good data. Setting error.')
             wd = DEFAULT_WEATHER_DATA
     else:

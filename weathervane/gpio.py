@@ -159,14 +159,14 @@ class GPIO(object):
         values = []
 
         for pin_number in pin_numbers:
-            status = self.handle.pinMode(pin_number, self.INPUT)
+            self.handle.pinMode(pin_number, self.INPUT)
             pin_state = self.handle.digitalRead(pin_number)
             values.append(pin_state)
 
         return values
 
     def write_pin(self, pin_number, value):
-        status = self.handle.pinMode(pin_number, self.OUTPUT)
+        self.handle.pinMode(pin_number, self.OUTPUT)
         self.handle.digitalWrite(pin_number, value)
 
 

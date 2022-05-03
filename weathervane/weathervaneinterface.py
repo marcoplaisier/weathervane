@@ -9,7 +9,7 @@ from weathervane.gpio import GPIO
 
 
 class WeatherVaneInterface(object):
-    winddirectionS = {'N': 0x00, 'NNO': 0x01, 'NO': 0x02, 'ONO': 0x03,
+    wind_directions = {'N': 0x00, 'NNO': 0x01, 'NO': 0x02, 'ONO': 0x03,
                       'O': 0x04, 'OZO': 0x05, 'ZO': 0x06, 'ZZO': 0x07,
                       'Z': 0x08, 'ZZW': 0x09, 'ZW': 0x0A, 'WZW': 0x0B,
                       'W': 0x0C, 'WNW': 0x0D, 'NW': 0x0E, 'NNW': 0x0F}
@@ -126,23 +126,13 @@ class WeatherVaneInterface(object):
 
     def value_to_bits(self, measurement_name, value, step_value, min_value, max_value):
         if measurement_name == 'winddirection':
-            if value in self.winddirectionS:
-                return self.winddirectionS[value]
-            else:
-                logging.debug('Wind direction {} not found. Using North as substitute.'.format(value))
-                return 0
+            return self.wind_directions.get(value, 0)
         elif measurement_name == 'precipitation':
-            if value and value > 0:
-                return 1
-            else:
-                return 0
+            return 1 if value and value > 0 else 0
         else:
-            if not value or value < min_value:
-                logging.debug('Value {} for {} is smaller than minimum {}'.format(value, measurement_name, min_value))
-                value = min_value
-            if max_value < value:
-                logging.debug('Value {} for {} is larger than maximum {}'.format(value, measurement_name, max_value))
-                value = max_value
+            if not value:
+                logging.debug('Value {} is missing. Setting to min-value'.format(value, measurement_name, min_value))
+            value = min(max(value, min_value), max_value)
 
             try:
                 value -= min_value
@@ -194,5 +184,3 @@ class Display(object):
                 self.wv_interface.gpio.write_pin(self.pin, 1)
             else:
                 self.wv_interface.gpio.write_pin(self.pin, 0)
-        else:
-            pass

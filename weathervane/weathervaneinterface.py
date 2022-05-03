@@ -131,7 +131,7 @@ class WeatherVaneInterface(object):
             return 1 if value and value > 0 else 0
         else:
             if not value:
-                logging.debug('Value {} is missing. Setting to min-value'.format(value, measurement_name, min_value))
+                logging.debug('Value {} is missing. Setting to min-value'.format(value))
             value = min(max(value, min_value), max_value)
 
             try:

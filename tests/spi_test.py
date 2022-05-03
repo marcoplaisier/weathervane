@@ -8,12 +8,12 @@ from weathervane.gpio import GPIO, SPISetupException, SPIDataTransmissionError
 
 def test_initialization_wrong_channel():
     with pytest.raises(SPISetupException):
-        g = GPIO(channel=2, frequency=25000, library='wiringPi')
+        GPIO(channel=2, frequency=25000, library='wiringPi')
 
 
 @patch('weathervane.gpio.GPIO.load_library_by_name')
 def test_initialization(mock_class):
-    spi = GPIO(channel=0, frequency=25000, library='wiringPi')
+    GPIO(channel=0, frequency=25000, library='wiringPi')
 
 
 @patch('weathervane.gpio.GPIO.load_library_by_name')

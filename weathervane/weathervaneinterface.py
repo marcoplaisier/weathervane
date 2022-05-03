@@ -126,23 +126,13 @@ class WeatherVaneInterface(object):
 
     def value_to_bits(self, measurement_name, value, step_value, min_value, max_value):
         if measurement_name == 'winddirection':
-            if value in self.wind_directions:
-                return self.wind_directions[value]
-            else:
-                logging.debug('Wind direction {} not found. Using North as substitute.'.format(value))
-                return 0
+            return self.wind_directions.get(value, 0)
         elif measurement_name == 'precipitation':
-            if value and value > 0:
-                return 1
-            else:
-                return 0
+            return 1 if value and value > 0 else 0
         else:
-            if not value or value < min_value:
-                logging.debug('Value {} for {} is smaller than minimum {}'.format(value, measurement_name, min_value))
-                value = min_value
-            if max_value < value:
-                logging.debug('Value {} for {} is larger than maximum {}'.format(value, measurement_name, max_value))
-                value = max_value
+            if not value:
+                logging.debug('Value {} is missing. Setting to min-value'.format(value, measurement_name, min_value))
+            value = min(max(value, min_value), max_value)
 
             try:
                 value -= min_value

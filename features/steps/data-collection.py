@@ -1,4 +1,4 @@
-from behave import use_step_matcher, given, step, then
+from behave import use_step_matcher, given, then, when
 
 use_step_matcher("re")
 

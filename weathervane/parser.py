@@ -84,7 +84,7 @@ class WeathervaneConfigParser(ConfigParser):
                 'pin': self.getint('Display', 'pin'),
             },
         }
-        logging.info('Configuration:', configuration)
+        logging.info(f'Configuration: {configuration}')
         return configuration
 
 

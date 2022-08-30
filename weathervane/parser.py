@@ -119,7 +119,7 @@ class BuienradarParser(object):
         weather_data_timestamp = datetime.fromisoformat(weather_data['timestamp'])
         time_delta = abs(datetime.now() - weather_data_timestamp)
         if time_delta > timedelta(hours=2):
-            logging.warning(f"{weather_data['timestamp']} is more than {time_delta.hours} hours out of date")
+            logging.warning(f"{weather_data['timestamp']} is more than {time_delta.seconds/3600} hours out of date")
             weather_data['error'] = True
         return weather_data
 

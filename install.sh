@@ -30,6 +30,10 @@ else
   echo "Only simulation mode is available"
 fi
 
+echo "Make sure time and timezones are set correctly"
+sudo timedatectl set-timezone Europe/Amsterdam
+sudo timedatectl set-ntp True
+
 echo "Checking python version..."
 py_version=$(python3 --version) >/dev/null 2>&1
 if [  "$py_version"  ]; then

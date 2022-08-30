@@ -1,5 +1,6 @@
 import json
 import logging
+from datetime import datetime, timedelta
 from configparser import ConfigParser
 from typing import Sequence, List
 
@@ -114,6 +115,12 @@ class BuienradarParser(object):
     @staticmethod
     def enrich(weather_data: dict) -> dict:
         weather_data['barometric_trend'] = 4
+
+        weather_data_timestamp = datetime.fromisoformat(weather_data['timestamp'])
+        time_delta = abs(datetime.now() - weather_data_timestamp)
+        if time_delta > timedelta(hours=2):
+            logging.warning(f"{weather_data['timestamp']} is more than {time_delta.seconds/3600} hours out of date")
+            weather_data['error'] = True
         return weather_data
 
     @staticmethod

@@ -6,7 +6,7 @@ from weathervane.weathervaneinterface import Display
 
 def test_display_is_not_active_before_630():
     d = Display(interface=None)
-    current_minute = Display.convert_to_minutes('6:30')
+    current_minute = Display.convert_to_minutes("6:30")
     result = d.is_active(current_minute=current_minute)
     expected = False
     assert result == expected
@@ -14,7 +14,7 @@ def test_display_is_not_active_before_630():
 
 def test_display_is_active_at_630():
     d = Display(interface=None)
-    current_minute = Display.convert_to_minutes('6:31')
+    current_minute = Display.convert_to_minutes("6:31")
     result = d.is_active(current_minute=current_minute)
     expected = True
     assert result == expected
@@ -22,7 +22,7 @@ def test_display_is_active_at_630():
 
 def test_display_is_active_before_2200():
     d = Display(interface=None)
-    current_minute = Display.convert_to_minutes('21:59')
+    current_minute = Display.convert_to_minutes("21:59")
     result = d.is_active(current_minute=current_minute)
     expected = True
     assert result == expected
@@ -30,7 +30,7 @@ def test_display_is_active_before_2200():
 
 def test_display_is_not_active_at_2201():
     d = Display(interface=None)
-    current_minute = Display.convert_to_minutes('22:00')
+    current_minute = Display.convert_to_minutes("22:00")
     result = d.is_active(current_minute=current_minute)
     expected = False
     assert result == expected

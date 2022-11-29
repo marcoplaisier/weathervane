@@ -5,12 +5,12 @@ import logging
 import logging.handlers
 import pprint
 import time
-from multiprocessing import Process, Pipe
+from multiprocessing import Pipe, Process
 
 from weathervane.datasources import fetch_weather_data
 from weathervane.gpio import TestInterface
 from weathervane.parser import WeathervaneConfigParser
-from weathervane.weathervaneinterface import WeatherVaneInterface, Display
+from weathervane.weathervaneinterface import Display, WeatherVaneInterface
 
 
 class WeatherVane(object):
@@ -19,12 +19,12 @@ class WeatherVane(object):
         self.args = args
         self.configuration = configuration
         self.interface = WeatherVaneInterface(*args, **configuration)
-        self.display = Display(self.interface, **configuration['display'])
+        self.display = Display(self.interface, **configuration["display"])
         logging.info("Using " + str(self.interface))
         self.wd = None
         self.counter = 0
-        self.interval = configuration['interval']
-        self.sleep_time = configuration['sleep-time']
+        self.interval = configuration["interval"]
+        self.sleep_time = configuration["sleep-time"]
         self.start_collection_time = datetime.datetime.now()
         self.end_collection_time = datetime.datetime.now()
         self.reached = False
@@ -38,9 +38,11 @@ class WeatherVane(object):
         self.counter = 0
         arguments = [pipe_end]
         arguments.extend(self.args)
-        p = Process(target=fetch_weather_data, args=arguments, kwargs=self.configuration)
+        p = Process(
+            target=fetch_weather_data, args=arguments, kwargs=self.configuration
+        )
         p.start()
-        logging.debug('Retrieving data')
+        logging.debug("Retrieving data")
 
     def send_data(self):
         if self.old_weatherdata:
@@ -50,11 +52,14 @@ class WeatherVane(object):
             self.interface.send(self.wd)
 
     def retrieve_data(self, pipe_end_2):
-        logging.info('Data available:')
+        logging.info("Data available:")
         self.end_collection_time = datetime.datetime.now()
         self.reached = False
-        logging.info('Data retrieval including parsing took {}'.format(
-            self.end_collection_time - self.start_collection_time))
+        logging.info(
+            "Data retrieval including parsing took {}".format(
+                self.end_collection_time - self.start_collection_time
+            )
+        )
         self.old_weatherdata, self.wd = self.wd, pipe_end_2.recv()
         logging.info(pprint.pformat(self.wd))
 
@@ -63,23 +68,24 @@ class WeatherVane(object):
         self.start_data_collection(pipe_end_1)
 
     def log_heartbeat(self):
-        logging.debug('Heartbeat-{}'.format(self.counter))
+        logging.debug("Heartbeat-{}".format(self.counter))
 
     def set_logger(self):
-        weathervane_logger = logging.getLogger('')
+        weathervane_logger = logging.getLogger("")
         weathervane_logger.setLevel(logging.INFO)
-        handler = logging.handlers.TimedRotatingFileHandler(filename="weathervane.log",
-                                                            when="midnight",
-                                                            interval=1,
-                                                            backupCount=7)
-        formatter = logging.Formatter("%(asctime)s:%(levelname)s:%(module)s:%(message)s")
+        handler = logging.handlers.TimedRotatingFileHandler(
+            filename="weathervane.log", when="midnight", interval=1, backupCount=7
+        )
+        formatter = logging.Formatter(
+            "%(asctime)s:%(levelname)s:%(module)s:%(message)s"
+        )
         handler.setFormatter(formatter)
         weathervane_logger.addHandler(handler)
 
     def interpolate(self, old_weatherdata, new_weatherdata, interval):
         if self.counter >= interval - 1:
             self.reached = True
-        if new_weatherdata['error']:
+        if new_weatherdata["error"]:
             return new_weatherdata
 
         interpolated_wd = {}
@@ -89,11 +95,21 @@ class WeatherVane(object):
             if not new_value:
                 continue
 
-            if key not in ['error', 'winddirection', 'winddirection', 'rain',
-                           'barometric_trend'] and not self.reached:
+            if (
+                key
+                not in [
+                    "error",
+                    "winddirection",
+                    "winddirection",
+                    "rain",
+                    "barometric_trend",
+                ]
+                and not self.reached
+            ):
                 try:
                     interpolated_value = float(old_value) + (
-                            self.counter * (float(new_value) - float(old_value)) / interval)
+                        self.counter * (float(new_value) - float(old_value)) / interval
+                    )
                     interpolated_wd[key] = interpolated_value
                 except ValueError:
                     interpolated_wd[key] = new_value
@@ -131,9 +147,16 @@ def get_configuration(args):
 
 
 def run():
-    parser = argparse.ArgumentParser(description="Get weather data from a provider and send it through SPI")
-    parser.add_argument('-c', '--config', action='store', default='config.ini',
-                        help="get the configuration from a specific configuration file")
+    parser = argparse.ArgumentParser(
+        description="Get weather data from a provider and send it through SPI"
+    )
+    parser.add_argument(
+        "-c",
+        "--config",
+        action="store",
+        default="config.ini",
+        help="get the configuration from a specific configuration file",
+    )
     args = parser.parse_args()
     logging.info(args)
 

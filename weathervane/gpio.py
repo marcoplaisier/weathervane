@@ -1,6 +1,5 @@
 import logging
-from ctypes import cdll, c_ubyte, util
-
+from ctypes import c_ubyte, cdll, util
 from unittest.mock import Mock
 
 
@@ -36,25 +35,31 @@ class GPIO(object):
         http://raspberrypi.stackexchange.com/questions/699/what-spi-frequencies-does-raspberry-pi-support
         @raise SPISetupException: when setup cannot proceed, it will raise a setup exception
         """
-        channel = kwargs['channel']
-        frequency = kwargs['frequency']
-        library = kwargs['library']
+        channel = kwargs["channel"]
+        frequency = kwargs["frequency"]
+        library = kwargs["library"]
 
         if channel not in self.AVAILABLE_CHANNELS:
             # If the channel is not 0 or 1, the rest of the program may fail silently or give weird errors. So, we
             # raise an exception.
-            error_message = 'Channel must be 0 or 1. Channel {} is not available'.format(channel)
+            error_message = (
+                "Channel must be 0 or 1. Channel {} is not available".format(channel)
+            )
             logging.exception(error_message)
             raise SPISetupException(error_message)
 
-        if not kwargs.get('test', False):
+        if not kwargs.get("test", False):
             try:
                 self.handle = self.load_library_by_name(library)
                 self._setup(channel, frequency)
                 self.data = None
             except SPISetupException:
-                logging.exception('Could not setup SPI protocol. Library: {}, channel: {}, frequency: {}. Please run '
-                                  '"gpio load spi" or install the drivers first'.format(library, channel, frequency))
+                logging.exception(
+                    "Could not setup SPI protocol. Library: {}, channel: {}, frequency: {}. Please run "
+                    '"gpio load spi" or install the drivers first'.format(
+                        library, channel, frequency
+                    )
+                )
                 raise
         else:
             self.handle = Mock()
@@ -74,8 +79,7 @@ class GPIO(object):
         if lib_name is not None:
             return cdll.LoadLibrary(lib_name)
         else:
-            raise SPISetupException(
-                'Could not find library {}.'.format(library))
+            raise SPISetupException("Could not find library {}.".format(library))
 
     def _setup(self, channel, frequency):
         """
@@ -90,20 +94,26 @@ class GPIO(object):
         status_code = self.handle.wiringPiSPISetup(channel, frequency)
 
         if status_code == self.ERROR_CODE:
-            error_message = 'Could not setup SPI protocol. Status code: {}'.format(status_code)
+            error_message = "Could not setup SPI protocol. Status code: {}".format(
+                status_code
+            )
             logging.exception(error_message)
             raise SPISetupException(error_message)
         else:
-            logging.info('SPI protocol setup succeeded at channel {} with frequency {}'.format(channel, frequency))
+            logging.info(
+                "SPI protocol setup succeeded at channel {} with frequency {}".format(
+                    channel, frequency
+                )
+            )
 
         status_code = self.handle.wiringPiSetupGpio()
 
         if status_code == self.ERROR_CODE:
-            error_message = 'Could not setup pins. Status code: {}'.format(status_code)
+            error_message = "Could not setup pins. Status code: {}".format(status_code)
             logging.exception(error_message)
             raise SPISetupException(error_message)
         else:
-            logging.info('Pins successfully configured')
+            logging.info("Pins successfully configured")
 
     def pack(self, data):
         """
@@ -120,7 +130,7 @@ class GPIO(object):
         return self.data, len(self.data)
 
     def send_data(self, data):
-        """ Send data over the 'wire'
+        """Send data over the 'wire'
 
         @param data: an iterable that returns only bytes (0 - 255). If the value is outside this range, then
         value = value mod 256. So -10 will be 246, 257 will be 1 and so on.
@@ -132,12 +142,14 @@ class GPIO(object):
         return_code = self.handle.wiringPiSPIDataRW(0, data_packet, data_length)
         if return_code == self.ERROR_CODE:
             raise SPIDataTransmissionError(
-                'Transmission failed and resulted in an error. Data: {}, data length: {}'.format(list(data_packet),
-                                                                                                 data_length))
+                "Transmission failed and resulted in an error. Data: {}, data length: {}".format(
+                    list(data_packet), data_length
+                )
+            )
         logging.info("Sent {}".format(binary_format(data)))
 
     def read_pin(self, pin_numbers):
-        """ Read the values of the supplied sequence of pins and returns them as a list
+        """Read the values of the supplied sequence of pins and returns them as a list
 
         Take note that pin numbering on the Raspberry Pi is not straightforward. There are three sorts of numbering in
         use. Four, if you want to get technical. This depends on the way you setup WiringPi.
@@ -177,7 +189,10 @@ class TestInterface(object):
         self.gpio = GPIO(channel=channel, frequency=frequency)
 
     def __repr__(self):
-        return "TestInterface(channel=%d, frequency=%d)" % (self.channel, self.frequency)
+        return "TestInterface(channel=%d, frequency=%d)" % (
+            self.channel,
+            self.frequency,
+        )
 
     def send(self, data):
         """Send data to the connected SPI device.
@@ -193,7 +208,7 @@ class TestInterface(object):
 
         This function returns the data that was sent by the connected SPI device. To get the data that was originally
         sent to that device, use get_sent_data.
-                """
+        """
         return self.gpio.data
 
 
@@ -211,6 +226,6 @@ def binary_format(sequence, bytes_per_line=4):
     test = []
     for index, item in enumerate(array):
         if index % bytes_per_line == 0:
-            test.append('\n{:2} - {:2} '.format(index, index + 3))
-        test.append('{:#010b}'.format(item)[2:])
-    return '|'.join(test) + '|'
+            test.append("\n{:2} - {:2} ".format(index, index + 3))
+        test.append("{:#010b}".format(item)[2:])
+    return "|".join(test) + "|"

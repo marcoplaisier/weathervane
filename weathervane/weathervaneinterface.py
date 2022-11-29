@@ -9,23 +9,40 @@ from weathervane.gpio import GPIO
 
 
 class WeatherVaneInterface(object):
-    wind_directions = {'N': 0x00, 'NNO': 0x01, 'NO': 0x02, 'ONO': 0x03,
-                      'O': 0x04, 'OZO': 0x05, 'ZO': 0x06, 'ZZO': 0x07,
-                      'Z': 0x08, 'ZZW': 0x09, 'ZW': 0x0A, 'WZW': 0x0B,
-                      'W': 0x0C, 'WNW': 0x0D, 'NW': 0x0E, 'NNW': 0x0F}
+    wind_directions = {
+        "N": 0x00,
+        "NNO": 0x01,
+        "NO": 0x02,
+        "ONO": 0x03,
+        "O": 0x04,
+        "OZO": 0x05,
+        "ZO": 0x06,
+        "ZZO": 0x07,
+        "Z": 0x08,
+        "ZZW": 0x09,
+        "ZW": 0x0A,
+        "WZW": 0x0B,
+        "W": 0x0C,
+        "WNW": 0x0D,
+        "NW": 0x0E,
+        "NNW": 0x0F,
+    }
 
     def __init__(self, *args, **kwargs):
-        self.channel = kwargs['channel']
-        self.frequency = kwargs['frequency']
+        self.channel = kwargs["channel"]
+        self.frequency = kwargs["frequency"]
         self.gpio = GPIO(**kwargs)
         self.old_bit_string = None
         self.new_bit_string = None
         self.weather_data = {}
-        self.bits: List[dict] = kwargs['bits']
-        self.stations = kwargs['stations']
+        self.bits: List[dict] = kwargs["bits"]
+        self.stations = kwargs["stations"]
 
     def __repr__(self):
-        return "WeatherVaneInterface(channel=%d, frequency=%d)" % (self.channel, self.frequency)
+        return "WeatherVaneInterface(channel=%d, frequency=%d)" % (
+            self.channel,
+            self.frequency,
+        )
 
     @property
     def data_changed(self):
@@ -56,10 +73,12 @@ class WeatherVaneInterface(object):
 
         for i, data in enumerate(self.bits):
             formatting = self.bits[i]
-            bit_length = int(formatting['length'])
-            bit_key = formatting['key']
+            bit_length = int(formatting["length"])
+            bit_key = formatting["key"]
             bit_value = t_data[bit_key]
-            padding_string = '#0{0}b'.format(bit_length + 2)  # account for '0b' in the length
+            padding_string = "#0{0}b".format(
+                bit_length + 2
+            )  # account for '0b' in the length
             padded_bit_value = format(bit_value, padding_string)
             if s is not None:
                 s += bitstring.pack("bin:{}={}".format(bit_length, padded_bit_value))
@@ -87,7 +106,7 @@ class WeatherVaneInterface(object):
 
         Returns:
         array of bytes
-                """
+        """
         return self.gpio.data
 
     @property
@@ -110,45 +129,53 @@ class WeatherVaneInterface(object):
         result = {}
 
         for data_point in requested_data:
-            measurement_name = data_point['key']
+            measurement_name = data_point["key"]
             value = weather_data.get(measurement_name, 0)
-            if measurement_name == 'random':
-                length = int(data_point['length'])
-                value = randint(0, 2 ** length - 1)
+            if measurement_name == "random":
+                length = int(data_point["length"])
+                value = randint(0, 2**length - 1)
 
-            step_value = float(data_point.get('step', 1))
-            min_value = float(data_point.get('min', 0))
-            max_value = float(data_point.get('max', 255))
-            result[measurement_name] = self.value_to_bits(measurement_name, value, step_value, min_value, max_value)
+            step_value = float(data_point.get("step", 1))
+            min_value = float(data_point.get("min", 0))
+            max_value = float(data_point.get("max", 255))
+            result[measurement_name] = self.value_to_bits(
+                measurement_name, value, step_value, min_value, max_value
+            )
             result = self.compensate_wind(result)
 
         return result
 
     def value_to_bits(self, measurement_name, value, step_value, min_value, max_value):
-        if measurement_name == 'winddirection':
+        if measurement_name == "winddirection":
             return self.wind_directions.get(value, 0)
-        elif measurement_name == 'precipitation':
+        elif measurement_name == "precipitation":
             return 1 if value and value > 0 else 0
         else:
             if not value:
-                logging.debug('Value {} is missing. Setting to min-value'.format(value))
+                logging.debug("Value {} is missing. Setting to min-value".format(value))
             value = min(max(value, min_value), max_value)
 
             try:
                 value -= min_value
                 value /= float(step_value)
             except TypeError:
-                logging.debug('Value {} for {} is not a number'.format(value, measurement_name))
+                logging.debug(
+                    "Value {} for {} is not a number".format(value, measurement_name)
+                )
                 return 0
 
             return int(value)
 
     def compensate_wind(self, result):
-        windspeed = result.get('windspeed', 0)
-        windgusts = result.get('windgusts', windspeed)
+        windspeed = result.get("windspeed", 0)
+        windgusts = result.get("windgusts", windspeed)
         if windspeed > windgusts:
-            result['windspeed'] = windgusts
-            logging.debug('Wind speed {} should not exceed maximum wind speed {}'.format(windspeed, windgusts))
+            result["windspeed"] = windgusts
+            logging.debug(
+                "Wind speed {} should not exceed maximum wind speed {}".format(
+                    windspeed, windgusts
+                )
+            )
 
         return result
 
@@ -156,16 +183,16 @@ class WeatherVaneInterface(object):
 class Display(object):
     def __init__(self, interface, **configuration):
         self.wv_interface = interface
-        self.auto_disable_display = configuration.get('auto-turn-off', False)
-        start_time = configuration.get('start-time', '6:30')
+        self.auto_disable_display = configuration.get("auto-turn-off", False)
+        start_time = configuration.get("start-time", "6:30")
         self.start_at_minutes = Display.convert_to_minutes(start_time)
-        end_time = configuration.get('end-time', '22:00')
+        end_time = configuration.get("end-time", "22:00")
         self.end_at_minutes = Display.convert_to_minutes(end_time)
-        self.pin = configuration.get('pin', 4)
+        self.pin = configuration.get("pin", 4)
 
     @staticmethod
     def convert_to_minutes(time_text):
-        time_array = [int(time_element) for time_element in time_text.split(':')]
+        time_array = [int(time_element) for time_element in time_text.split(":")]
         minutes = time_array[0] * 60
         minutes += time_array[1]
         return minutes

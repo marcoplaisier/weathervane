@@ -49,14 +49,11 @@ def weather_data_with_fallback():
     return load_test_data(stations=[6308, 6275])
 
 
-def test_windspeed_for_station_6275(complete_weather_data):
-    windspeed = complete_weather_data["data"]["windspeed"]
-    assert windspeed == 3.3
-
-
-def test_feeltemperature_for_station_6275(complete_weather_data):
-    feeltemperature = complete_weather_data["data"]["feeltemperature"]
-    assert feeltemperature == 20.2
+def test_some_fields_for_station_6275(complete_weather_data):
+    expected = {"windspeed": 3.3, "feeltemperature": 20.2}
+    for k in expected.keys():
+        windspeed = complete_weather_data["data"][k]
+        assert windspeed == expected[k]
 
 
 def test_missing_visibility_for_station_6308(

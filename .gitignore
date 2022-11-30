@@ -29,3 +29,6 @@
 
 # private and public key files
 *.pem
+
+# IDE
+.vscode

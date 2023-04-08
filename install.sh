@@ -59,7 +59,7 @@ gpio_version=$(gpio -v) >/dev/null 2>&1
 if [ ! "$gpio_version" ]; then
   echo "Installing wiringPi..."
   cd /tmp
-  wget https://project-downloads.drogon.net/wiringpi-latest.deb
+  wget https://unicorn.drogon.net/wiringpi-2.46-1.deb
   dpkg -i wiringpi-latest.deb
   cd /home/pi
   echo "Installation done."

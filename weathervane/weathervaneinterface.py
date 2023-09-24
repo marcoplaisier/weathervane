@@ -181,14 +181,14 @@ class WeatherVaneInterface(object):
 
 
 class Display(object):
-    def __init__(self, interface, **configuration):
+    def __init__(self, interface, **kwargs):
         self.wv_interface = interface
-        self.auto_disable_display = configuration.get("auto-turn-off", False)
-        start_time = configuration.get("start-time", "6:30")
+        self.auto_disable_display = kwargs.get("auto-turn-off", False)
+        start_time = kwargs.get("start-time", "6:30")
         self.start_at_minutes = Display.convert_to_minutes(start_time)
-        end_time = configuration.get("end-time", "22:00")
+        end_time = kwargs.get("end-time", "22:00")
         self.end_at_minutes = Display.convert_to_minutes(end_time)
-        self.pin = configuration.get("pin", 4)
+        self.pin = kwargs.get("pin", 4)
 
     @staticmethod
     def convert_to_minutes(time_text):
@@ -199,9 +199,10 @@ class Display(object):
 
     def is_active(self, current_minute):
         if self.start_at_minutes < self.end_at_minutes:
-            return self.start_at_minutes < current_minute < self.end_at_minutes
+            return self.start_at_minutes <= current_minute <= self.end_at_minutes
         else:
-            return self.end_at_minutes < current_minute < self.start_at_minutes
+            return (self.convert_to_minutes("00:00") <= current_minute <= self.end_at_minutes &
+                    self.start_at_minutes <= current_minute <= self.convert_to_minutes("23:59"))
 
     def tick(self):
         if self.auto_disable_display:

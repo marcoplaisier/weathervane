@@ -82,6 +82,10 @@ echo "Installing weathervane as a service..."
 cp /home/pi/weathervane/weathervane.service /etc/systemd/system/weathervane.service
 systemctl daemon-reload
 
+# enabling weathervane.service to start only after the network has actually started
+# see: https://stackoverflow.com/questions/35805354/systemd-start-service-at-boot-time-after-network-is-really-up-for-wol-purpose
+systemctl enable systemd-networkd.service systemd-networkd-wait-online.service
+
 echo "Starting service"
 # start service
 systemctl enable weathervane.service

@@ -6,6 +6,8 @@ import requests
 
 from weathervane.parser import BuienradarParser
 
+HTTP_OK = 200
+
 DEFAULT_WEATHER_DATA = {
     "error": True,
     "airpressure": 900,
@@ -27,7 +29,7 @@ def get_weather_string_with_retries(max_retries=5, retry_interval=5):
     while max_retries > 0:
         try:
             r = requests.get("https://data.buienradar.nl/2.0/feed/json", timeout=10)
-            if r.status_code == 200:
+            if r.status_code == HTTP_OK:
                 logging.info("Weather data retrieved in {} ms".format(r.elapsed))
                 return r.text
             else:

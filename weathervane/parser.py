@@ -4,6 +4,9 @@ from configparser import ConfigParser
 from datetime import datetime, timedelta
 from typing import List, Sequence
 
+SIMPLE_CONFIG = 2
+EXTENDED_CONFIG = 5
+
 
 class InvalidConfigException(Exception):
     pass
@@ -11,6 +14,11 @@ class InvalidConfigException(Exception):
 
 class WeathervaneConfigParser(ConfigParser):
     DEFAULT_STATIONS = [6260, 6370]
+    KEY_INDEX = 0
+    LENGTH_INDEX = 1
+    MIN_INDEX = 2
+    MAX_INDEX = 3
+    STEP_INDEX = 4
 
     def __init__(self):
         super(WeathervaneConfigParser, self).__init__()
@@ -23,16 +31,16 @@ class WeathervaneConfigParser(ConfigParser):
         for bit_number in bit_numbers:
             bit_config = self.get("Bit Packing", str(bit_number))
             bit_config = bit_config.split(",")
-            if len(bit_config) == 2:
-                bits.append({"key": bit_config[0], "length": bit_config[1]})
-            elif len(bit_config) == 5:
+            if len(bit_config) == SIMPLE_CONFIG:
+                bits.append({"key": bit_config[self.KEY_INDEX], "length": bit_config[self.LENGTH_INDEX]})
+            elif len(bit_config) == EXTENDED_CONFIG:
                 bits.append(
                     {
-                        "key": bit_config[0],
-                        "length": bit_config[1],
-                        "min": bit_config[2],
-                        "max": bit_config[3],
-                        "step": bit_config[4],
+                        "key": bit_config[self.KEY_INDEX],
+                        "length": bit_config[self.LENGTH_INDEX],
+                        "min": bit_config[self.MIN_INDEX],
+                        "max": bit_config[self.MAX_INDEX],
+                        "step": bit_config[self.STEP_INDEX],
                     }
                 )
             else:
@@ -99,7 +107,7 @@ class BuienradarParser(object):
         "random",
         "service_byte",
     ]
-    TREND_MAPPING = {-1: 2, 0: 4, 1: 1}
+    TREND_MAPPING = {'dropping': 2, 'stable': 4, 'rising': 1}
 
     def __init__(self, *args, **kwargs):
         self.fallback_used = None
@@ -120,7 +128,7 @@ class BuienradarParser(object):
 
     @staticmethod
     def enrich(weather_data: dict) -> dict:
-        weather_data["barometric_trend"] = 4
+        weather_data["barometric_trend"] = BuienradarParser.TREND_MAPPING['stable']
 
         weather_data_timestamp = datetime.fromisoformat(weather_data["timestamp"])
         time_delta = abs(datetime.now() - weather_data_timestamp)

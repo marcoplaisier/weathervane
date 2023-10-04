@@ -168,5 +168,4 @@ def run():
 
 
 if __name__ == "__main__":
-    time.sleep(15)  # When connected to WiFi, the network may be ready after this program starts. So wait a while for it to be actually ready
     run()

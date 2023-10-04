@@ -35,29 +35,29 @@ class GPIO(object):
         http://raspberrypi.stackexchange.com/questions/699/what-spi-frequencies-does-raspberry-pi-support
         @raise SPISetupException: when setup cannot proceed, it will raise a setup exception
         """
-        channel = kwargs["channel"]
-        frequency = kwargs["frequency"]
-        library = kwargs["library"]
+        self.channel = kwargs["channel"]
+        self.frequency = kwargs["frequency"]
+        self.library = kwargs["library"]
 
-        if channel not in self.AVAILABLE_CHANNELS:
+        if self.channel not in self.AVAILABLE_CHANNELS:
             # If the channel is not 0 or 1, the rest of the program may fail silently or give weird errors. So, we
             # raise an exception.
             error_message = (
-                "Channel must be 0 or 1. Channel {} is not available".format(channel)
+                "Channel must be 0 or 1. Channel {} is not available".format(self.channel)
             )
             logging.exception(error_message)
             raise SPISetupException(error_message)
 
         if not kwargs.get("test", False):
             try:
-                self.handle = self.load_library_by_name(library)
-                self._setup(channel, frequency)
+                self.handle = self.load_library_by_name(self.library)
+                self._setup(self.channel, self.frequency)
                 self.data = None
             except SPISetupException:
                 logging.exception(
                     "Could not setup SPI protocol. Library: {}, channel: {}, frequency: {}. Please run "
                     '"gpio load spi" or install the drivers first'.format(
-                        library, channel, frequency
+                        self.library, self.channel, self.frequency
                     )
                 )
                 raise
@@ -139,7 +139,7 @@ class GPIO(object):
 
         data_packet, data_length = self.pack(data)
 
-        return_code = self.handle.wiringPiSPIDataRW(0, data_packet, data_length)
+        return_code = self.handle.wiringPiSPIDataRW(self.channel, data_packet, data_length)
         if return_code == self.ERROR_CODE:
             raise SPIDataTransmissionError(
                 "Transmission failed and resulted in an error. Data: {}, data length: {}".format(

@@ -1,7 +1,21 @@
 #!/usr/bin/env python
+import argparse
+import datetime
+import logging
+import logging.handlers
+import os
+import pprint
+import time
+from multiprocessing import Pipe, Process
+
 import sentry_sdk
 
+from weathervane.datasources import fetch_weather_data
+from weathervane.parser import WeathervaneConfigParser
+from weathervane.weathervaneinterface import Display, WeatherVaneInterface
+
 sentry_sdk.init(
+    dsn=os.environ['SENTRY_DSN'],
     # Set traces_sample_rate to 1.0 to capture 100%
     # of transactions for performance monitoring.
     traces_sample_rate=1.0,
@@ -10,18 +24,6 @@ sentry_sdk.init(
     # We recommend adjusting this value in production.
     profiles_sample_rate=1.0,
 )
-
-import argparse
-import datetime
-import logging
-import logging.handlers
-import pprint
-import time
-from multiprocessing import Pipe, Process
-
-from weathervane.datasources import fetch_weather_data
-from weathervane.parser import WeathervaneConfigParser
-from weathervane.weathervaneinterface import Display, WeatherVaneInterface
 
 
 class WeatherVane(object):

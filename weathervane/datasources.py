@@ -1,3 +1,16 @@
+import sentry_sdk
+
+sentry_sdk.init(
+    dsn="https://8ce0a3b31e40b2fcd62dfd73fd4eef2c@o105194.ingest.sentry.io/4505999467347968",
+    # Set traces_sample_rate to 1.0 to capture 100%
+    # of transactions for performance monitoring.
+    traces_sample_rate=1.0,
+    # Set profiles_sample_rate to 1.0 to profile 100%
+    # of sampled transactions.
+    # We recommend adjusting this value in production.
+    profiles_sample_rate=1.0,
+)
+
 import logging
 import os
 import time
@@ -36,7 +49,8 @@ def get_weather_string_with_retries(max_retries=5, retry_interval=5):
                 logging.warning(
                     "Got response, but unhandled status code {}".format(r.status_code)
                 )
-        except (ConnectionError, TimeoutError):
+        except (ConnectionError, TimeoutError) as e:
+            sentry_sdk.capture_exception(e)
             if max_retries > 0:
                 logging.warning(
                     "Retrieving data failed. Retrying after {} seconds".format(
@@ -60,7 +74,8 @@ def fetch_weather_data(conn, *args, **kwargs):
         bp = BuienradarParser(*args, **kwargs)
         try:
             wd = bp.parse(data)
-        except Exception:
+        except Exception as e:
+            sentry_sdk.capture_exception(e)
             logging.error("Data parsing failed. Cannot send good data. Setting error.")
             wd = DEFAULT_WEATHER_DATA
     else:

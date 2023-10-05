@@ -2,6 +2,8 @@ import logging
 from ctypes import c_ubyte, cdll, util
 from unittest.mock import Mock
 
+import sentry_sdk
+
 
 class SPISetupException(Exception):
     pass
@@ -53,7 +55,8 @@ class GPIO(object):
                 self.handle = self.load_library_by_name(self.library)
                 self._setup(self.channel, self.frequency)
                 self.data = None
-            except SPISetupException:
+            except SPISetupException as e:
+                sentry_sdk.capture_exception(e)
                 logging.exception(
                     "Could not setup SPI protocol. Library: {}, channel: {}, frequency: {}. Please run "
                     '"gpio load spi" or install the drivers first'.format(

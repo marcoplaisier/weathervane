@@ -1,4 +1,16 @@
 #!/usr/bin/env python
+import sentry_sdk
+
+sentry_sdk.init(
+    # Set traces_sample_rate to 1.0 to capture 100%
+    # of transactions for performance monitoring.
+    traces_sample_rate=1.0,
+    # Set profiles_sample_rate to 1.0 to profile 100%
+    # of sampled transactions.
+    # We recommend adjusting this value in production.
+    profiles_sample_rate=1.0,
+)
+
 import argparse
 import datetime
 import logging
@@ -8,7 +20,6 @@ import time
 from multiprocessing import Pipe, Process
 
 from weathervane.datasources import fetch_weather_data
-from weathervane.gpio import TestInterface
 from weathervane.parser import WeathervaneConfigParser
 from weathervane.weathervaneinterface import Display, WeatherVaneInterface
 
@@ -96,19 +107,19 @@ class WeatherVane(object):
                 continue
 
             if (
-                key
-                not in [
-                    "error",
-                    "winddirection",
-                    "winddirection",
-                    "rain",
-                    "barometric_trend",
-                ]
-                and not self.reached
+                    key
+                    not in [
+                "error",
+                "winddirection",
+                "winddirection",
+                "rain",
+                "barometric_trend",
+            ]
+                    and not self.reached
             ):
                 try:
                     interpolated_value = float(old_value) + (
-                        self.counter * (float(new_value) - float(old_value)) / interval
+                            self.counter * (float(new_value) - float(old_value)) / interval
                     )
                     interpolated_wd[key] = interpolated_value
                 except ValueError:

@@ -8,7 +8,6 @@ import sentry_sdk
 from weathervane.parser import BuienradarParser
 
 sentry_sdk.init(
-    dsn=os.environ['SENTRY_DSN'],
     # Set traces_sample_rate to 1.0 to capture 100%
     # of transactions for performance monitoring.
     traces_sample_rate=1.0,

@@ -41,7 +41,7 @@ DEFAULT_WEATHER_DATA = {
 def get_weather_string_with_retries(max_retries=5, retry_interval=5):
     while max_retries > 0:
         try:
-            with sentry_sdk.start_transaction("Retrieving data from buienradar"):
+            with sentry_sdk.start_transaction(op="task", name="Retrieving data from buienradar"):
                 r = requests.get("https://data.buienradar.nl/2.0/feed/json", timeout=10)
                 if r.status_code == HTTP_OK:
                     logging.info("Weather data retrieved in {} ms".format(r.elapsed))

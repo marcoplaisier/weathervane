@@ -182,5 +182,5 @@ if sentry.SENTRY_DSN:
 
 
     if __name__ == "__main__":
-        sentry_sdk.capture_event(f"Weathervane startup")
+        sentry_sdk.capture_event("Weathervane startup")
         run()

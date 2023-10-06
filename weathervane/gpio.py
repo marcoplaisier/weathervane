@@ -54,7 +54,6 @@ class GPIO(object):
                 self._setup(self.channel, self.frequency)
                 self.data = None
             except SPISetupException as e:
-                sentry_sdk.capture_exception(e)
                 logging.exception(
                     "Could not setup SPI protocol. Library: {}, channel: {}, frequency: {}. Please run "
                     '"gpio load spi" or install the drivers first'.format(

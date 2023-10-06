@@ -10,7 +10,6 @@ StandardOutput=inherit
 StandardError=inherit
 Restart=always
 RestartSec=300
-EnvironmentFile=/home/pi/weathervane/sentry.conf
 
 [Install]
 WantedBy=multi-user.target

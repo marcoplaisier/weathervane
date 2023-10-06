@@ -3,12 +3,12 @@ import argparse
 import datetime
 import logging
 import logging.handlers
-import os
 import pprint
 import time
 from multiprocessing import Pipe, Process
 
-import sentry_sdk, sentry
+import sentry
+import sentry_sdk
 
 from weathervane.datasources import fetch_weather_data
 from weathervane.parser import WeathervaneConfigParser
@@ -182,4 +182,5 @@ if sentry.SENTRY_DSN:
 
 
     if __name__ == "__main__":
+        sentry_sdk.capture_event(f"Weathervane startup")
         run()

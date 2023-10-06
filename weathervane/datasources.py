@@ -3,19 +3,21 @@ import os
 import time
 
 import requests
-import sentry_sdk
+import sentry_sdk, sentry
 
 from weathervane.parser import BuienradarParser
 
-sentry_sdk.init(
-    # Set traces_sample_rate to 1.0 to capture 100%
-    # of transactions for performance monitoring.
-    traces_sample_rate=1.0,
-    # Set profiles_sample_rate to 1.0 to profile 100%
-    # of sampled transactions.
-    # We recommend adjusting this value in production.
-    profiles_sample_rate=1.0,
-)
+if sentry.SENTRY_DSN:
+    sentry_sdk.init(
+        dsn=sentry.SENTRY_DSN,
+        # Set traces_sample_rate to 1.0 to capture 100%
+        # of transactions for performance monitoring.
+        traces_sample_rate=1.0,
+        # Set profiles_sample_rate to 1.0 to profile 100%
+        # of sampled transactions.
+        # We recommend adjusting this value in production.
+        profiles_sample_rate=1.0,
+    )
 
 HTTP_OK = 200
 

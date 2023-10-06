@@ -2,8 +2,6 @@ import logging
 from ctypes import c_ubyte, cdll, util
 from unittest.mock import Mock
 
-import sentry_sdk
-
 
 class SPISetupException(Exception):
     pass

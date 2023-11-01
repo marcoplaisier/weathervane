@@ -58,14 +58,14 @@ raspi-config nonint do_spi 0
 gpio_version=$(gpio -v) >/dev/null 2>&1
 if [ ! "$gpio_version" ]; then
   echo "Installing wiringPi..."
-  cd /tmp
+  cd /tmp || return
   wget https://github.com/WiringPi/WiringPi/releases/download/2.61-1/wiringpi-2.61-1-armhf.deb
   dpkg -i wiringpi-2.61-1-armhf.deb
-  cd /home/pi
+  cd /home/pi || exit
   echo "Installation done."
 fi
 
-has_git = $(git --version) >/dev/null 2>&1
+has_git=$(git --version) >/dev/null 2>&1
 if [ ! "$has_git" ]; then
   apt-get install git -y
 fi
@@ -76,7 +76,9 @@ echo "Requirements satisfied"
 echo "Installing weathervane"
 # clone repository
 git clone https://github.com/marcoplaisier/weathervane.git
-pip3 install -r weathervane/requirements.txt
+apt install python3-requests
+apt install python3-bitstring
+
 echo "Installing weathervane as a service..."
 # install as service
 cp /home/pi/weathervane/weathervane.service /etc/systemd/system/weathervane.service

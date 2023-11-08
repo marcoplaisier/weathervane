@@ -29,27 +29,28 @@ def get_weather_string_with_retries(max_retries=5, retry_interval=5):
     while max_retries > 0:
         try:
             r = requests.get("https://data.buienradar.nl/2.0/feed/json", timeout=10)
+
             if r.status_code == HTTP_OK:
-                logging.info("Weather data retrieved in {} ms".format(r.elapsed))
+                logging.info(f"Weather data retrieved in {r.elapsed} ms")
                 return r.text
             else:
-                logging.warning(
-                    "Got response, but unhandled status code {}".format(r.status_code)
-                )
+                logging.warning(f"Got response, but unhandled status code {r.status_code}")
+
         except (ConnectionError, TimeoutError) as e:
             if max_retries > 0:
-                logging.warning(
-                    "Retrieving data failed. Retrying after {} seconds".format(
-                        retry_interval
-                    )
-                )
-                time.sleep(retry_interval)
+                logging.error(e)
                 max_retries -= 1
                 retry_interval *= 2
-            if max_retries == 2:
-                # if it still doesn't work, then attempt to get a new IP address. Maybe it is the Internet connection
-                logging.info("Attempting to reset the internet connection")
-                os.system("sudo /etc/init.d/networking restart")
+                if max_retries == 1:
+                    # if this is the last attempt, then attempt to get a new IP address.
+                    logging.info("Attempting to reset the internet connection")
+                    os.system("sudo /etc/init.d/networking restart")
+                    time.sleep(15)
+                else:
+                    logging.warning(f"Retrieving data failed. Retrying after {retry_interval} seconds")
+                    time.sleep(retry_interval)
+            else:
+                return None
     return None
 
 

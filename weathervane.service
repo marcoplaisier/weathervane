@@ -1,7 +1,6 @@
 [Unit]
 Description=Weathervane Service
-After=systemd-networkd-wait-online.service
-Wants=systemd-networkd-wait-online.service
+After=network.target
 
 [Service]
 WorkingDirectory=/home/pi/weathervane

@@ -146,7 +146,7 @@ class GPIO(object):
                     list(data_packet), data_length
                 )
             )
-        logging.info("Sent {}".format(binary_format(data)))
+        # logging.info("Sent {}".format(binary_format(data)))
 
     def read_pin(self, pin_numbers):
         """Read the values of the supplied sequence of pins and returns them as a list

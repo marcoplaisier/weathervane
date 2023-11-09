@@ -1,6 +1,5 @@
 [Unit]
 Description=Weathervane Service
-After=network.target
 
 [Service]
 WorkingDirectory=/home/pi/weathervane

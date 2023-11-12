@@ -1,0 +1,31 @@
+server:
+  http_listen_port: 0
+  grpc_listen_port: 0
+  log_level: debug
+
+positions:
+  filename: /var/log/positions.yaml
+
+clients:
+  - url: https://${SECRET_LOKI_KEY}@logs-prod-012.grafana.net/loki/api/v1/push
+
+scrape_configs:
+- job_name: weathervane
+  static_configs:
+  - targets:
+      - localhost
+    labels:
+      job: weathervane
+      host: wv_at_home
+      __path__: /home/pi/weathervane/weathervane.log
+- job_name: journal
+  journal:
+    json: false
+    max_age: 12h
+    path: /var/log/journal
+    matches: _TRANSPORT=kernel
+    labels:
+      job: systemd-journal
+  relabel_configs:
+    - source_labels: ['__journal__systemd_unit']
+      target_label: 'unit'

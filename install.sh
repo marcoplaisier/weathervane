@@ -80,6 +80,21 @@ git clone https://github.com/marcoplaisier/weathervane.git
 apt install python3-requests
 apt install python3-bitstring
 
+echo "Installing logging"
+promtail_dir=/etc/promtail
+promtail_version=v2.9.2
+mkdir $promtail_dir
+cd $promtail_dir || exit
+curl -O -L "https://github.com/grafana/loki/releases/download/$promtail_version/promtail-linux-arm.zip"
+unzip "promtail-linux-arm.zip"
+chmod a+x "promtail-linux-arm"
+cp /home/pi/weathervane/promtail.service /etc/systemd/system/promtail.service
+cp /home/pi/weathervane/promtail-config.yaml $promtail_dir/promtail/config.yaml
+serial_number=$(cat /sys/firmware/devicetree/base/serial-number) >/dev/null 2>&1
+grep -qxF "SERIAL_NUMBER=$serial_number" /etc/environment || echo "SERIAL_NUMBER=$serial_number" >> /home/pi/.profile
+
+cd /home/pi || exit
+
 echo "Installing weathervane as a service..."
 # install as service
 cp /home/pi/weathervane/weathervane.service /etc/systemd/system/weathervane.service

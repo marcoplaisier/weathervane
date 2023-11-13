@@ -89,10 +89,13 @@ curl -O -L "https://github.com/grafana/loki/releases/download/$promtail_version/
 unzip "promtail-linux-arm.zip"
 chmod a+x "promtail-linux-arm"
 cp /home/pi/weathervane/promtail.service /etc/systemd/system/promtail.service
-cp /home/pi/weathervane/promtail-config.yaml $promtail_dir/promtail/config.yaml
 serial_number=$(cat /sys/firmware/devicetree/base/serial-number) >/dev/null 2>&1
-grep -qxF "SERIAL_NUMBER=$serial_number" /etc/environment || echo "SERIAL_NUMBER=$serial_number" >> /home/pi/.profile
-
+sed -i "s/SERIAL/$serial_number" /home/pi/weathervane/promtail-config.yaml
+cp /home/pi/weathervane/promtail-config.yaml $promtail_dir/promtail/config.yaml
+source /home/pi/.profile
+systemctl daemon-reload
+systemctl enable promtail.service
+systemctl start promtail.service
 cd /home/pi || exit
 
 echo "Installing weathervane as a service..."

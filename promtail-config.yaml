@@ -16,7 +16,7 @@ scrape_configs:
       - localhost
     labels:
       job: weathervane
-      host: wv_at_home
+      host: SERIAL
       __path__: /home/pi/weathervane/weathervane.log
 - job_name: journal
   journal:

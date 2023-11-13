@@ -1,10 +1,7 @@
 #!/usr/bin/env python
 import argparse
 import datetime
-import logging
 import logging.handlers
-import pprint
-import sys
 import time
 from multiprocessing import Pipe, Process
 
@@ -182,4 +179,7 @@ def run():
 
 
 if __name__ == "__main__":
-    run()
+    try:
+        run()
+    finally:
+        logger.info("Shutting down")

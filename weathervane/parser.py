@@ -53,9 +53,7 @@ class WeathervaneConfigParser(ConfigParser):
         try:
             station_numbers = self["Stations"]
         except KeyError:
-            logger.error(
-                "Stations sections in config is formatted incorrectly. Using default stations"
-            )
+            logger.error("Stations sections in config is formatted incorrectly. Using default stations")
             return self.DEFAULT_STATIONS
 
         stations = []
@@ -74,6 +72,7 @@ class WeathervaneConfigParser(ConfigParser):
 
         @return: configuration as dictionary
         """
+        logger.info("Parsing configuration")
         station_config = self.parse_station_numbers()
         bits: List[dict] = self.parse_bit_packing_section()
 
@@ -96,7 +95,7 @@ class WeathervaneConfigParser(ConfigParser):
                 "pin": self.getint("Display", "pin"),
             },
         }
-        logger.info(f"Configuration: {configuration}")
+        logger.info("Configuration successfully parsed")
         return configuration
 
 
@@ -156,21 +155,18 @@ class BuienradarParser(object):
             field_name = field_dict["key"]
             value = weather_data[primary_station].get(field_name, None)
             if value is None and field_name not in BuienradarParser.DERIVED_FIELDS:
+                logger.warning(f"Using data from fallback stations for field {field_name}")
                 for secondary_station in secondary_stations:
                     try:
-                        fallback_data = weather_data.get(secondary_station, {})[
-                            field_name
-                        ]
+                        fallback_data = weather_data.get(secondary_station, {})[field_name]
                         weather_data[primary_station][field_name] = fallback_data
                         weather_data[primary_station]["data_from_fallback"] = True
-                        logger.info(
-                            f"Setting fallback, because {field_name} is missing"
-                        )
+                        logger.info(f"Set {field_name} to {fallback_data}, due to missing data at the primary station")
                         break
                     except KeyError:
                         continue
                 else:
-                    logger.warning(f"No backup value found for {field_name}")
+                    logger.error(f"No backup value found for {field_name}; setting error")
                     weather_data[primary_station]["error"] = True
         return weather_data[primary_station]
 

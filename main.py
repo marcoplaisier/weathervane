@@ -89,7 +89,7 @@ class WeatherVane(object):
             )
         )
         self.old_weatherdata, self.wd = self.wd, pipe_end_2.recv()
-        logger.info(pprint.pformat(self.wd))
+        logger.info("weather data", extra=self.wd)
 
     def start_data_collection_and_timer(self, pipe_end_1):
         self.start_collection_time = datetime.datetime.now()

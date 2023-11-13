@@ -77,8 +77,8 @@ echo "Requirements satisfied"
 echo "Installing weathervane"
 # clone repository
 git clone https://github.com/marcoplaisier/weathervane.git
-apt install python3-requests
-apt install python3-bitstring
+python3 venv venv
+./venv/bin/pip3 install -r requirements.txt
 
 echo "Installing logging"
 promtail_dir=/etc/promtail

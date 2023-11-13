@@ -3,6 +3,9 @@ from ctypes import c_ubyte, cdll, util
 from unittest.mock import Mock
 
 
+logger = logging.getLogger('weathervane.gpio')
+
+
 class SPISetupException(Exception):
     pass
 
@@ -45,7 +48,7 @@ class GPIO(object):
             error_message = (
                 "Channel must be 0 or 1. Channel {} is not available".format(self.channel)
             )
-            logging.exception(error_message)
+            logger.exception(error_message)
             raise SPISetupException(error_message)
 
         if not kwargs.get("test", False):
@@ -54,7 +57,7 @@ class GPIO(object):
                 self._setup(self.channel, self.frequency)
                 self.data = None
             except SPISetupException as e:
-                logging.exception(
+                logger.exception(
                     "Could not setup SPI protocol. Library: {}, channel: {}, frequency: {}. Please run "
                     '"gpio load spi" or install the drivers first'.format(
                         self.library, self.channel, self.frequency
@@ -97,10 +100,10 @@ class GPIO(object):
             error_message = "Could not setup SPI protocol. Status code: {}".format(
                 status_code
             )
-            logging.exception(error_message)
+            logger.exception(error_message)
             raise SPISetupException(error_message)
         else:
-            logging.info(
+            logger.info(
                 "SPI protocol setup succeeded at channel {} with frequency {}".format(
                     channel, frequency
                 )
@@ -110,10 +113,10 @@ class GPIO(object):
 
         if status_code == self.ERROR_CODE:
             error_message = "Could not setup pins. Status code: {}".format(status_code)
-            logging.exception(error_message)
+            logger.exception(error_message)
             raise SPISetupException(error_message)
         else:
-            logging.info("Pins successfully configured")
+            logger.info("Pins successfully configured")
 
     def pack(self, data):
         """
@@ -146,7 +149,7 @@ class GPIO(object):
                     list(data_packet), data_length
                 )
             )
-        # logging.info("Sent {}".format(binary_format(data)))
+        logger.debug("Sent data via SPI")
 
     def read_pin(self, pin_numbers):
         """Read the values of the supplied sequence of pins and returns them as a list

@@ -7,6 +7,8 @@ from typing import List, Sequence
 SIMPLE_CONFIG = 2
 EXTENDED_CONFIG = 5
 
+logger = logging.getLogger('weathervane.parser')
+
 
 class InvalidConfigException(Exception):
     pass
@@ -51,7 +53,7 @@ class WeathervaneConfigParser(ConfigParser):
         try:
             station_numbers = self["Stations"]
         except KeyError:
-            logging.error(
+            logger.error(
                 "Stations sections in config is formatted incorrectly. Using default stations"
             )
             return self.DEFAULT_STATIONS
@@ -94,7 +96,7 @@ class WeathervaneConfigParser(ConfigParser):
                 "pin": self.getint("Display", "pin"),
             },
         }
-        logging.info(f"Configuration: {configuration}")
+        logger.info(f"Configuration: {configuration}")
         return configuration
 
 
@@ -133,7 +135,7 @@ class BuienradarParser(object):
         weather_data_timestamp = datetime.fromisoformat(weather_data["timestamp"])
         time_delta = abs(datetime.now() - weather_data_timestamp)
         if time_delta > timedelta(hours=2):
-            logging.warning(
+            logger.warning(
                 f"{weather_data['timestamp']} is more than {time_delta.seconds/3600} hours out of date"
             )
             weather_data["error"] = True
@@ -161,14 +163,14 @@ class BuienradarParser(object):
                         ]
                         weather_data[primary_station][field_name] = fallback_data
                         weather_data[primary_station]["data_from_fallback"] = True
-                        logging.info(
+                        logger.info(
                             f"Setting fallback, because {field_name} is missing"
                         )
                         break
                     except KeyError:
                         continue
                 else:
-                    logging.warning(f"No backup value found for {field_name}")
+                    logger.warning(f"No backup value found for {field_name}")
                     weather_data[primary_station]["error"] = True
         return weather_data[primary_station]
 

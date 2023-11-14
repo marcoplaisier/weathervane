@@ -74,6 +74,7 @@ echo "Installing weathervane..."
 # clone repository
 git clone https://github.com/marcoplaisier/weathervane.git
 # creating virtual environment
+cd weathervane || exit
 python3 venv venv
 # install dependencies
 ./venv/bin/pip3 install -r requirements.txt
@@ -89,12 +90,11 @@ unzip promtail-linux-arm.zip
 chmod a+x promtail-linux-arm
 rm -f promtail-linux-arm.zip
 read -r -p 'Password: ' password
-openssl enc -d -pbkdf2 -aes-256-cbc -salt -in promtail-config-encrypted.yaml -out promtail-config-decrypted.yaml -k "$password"
+openssl enc -d -pbkdf2 -aes-256-cbc -salt -in /home/pi/weathervane/promtail-config-encrypted.yaml -out $promtail_dir/promtail-config.yaml -k "$password"
 unset password
 cp /home/pi/weathervane/promtail.service /etc/systemd/system/promtail.service
 serial_number=$(cat /sys/firmware/devicetree/base/serial-number) >/dev/null 2>&1
-sed -i "s/SERIAL/$serial_number" /home/pi/weathervane/promtail-config.yaml
-cp /home/pi/weathervane/promtail-config.yaml $promtail_dir/promtail/config.yaml
+sed -i "s/SERIAL/$serial_number/" /home/pi/weathervane/promtail-config.yaml
 systemctl daemon-reload
 systemctl enable promtail.service
 systemctl start promtail.service

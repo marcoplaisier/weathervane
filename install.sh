@@ -45,58 +45,61 @@ else
   exit 1
 fi
 
-echo "Checking Python 3 pip presence"
-py_pip=$(python3 -m pip --version) >/dev/null 2>&1
-if [ ! "$py_pip" ]; then
-  apt-get install python3-pip -y
-fi
-
 # enable SPI
-echo "Enabling SPI"
+echo "Enabling SPI..."
 raspi-config nonint do_spi 0
+echo "SPI enabled."
 
 # install wiringpi
 gpio_version=$(gpio -v) >/dev/null 2>&1
 if [ ! "$gpio_version" ]; then
-  echo "Installing wiringPi..."
+  echo "wiringPi not found; installing wiringPi..."
   cd /tmp || return
   wget https://github.com/WiringPi/WiringPi/releases/download/2.61-1/wiringpi-2.61-1-armhf.deb
   dpkg -i wiringpi-2.61-1-armhf.deb
   cd /home/pi || exit
-  echo "Installation done."
+  echo "wiringPi installed."
 fi
 
 has_git=$(git --version) >/dev/null 2>&1
 if [ ! "$has_git" ]; then
+  echo "Git not found; installing Git..."
   apt-get install git -y
+  echo "Git installed."
 fi
 
-echo "Validating requirements done"
-echo "Requirements satisfied"
+echo "Validating requirements done; Requirements satisfied"
 
-echo "Installing weathervane"
+echo "Installing weathervane..."
 # clone repository
 git clone https://github.com/marcoplaisier/weathervane.git
+# creating virtual environment
 python3 venv venv
+# install dependencies
 ./venv/bin/pip3 install -r requirements.txt
+echo "Weathervane installed."
 
-echo "Installing logging"
+echo "Installing logging..."
 promtail_dir=/etc/promtail
 promtail_version=v2.9.2
 mkdir $promtail_dir
 cd $promtail_dir || exit
 curl -O -L "https://github.com/grafana/loki/releases/download/$promtail_version/promtail-linux-arm.zip"
-unzip "promtail-linux-arm.zip"
-chmod a+x "promtail-linux-arm"
+unzip promtail-linux-arm.zip
+chmod a+x promtail-linux-arm
+rm -f promtail-linux-arm.zip
+read -r -p 'Password: ' password
+openssl enc -d -pbkdf2 -aes-256-cbc -salt -in promtail-config-encrypted.yaml -out promtail-config-decrypted.yaml -k "$password"
+unset password
 cp /home/pi/weathervane/promtail.service /etc/systemd/system/promtail.service
 serial_number=$(cat /sys/firmware/devicetree/base/serial-number) >/dev/null 2>&1
 sed -i "s/SERIAL/$serial_number" /home/pi/weathervane/promtail-config.yaml
 cp /home/pi/weathervane/promtail-config.yaml $promtail_dir/promtail/config.yaml
-source /home/pi/.profile
 systemctl daemon-reload
 systemctl enable promtail.service
 systemctl start promtail.service
 cd /home/pi || exit
+echo "Logging installed."
 
 echo "Installing weathervane as a service..."
 # install as service
@@ -107,5 +110,5 @@ echo "Starting service"
 # start service
 systemctl enable weathervane.service
 systemctl start weathervane.service
-echo "Weathervane installed."
+echo "Weathervane configured."
 # reboot

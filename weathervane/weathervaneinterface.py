@@ -7,6 +7,8 @@ import bitstring
 
 from weathervane.gpio import GPIO
 
+logger = logging.getLogger('weathervane.interface')
+
 
 class WeatherVaneInterface(object):
     wind_directions = {
@@ -152,14 +154,14 @@ class WeatherVaneInterface(object):
             return 1 if value and value > 0 else 0
         else:
             if not value:
-                logging.debug("Value {} is missing. Setting to min-value".format(value))
+                logger.debug("Value {} is missing. Setting to min-value".format(value))
             value = min(max(value, min_value), max_value)
 
             try:
                 value -= min_value
                 value /= float(step_value)
             except TypeError:
-                logging.debug(
+                logger.debug(
                     "Value {} for {} is not a number".format(value, measurement_name)
                 )
                 return 0
@@ -171,7 +173,7 @@ class WeatherVaneInterface(object):
         windgusts = result.get("windgusts", windspeed)
         if windspeed > windgusts:
             result["windspeed"] = windgusts
-            logging.debug(
+            logger.debug(
                 "Wind speed {} should not exceed maximum wind speed {}".format(
                     windspeed, windgusts
                 )

@@ -1,15 +1,41 @@
 #!/usr/bin/env python
 import argparse
 import datetime
-import logging
 import logging.handlers
-import pprint
 import time
 from multiprocessing import Pipe, Process
+
+from pythonjsonlogger import jsonlogger
 
 from weathervane.datasources import fetch_weather_data
 from weathervane.parser import WeathervaneConfigParser
 from weathervane.weathervaneinterface import Display, WeatherVaneInterface
+
+
+class CustomJsonFormatter(jsonlogger.JsonFormatter):
+    def add_fields(self, log_record, record, message_dict):
+        super(CustomJsonFormatter, self).add_fields(log_record, record, message_dict)
+        if not log_record.get('timestamp'):
+            # this doesn't use record.created, so it is slightly off
+            now = datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+            log_record['timestamp'] = now
+        if log_record.get('level'):
+            log_record['level'] = log_record['level'].upper()
+        else:
+            log_record['level'] = record.levelname
+
+
+logger = logging.getLogger("weathervane")
+logger.setLevel(logging.INFO)
+handler = logging.handlers.TimedRotatingFileHandler(
+    filename="weathervane.log", when="midnight", interval=1, backupCount=1
+)
+stream_handler = logging.StreamHandler()
+formatter = CustomJsonFormatter('%(timestamp)s %(level)s %(name)s %(message)s')
+stream_handler.setFormatter(formatter)
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+logger.addHandler(stream_handler)
 
 
 class WeatherVane(object):
@@ -19,7 +45,7 @@ class WeatherVane(object):
         self.configuration = configuration
         self.interface = WeatherVaneInterface(*args, **configuration)
         self.display = Display(self.interface, **configuration["display"])
-        logging.info("Using " + str(self.interface))
+        logger.info("Using " + str(self.interface))
         self.wd = None
         self.counter = 0
         self.interval = configuration["interval"]
@@ -41,7 +67,7 @@ class WeatherVane(object):
             target=fetch_weather_data, args=arguments, kwargs=self.configuration
         )
         p.start()
-        logging.debug("Retrieving data")
+        logger.debug("Retrieving data")
 
     def send_data(self):
         if self.old_weatherdata:
@@ -51,35 +77,23 @@ class WeatherVane(object):
             self.interface.send(self.wd)
 
     def retrieve_data(self, pipe_end_2):
-        logging.info("Data available:")
+        logger.info("Data available:")
         self.end_collection_time = datetime.datetime.now()
         self.reached = False
-        logging.info(
+        logger.info(
             "Data retrieval including parsing took {}".format(
                 self.end_collection_time - self.start_collection_time
             )
         )
         self.old_weatherdata, self.wd = self.wd, pipe_end_2.recv()
-        logging.info(pprint.pformat(self.wd))
+        logger.info("weather data", extra=self.wd)
 
     def start_data_collection_and_timer(self, pipe_end_1):
         self.start_collection_time = datetime.datetime.now()
         self.start_data_collection(pipe_end_1)
 
     def log_heartbeat(self):
-        logging.debug("Heartbeat-{}".format(self.counter))
-
-    def set_logger(self):
-        weathervane_logger = logging.getLogger("")
-        weathervane_logger.setLevel(logging.INFO)
-        handler = logging.handlers.TimedRotatingFileHandler(
-            filename="weathervane.log", when="midnight", interval=1, backupCount=7
-        )
-        formatter = logging.Formatter(
-            "%(asctime)s:%(levelname)s:%(module)s:%(message)s"
-        )
-        handler.setFormatter(formatter)
-        weathervane_logger.addHandler(handler)
+        logger.debug("Heartbeat-{}".format(self.counter))
 
     def interpolate(self, old_weatherdata, new_weatherdata, interval):
         if self.counter >= interval - 1:
@@ -157,14 +171,15 @@ def run():
         help="get the configuration from a specific configuration file",
     )
     args = parser.parse_args()
-    logging.info(args)
 
     wv_config = get_configuration(args)
+    logger.info("Weathervane started with properties", extra=wv_config)
     wv = WeatherVane(**wv_config)
-    wv.set_logger()
-
     wv.main()
 
 
 if __name__ == "__main__":
-    run()
+    try:
+        run()
+    finally:
+        logger.info("Shutting down")

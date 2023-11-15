@@ -3,3 +3,8 @@ bitstring===3.1.7
 requests==2.31.0
 python-json-logger==2.0.7
 tenacity==8.2.3
+
+# Testing related
+pytest
+hypothesis
+behave

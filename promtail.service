@@ -1,0 +1,14 @@
+[Unit]
+Description=Promtail Logging Service
+After=network.target
+
+[Service]
+WorkingDirectory=/etc/promtail
+ExecStart=/etc/promtail/promtail-linux-arm -config.file /etc/promtail/config.yaml
+StandardOutput=inherit
+StandardError=inherit
+Restart=always
+RestartSec=300
+
+[Install]
+WantedBy=multi-user.target

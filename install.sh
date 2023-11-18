@@ -49,6 +49,15 @@ fi
 echo "Git done"
 echo "Validating requirements done."
 
+echo "Installing weathervane..."
+cd /home/pi || exit
+git clone https://github.com/marcoplaisier/weathervane.git
+cd weathervane || exit
+apt install python3.11-venv -y
+python3 -m venv venv
+./venv/bin/pip3 install -r requirements.txt
+echo "Weathervane installed."
+
 echo "Installing logging..."
 promtail_dir=/etc/promtail
 promtail_version=v2.9.2
@@ -70,14 +79,7 @@ echo "Enabling and starting Promtail logging service (this may take a while)"
 systemctl enable promtail.service --now
 echo "Logging installed."
 
-echo "Installing weathervane..."
-cd /home/pi || exit
-git clone https://github.com/marcoplaisier/weathervane.git
-cd weathervane || exit
-apt install python3.11-venv -y
-python3 -m venv venv
-./venv/bin/pip3 install -r requirements.txt
-echo "Weathervane installed."
+
 
 echo "Installing weathervane as a service..."
 cp /home/pi/weathervane/weathervane.service /etc/systemd/system/weathervane.service

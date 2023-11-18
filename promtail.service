@@ -4,7 +4,7 @@ After=network.target
 
 [Service]
 WorkingDirectory=/etc/promtail
-ExecStart=/etc/promtail/promtail-linux-arm -config.file /etc/promtail/config.yaml
+ExecStart=/etc/promtail/promtail-linux-arm -config.file /etc/promtail/promtail-config.yaml -config.expand-env=true
 StandardOutput=inherit
 StandardError=inherit
 Restart=always

@@ -77,7 +77,7 @@ class WeatherVane(object):
             self.interface.send(self.wd)
 
     def retrieve_data(self, pipe_end_2):
-        logger.info("Data available:")
+        logger.info("Data available")
         self.end_collection_time = datetime.datetime.now()
         self.reached = False
         logger.info(

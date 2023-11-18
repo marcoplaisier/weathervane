@@ -1,6 +1,8 @@
-import logging
+import logging.handlers
+from datetime import datetime
 
 import requests
+from pythonjsonlogger import jsonlogger
 from tenacity import retry, wait_random_exponential, stop_after_delay
 
 from weathervane.parser import BuienradarParser
@@ -23,7 +25,31 @@ DEFAULT_WEATHER_DATA = {
     "windspeedBft": 0,
 }
 
-logger = logging.getLogger('weathervane.parser')
+
+class CustomJsonFormatter(jsonlogger.JsonFormatter):
+    def add_fields(self, log_record, record, message_dict):
+        super(CustomJsonFormatter, self).add_fields(log_record, record, message_dict)
+        if not log_record.get('timestamp'):
+            # this doesn't use record.created, so it is slightly off
+            now = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+            log_record['timestamp'] = now
+        if log_record.get('level'):
+            log_record['level'] = log_record['level'].upper()
+        else:
+            log_record['level'] = record.levelname
+
+
+logger = logging.getLogger("weathervane.datasource")
+logger.setLevel(logging.INFO)
+handler = logging.handlers.TimedRotatingFileHandler(
+    filename="datasource.log", when="midnight", interval=1, backupCount=1
+)
+stream_handler = logging.StreamHandler()
+formatter = CustomJsonFormatter('%(timestamp)s %(level)s %(name)s %(message)s')
+stream_handler.setFormatter(formatter)
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+logger.addHandler(stream_handler)
 
 
 @retry(wait=wait_random_exponential(multiplier=1, max=60), stop=stop_after_delay(300))

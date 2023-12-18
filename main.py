@@ -139,6 +139,7 @@ class WeatherVane(object):
                     self.wd = None
                     self.counter = 0
                     continue
+
             if self.wd:
                 self.send_data()
             self.counter += 1

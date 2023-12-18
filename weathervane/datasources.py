@@ -54,8 +54,9 @@ logger.addHandler(stream_handler)
 
 @retry(wait=wait_random_exponential(multiplier=1, max=60), stop=stop_after_delay(300))
 def get_weather_string_with_retries():
+    logger.info("Starting request to buienradar")
     r = requests.get("https://data.buienradar.nl/2.0/feed/json", timeout=5)
-
+    logger.info("Request done")
     if r.status_code == HTTP_OK:
         logger.info(f"Weather data retrieved in {r.elapsed} ms")
         return r.text

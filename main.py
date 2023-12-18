@@ -135,11 +135,11 @@ class WeatherVane(object):
                 self.start_data_collection_and_timer(pipe_end_1)
             if pipe_end_2.poll(0):
                 self.retrieve_data(pipe_end_2)
+                if self.wd["error"] and self.startup:
+                    self.wd = None
+                    self.counter = 0
+                    continue
 
-            if self.wd["error"] and self.startup:
-                self.wd = None
-                self.start_data_collection_and_timer(pipe_end_1)
-                continue
             if self.wd:
                 self.send_data()
             self.counter += 1

@@ -53,6 +53,7 @@ class WeatherVane(object):
         self.start_collection_time = datetime.datetime.now()
         self.end_collection_time = datetime.datetime.now()
         self.reached = False
+        self.startup = True
 
     def start_data_collection(self, pipe_end):
         """Side effect: reset counter to 0
@@ -108,17 +109,8 @@ class WeatherVane(object):
             if not new_value:
                 continue
 
-            if (
-                    key
-                    not in [
-                "error",
-                "winddirection",
-                "winddirection",
-                "rain",
-                "barometric_trend",
-            ]
-                    and not self.reached
-            ):
+            if (key not in ["error", "winddirection", "winddirection", "rain",
+                            "barometric_trend", ] and not self.reached):
                 try:
                     interpolated_value = float(old_value) + (
                             self.counter * (float(new_value) - float(old_value)) / interval
@@ -139,12 +131,15 @@ class WeatherVane(object):
         while True:
             self.display.tick()
 
-            if (self.counter % 3) == 0:
-                self.log_heartbeat()
             if (self.counter % self.interval) == 0:
                 self.start_data_collection_and_timer(pipe_end_1)
             if pipe_end_2.poll(0):
                 self.retrieve_data(pipe_end_2)
+
+            if self.wd["error"] and self.startup:
+                self.wd = None
+                self.start_data_collection_and_timer(pipe_end_1)
+                continue
             if self.wd:
                 self.send_data()
             self.counter += 1

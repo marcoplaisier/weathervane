@@ -1,9 +1,9 @@
 import logging
+import multiprocessing
 from ctypes import c_ubyte, cdll, util
 from unittest.mock import Mock
 
-
-logger = logging.getLogger('weathervane.gpio')
+logger = multiprocessing.get_logger()
 
 
 class SPISetupException(Exception):

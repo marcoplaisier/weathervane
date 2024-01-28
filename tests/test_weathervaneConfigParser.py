@@ -11,21 +11,20 @@ def test_parse_config():
     config_file = os.path.join(os.getcwd(), "tests", config_file_name)
     cp = WeathervaneConfigParser()
     cp.read(config_file)
-    observed = cp.parse_config()
     expected_keys = [
-        "extended-error-mode",
         "channel",
         "frequency",
         "library",
-        "interval",
+        "data_collection_interval",
+        "data_display_interval",
         "source",
         "stations",
         "bits",
-        "sleep-time",
         "test",
         "barometric_trend",
         "display",
     ]
+    observed = cp.parse_config()
     assert set(observed.keys()) == set(expected_keys)
     assert len(observed["bits"]) == 16
 

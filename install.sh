@@ -7,8 +7,6 @@ if [ "$EUID" -ne 0 ]
   exit
 fi
 
-read -r -p 'Password: ' password
-
 echo "Making sure time and timezones are set correctly..."
 sudo timedatectl set-timezone Europe/Amsterdam
 sudo timedatectl set-ntp True
@@ -57,29 +55,6 @@ apt install python3.11-venv -y
 python3 -m venv venv
 ./venv/bin/pip3 install -r requirements.txt
 echo "Weathervane installed."
-
-echo "Installing logging..."
-promtail_dir=/etc/promtail
-promtail_version=v2.9.2
-filename=promtail-linux-arm
-cd /tmp || exit
-curl -O -L "https://github.com/grafana/loki/releases/download/$promtail_version/$filename.zip"
-unzip $filename.zip
-mkdir $promtail_dir
-cp $filename $promtail_dir
-rm -f $filename.zip
-cd $promtail_dir || exit
-chmod a+x $filename
-openssl enc -d -pbkdf2 -aes-256-cbc -salt -in /home/pi/weathervane/promtail-config-encrypted.yaml -out $promtail_dir/promtail-config.yaml -k "$password"
-unset password
-cp /home/pi/weathervane/promtail.service /etc/systemd/system/promtail.service
-echo "Reloading systemd daemon (this may take a while)"
-systemctl daemon-reload
-echo "Enabling and starting Promtail logging service (this may take a while)"
-systemctl enable promtail.service --now
-echo "Logging installed."
-
-
 
 echo "Installing weathervane as a service..."
 cp /home/pi/weathervane/weathervane.service /etc/systemd/system/weathervane.service

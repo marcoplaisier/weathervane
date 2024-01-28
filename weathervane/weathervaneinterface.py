@@ -1,4 +1,5 @@
 import logging
+import multiprocessing
 import time
 from random import randint
 from typing import List
@@ -7,7 +8,7 @@ import bitstring
 
 from weathervane.gpio import GPIO
 
-logger = logging.getLogger('weathervane.interface')
+logger = multiprocessing.get_logger()
 
 
 class WeatherVaneInterface(object):
@@ -96,6 +97,7 @@ class WeatherVaneInterface(object):
         weather_data -- a dictionary with the data
         """
         data_array = self.convert_data(weather_data)
+        logger.info(f'Sending data {data_array.tobytes()} to device')
         self.gpio.send_data(data_array.tobytes())
         self.old_bit_string, self.new_bit_string = self.new_bit_string, data_array
 

@@ -1,41 +1,28 @@
 #!/usr/bin/env python
 import argparse
-import datetime
 import logging.handlers
+import multiprocessing
 import time
 from multiprocessing import Pipe, Process
-
-from pythonjsonlogger import jsonlogger
 
 from weathervane.datasources import fetch_weather_data
 from weathervane.parser import WeathervaneConfigParser
 from weathervane.weathervaneinterface import Display, WeatherVaneInterface
 
+NON_INTERPOLATABLE_VARIABLES = ["error", "winddirection", "winddirection", "rain", "barometric_trend"]
+SLEEP_INTERVAL = 0.1
 
-class CustomJsonFormatter(jsonlogger.JsonFormatter):
-    def add_fields(self, log_record, record, message_dict):
-        super(CustomJsonFormatter, self).add_fields(log_record, record, message_dict)
-        if not log_record.get('timestamp'):
-            # this doesn't use record.created, so it is slightly off
-            now = datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
-            log_record['timestamp'] = now
-        if log_record.get('level'):
-            log_record['level'] = log_record['level'].upper()
-        else:
-            log_record['level'] = record.levelname
-
-
-logger = logging.getLogger("weathervane")
+logger = multiprocessing.get_logger()
 logger.setLevel(logging.INFO)
+formatter = logging.Formatter("%(asctime)s:%(levelname)s:%(module)s:%(message)s")
 handler = logging.handlers.TimedRotatingFileHandler(
     filename="weathervane.log", when="midnight", interval=1, backupCount=1
 )
-stream_handler = logging.StreamHandler()
-formatter = CustomJsonFormatter('%(timestamp)s %(level)s %(name)s %(message)s')
-stream_handler.setFormatter(formatter)
 handler.setFormatter(formatter)
-logger.addHandler(handler)
+stream_handler = logging.StreamHandler()
+stream_handler.setFormatter(formatter)
 logger.addHandler(stream_handler)
+logger.addHandler(handler)
 
 
 class WeatherVane(object):
@@ -47,103 +34,75 @@ class WeatherVane(object):
         self.display = Display(self.interface, **configuration["display"])
         logger.info("Using " + str(self.interface))
         self.wd = None
-        self.counter = 0
-        self.interval = configuration["interval"]
-        self.sleep_time = configuration["sleep-time"]
-        self.start_collection_time = datetime.datetime.now()
-        self.end_collection_time = datetime.datetime.now()
-        self.reached = False
-        self.startup = True
+        self.data_collection_interval = configuration["data_collection_interval"]
+        self.data_display_interval = configuration["data_display_interval"]
+        self.start_collection_time = time.monotonic()
+        self.end_collection_time = time.monotonic()
 
     def start_data_collection(self, pipe_end):
-        """Side effect: reset counter to 0
-
-        @param pipe_end_1:
-        @return:
-        """
-        self.counter = 0
         arguments = [pipe_end]
         arguments.extend(self.args)
         p = Process(
             target=fetch_weather_data, args=arguments, kwargs=self.configuration
         )
         p.start()
-        logger.debug("Retrieving data")
 
-    def send_data(self):
-        if self.old_weatherdata:
-            wd = self.interpolate(self.old_weatherdata, self.wd, self.interval)
-            self.interface.send(wd)
-        else:
-            self.interface.send(self.wd)
+    def retrieve_data(self, pipe_end):
+        wd = pipe_end.recv()
+        self.old_weatherdata, self.wd = self.wd, wd
+        logger.info("weather data", extra=wd)
+        return wd
 
-    def retrieve_data(self, pipe_end_2):
-        logger.info("Data available")
-        self.end_collection_time = datetime.datetime.now()
-        self.reached = False
-        logger.info(
-            "Data retrieval including parsing took {}".format(
-                self.end_collection_time - self.start_collection_time
-            )
-        )
-        self.old_weatherdata, self.wd = self.wd, pipe_end_2.recv()
-        logger.info("weather data", extra=self.wd)
-
-    def start_data_collection_and_timer(self, pipe_end_1):
-        self.start_collection_time = datetime.datetime.now()
-        self.start_data_collection(pipe_end_1)
-
-    def log_heartbeat(self):
-        logger.debug("Heartbeat-{}".format(self.counter))
-
-    def interpolate(self, old_weatherdata, new_weatherdata, interval):
-        if self.counter >= interval - 1:
-            self.reached = True
+    @staticmethod
+    def interpolate(old_weatherdata, new_weatherdata, percentage):
+        percentage = min(percentage, 1)
         if new_weatherdata["error"]:
+            return new_weatherdata
+        if not old_weatherdata:
             return new_weatherdata
 
         interpolated_wd = {}
 
-        for key, old_value in list(old_weatherdata.items()):
+        for key, old_value in old_weatherdata.items():
             new_value = new_weatherdata.get(key, None)
             if not new_value:
-                continue
-
-            if (key not in ["error", "winddirection", "winddirection", "rain",
-                            "barometric_trend", ] and not self.reached):
+                interpolated_wd[key] = old_value
+            elif key in NON_INTERPOLATABLE_VARIABLES:
+                interpolated_wd[key] = new_value
+            else:
                 try:
-                    interpolated_value = float(old_value) + (
-                            self.counter * (float(new_value) - float(old_value)) / interval
-                    )
-                    interpolated_wd[key] = interpolated_value
+                    interpolated_wd[key] = float(old_value) + (percentage * (float(new_value) - float(old_value)))
                 except ValueError:
                     interpolated_wd[key] = new_value
                 except TypeError:
                     interpolated_wd[key] = new_value
-            else:
-                interpolated_wd[key] = new_value
 
         return interpolated_wd
 
     def main(self):
         pipe_end_1, pipe_end_2 = Pipe()
+        prev_data_collection_start_time = time.monotonic()
+        prev_display_data_send_time = time.monotonic()
+        self.start_data_collection(pipe_end_1)
+        wd = None
 
         while True:
             self.display.tick()
 
-            if (self.counter % self.interval) == 0:
-                self.start_data_collection_and_timer(pipe_end_1)
+            if time.monotonic() - prev_data_collection_start_time > self.data_collection_interval:
+                prev_data_collection_start_time = time.monotonic()
+                self.start_data_collection(pipe_end_1)
             if pipe_end_2.poll(0):
-                self.retrieve_data(pipe_end_2)
-                if self.wd["error"] and self.startup:
-                    self.wd = None
-                    self.counter = 0
-                    continue
+                wd = self.retrieve_data(pipe_end_2)
 
-            if self.wd:
-                self.send_data()
-            self.counter += 1
-            time.sleep(self.sleep_time)
+            display_time_elapsed = time.monotonic() - prev_display_data_send_time
+            if wd and display_time_elapsed > self.data_display_interval:
+                prev_display_data_send_time = time.monotonic()
+                percentage = display_time_elapsed / self.data_collection_interval
+                interpolated_wd = self.interpolate(self.old_weatherdata, wd, percentage)
+                self.interface.send(interpolated_wd)
+
+            time.sleep(SLEEP_INTERVAL)
 
 
 def get_configuration(args):

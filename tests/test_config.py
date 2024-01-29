@@ -24,10 +24,9 @@ config = {
         {"key": "DUMMY_BYTE", "length": "4"},
     ],
     "channel": 0,
-    "extended-error-mode": False,
     "fallback-station": "6310",
     "frequency": 250000,
-    "interval": 300,
+    "data_collection_interval": 300,
     "library": "wiringPi",
     "source": "buienradar",
     "stations": {

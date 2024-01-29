@@ -1,5 +1,6 @@
 import json
 import logging
+import multiprocessing
 from configparser import ConfigParser
 from datetime import datetime, timedelta
 from typing import List, Sequence
@@ -7,7 +8,7 @@ from typing import List, Sequence
 SIMPLE_CONFIG = 2
 EXTENDED_CONFIG = 5
 
-logger = logging.getLogger('weathervane.parser')
+logger = multiprocessing.get_logger()
 
 
 class InvalidConfigException(Exception):
@@ -77,13 +78,12 @@ class WeathervaneConfigParser(ConfigParser):
         bits: List[dict] = self.parse_bit_packing_section()
 
         configuration = {
-            "extended-error-mode": self.getboolean("General", "extended-error-mode"),
             "channel": self.getint("SPI", "channel"),
             "frequency": self.getint("SPI", "frequency"),
             "library": self.get("SPI", "library"),
-            "interval": self.getint("General", "interval"),
+            "data_collection_interval": self.getint("General", "data_collection_interval"),
             "source": self.get("General", "source"),
-            "sleep-time": float(self.get("General", "sleep-time")),
+            "data_display_interval": float(self.get("General", "data_display_interval")),
             "test": self.getboolean("General", "test"),
             "barometric_trend": self.getboolean("General", "barometric_trend"),
             "stations": station_config,
@@ -135,14 +135,14 @@ class BuienradarParser(object):
         time_delta = abs(datetime.now() - weather_data_timestamp)
         if time_delta > timedelta(hours=2):
             logger.error(
-                f"{weather_data['timestamp']} is more than {time_delta.seconds/3600} hours out of date"
+                f"{weather_data['timestamp']} is more than {time_delta.seconds / 3600} hours out of date"
             )
             weather_data["error"] = True
         return weather_data
 
     @staticmethod
     def merge(
-        weather_data: dict, stations: list, required_fields: Sequence[dict]
+            weather_data: dict, stations: list, required_fields: Sequence[dict]
     ) -> dict:
         primary_station = stations[0]
         weather_data[primary_station]["data_from_fallback"] = False

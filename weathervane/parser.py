@@ -5,6 +5,8 @@ from configparser import ConfigParser
 from datetime import datetime, timedelta
 from typing import List, Sequence
 
+HOUR_ERROR_LIMIT = 2.0 * 60 * 60
+
 SIMPLE_CONFIG = 2
 EXTENDED_CONFIG = 5
 
@@ -99,6 +101,16 @@ class WeathervaneConfigParser(ConfigParser):
         return configuration
 
 
+def is_weather_data_stale(timestamp, now):
+    weather_data_ts = datetime.fromisoformat(timestamp).timestamp()
+    now_ts = now.timestamp()
+    time_delta_in = now_ts - weather_data_ts
+    if time_delta_in > HOUR_ERROR_LIMIT:
+        logger.error(f"{timestamp} is more than {(time_delta_in/3600):.2f} hours old; data is stale")
+        return True
+    return False
+
+
 class BuienradarParser(object):
     DERIVED_FIELDS = [
         "error",
@@ -130,14 +142,7 @@ class BuienradarParser(object):
     @staticmethod
     def enrich(weather_data: dict) -> dict:
         weather_data["barometric_trend"] = BuienradarParser.TREND_MAPPING['stable']
-
-        weather_data_timestamp = datetime.fromisoformat(weather_data["timestamp"])
-        time_delta = abs(datetime.now() - weather_data_timestamp)
-        if time_delta > timedelta(hours=2):
-            logger.error(
-                f"{weather_data['timestamp']} is more than {time_delta.seconds / 3600} hours out of date"
-            )
-            weather_data["error"] = True
+        weather_data["error"] = is_weather_data_stale(weather_data["timestamp"], datetime.now())
         return weather_data
 
     @staticmethod

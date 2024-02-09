@@ -41,7 +41,7 @@ echo "Checking Git installation..."
 has_git=$(git --version) >/dev/null 2>&1
 if [ ! "$has_git" ]; then
   echo "Git not found; installing Git..."
-  apt-get install git -y
+  apt-get install git git-man libc6:armhf liberror-perl -y
   echo "Git installed."
 fi
 echo "Git done"

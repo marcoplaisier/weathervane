@@ -13,7 +13,7 @@ dependencies = [
 requires-python = ">= 3.7"
 authors = [
     { name = "Marco Plaisier", email = "m.plaisier@gmail.com" }]
-description = "Collect weatherdata from public source(s) and display on 32-LED weathervane"
+description = "Collect weatherdata from public source and display on 32 LED weathervane"
 
 [tool.hatch.version]
 path="about.py"

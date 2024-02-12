@@ -1,0 +1,17 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "weathervane"
+dynamic = ["version"]
+dependencies = [
+    "bitstring==3.1.7",
+    "requests==2.31.0",
+    "tenacity==8.2.3"
+]
+requires-python = ">= 3.7"
+authors = [
+    { name = "Marco Plaisier", email = "m.plaisier@gmail.com" }]
+description="Collect weatherdata from public source(s) and display on 32-LED weathervane"
+readme="README.rst"

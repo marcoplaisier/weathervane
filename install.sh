@@ -46,7 +46,7 @@ echo "Installing weathervane..."
 cd /home/pi || exit
 git clone https://github.com/marcoplaisier/weathervane.git
 cd weathervane || exit
-apt install python3.11-venv -y
+apt install python3-venv -y
 python3 -m venv venv
 ./venv/bin/pip3 install -r requirements.txt
 echo "Weathervane installed."

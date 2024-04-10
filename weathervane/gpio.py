@@ -17,10 +17,6 @@ class SPIDataTransmissionError(Exception):
 class GPIO(object):
     ERROR_CODE = -1
     AVAILABLE_CHANNELS = (0, 1)
-    INPUT = 0
-    OUTPUT = 1
-    PWM_OUTPUT = 2
-    GPIO_CLOCK = 3
 
     def __init__(self, *args, **kwargs):
         """
@@ -31,21 +27,11 @@ class GPIO(object):
         http://raspberrypi.stackexchange.com/questions/699/what-spi-frequencies-does-raspberry-pi-support
         @raise SPISetupException: when setup cannot proceed, it will raise a setup exception
         """
-        self.channel = kwargs["channel"]
         self.frequency = kwargs["frequency"]
-
-        if self.channel not in self.AVAILABLE_CHANNELS:
-            # If the channel is not 0 or 1, the rest of the program may fail silently or give weird errors. So, we
-            # raise an exception.
-            error_message = (
-                "Channel must be 0 or 1. Channel {} is not available".format(self.channel)
-            )
-            logger.exception(error_message)
-            raise SPISetupException(error_message)
 
         if not kwargs.get("test", False):
             spi = spidev.SpiDev()
-            spi.open(bus=self.channel, device=0)
+            spi.open(0, 0)
             self.spi = spi
         else:
             self.spi = Mock()
@@ -59,7 +45,7 @@ class GPIO(object):
         @raise SPIDataTransmissionError:
         """
 
-        self.spi.xfer(bytes(data))
+        self.spi.xfer(data)
         logger.debug("Sent data via SPI")
 
 

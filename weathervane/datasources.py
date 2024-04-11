@@ -1,9 +1,7 @@
-import logging.handlers
 import multiprocessing
 import time
 
 import requests
-from tenacity import retry, wait_random_exponential, stop_after_delay
 
 from weathervane.parser import BuienradarParser
 
@@ -27,7 +25,6 @@ DEFAULT_WEATHER_DATA = {
 
 logger = multiprocessing.get_logger()
 
-@retry(wait=wait_random_exponential(multiplier=1, max=60), stop=stop_after_delay(300))
 def get_weather_string_with_retries():
     logger.info("Starting request to buienradar")
     r = requests.get("https://data.buienradar.nl/2.0/feed/json", timeout=5)

@@ -25,18 +25,6 @@ echo "Enabling SPI..."
 raspi-config nonint do_spi 0
 echo "SPI enabled."
 
-echo "Checking wiringPi installation..."
-gpio_version=$(gpio -v) >/dev/null 2>&1
-if [ ! "$gpio_version" ]; then
-  echo "wiringPi not found; installing wiringPi..."
-  cd /tmp || return
-  wget https://github.com/WiringPi/WiringPi/releases/download/2.61-1/wiringpi-2.61-1-armhf.deb
-  dpkg -i wiringpi-2.61-1-armhf.deb
-  cd $home_dir || exit
-  echo "wiringPi installed."
-fi
-echo "wiringPi done."
-
 echo "Checking Git installation..."
 apt install git git-man -y
 echo "Git installed."

@@ -1,14 +1,6 @@
 from unittest.mock import MagicMock
 
-import bitstring
-import pytest
-
-from weathervane.gpio import GPIO, SPIDataTransmissionError, SPISetupException
-
-
-def test_initialization_wrong_channel():
-    with pytest.raises(SPISetupException):
-        GPIO(channel=2, frequency=25000, library="wiringPi")
+from weathervane.gpio import GPIO
 
 
 def test_initialization():

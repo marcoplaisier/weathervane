@@ -24,10 +24,10 @@ class WeatherVaneTest(unittest.TestCase):
             % (expected, result),
         )
 
-    def test_bitstring_length(self, mock_class):
+    def test_transmittable_data_length(self, mock_class):
         weather_data = {"winddirection": "NO"}
         self.interface.send(weather_data)
-        self.assertEqual(len(self.interface.new_bit_string), 64)
+        self.assertEqual(len(self.interface.new_byte_array), 8)
 
     def test_toggle_bit_empty_data(self, mock_class):
         weather_data = {"winddirection": "NO"}
@@ -35,7 +35,7 @@ class WeatherVaneTest(unittest.TestCase):
         self.interface.send(weather_data)
         self.assertTrue(self.interface.data_changed)
 
-    def test_bitstring_length_2(self, mock_class):
+    def test_transmittable_data_length_2(self, mock_class):
         weather_data = {
             "winddirection": "NO",
             "windspeed": 10,
@@ -47,7 +47,7 @@ class WeatherVaneTest(unittest.TestCase):
             "humidity": 100,
         }
         self.interface.send(weather_data)
-        self.assertEqual(len(self.interface.new_bit_string), 64)
+        self.assertEqual(len(self.interface.new_byte_array), 8)
 
     def test_toggle_bit(self, mock_class):
         weather_data = {

@@ -4,7 +4,6 @@ Weathervane for the Raspberry Pi
 Requirements
 -----------
 * requests
-* bitstring
 
 
 Installation

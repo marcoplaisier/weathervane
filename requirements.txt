@@ -1,5 +1,5 @@
 # Project core
 bitstring===3.1.7
-requests==2.31.0
+requests==2.32.2
 spidev
 gpiozero

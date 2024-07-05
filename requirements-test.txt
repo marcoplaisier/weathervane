@@ -1,6 +1,6 @@
 # Project core
 bitstring===3.1.7
-requests==2.31.0
+requests==2.32.2
 python-json-logger==2.0.7
 tenacity==8.2.3
 spidev

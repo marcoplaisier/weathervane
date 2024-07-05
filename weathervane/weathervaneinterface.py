@@ -1,10 +1,8 @@
-import logging
 import multiprocessing
 import time
 from random import randint
 from typing import List
 
-import bitstring
 import gpiozero
 
 from weathervane.gpio import GPIO
@@ -36,8 +34,8 @@ class WeatherVaneInterface(object):
         self.channel = kwargs["channel"]
         self.frequency = kwargs["frequency"]
         self.gpio = GPIO(**kwargs)
-        self.old_bit_string = None
-        self.new_bit_string = None
+        self.old_byte_array = None
+        self.new_byte_array = None
         self.weather_data = {}
         self.bits: List[dict] = kwargs["bits"]
         self.stations = kwargs["stations"]
@@ -54,7 +52,7 @@ class WeatherVaneInterface(object):
 
         @return: a boolean indicating whether the data has changed
         """
-        return self.old_bit_string != self.new_bit_string
+        return self.old_byte_array != self.new_byte_array
 
     def convert_data(self, weather_data):
         """Converts the weather data into a string of bits
@@ -70,26 +68,22 @@ class WeatherVaneInterface(object):
 
         @precondition: the member 'requested data' is properly set
         @param weather_data: a dictionary containing the weatherdata
-        @return: a bitstring with the data in bits according to the configuration
+        @return: a byte array
         """
-        s = None
         t_data = self.transmittable_data(weather_data, self.bits)
 
-        for i, data in enumerate(self.bits):
-            formatting = self.bits[i]
-            bit_length = int(formatting["length"])
-            bit_key = formatting["key"]
+        r = 0b0
+        length = 0
+        for data in self.bits:
+            bit_length = int(data["length"])
+            length += bit_length
+            bit_key = data["key"]
             bit_value = t_data[bit_key]
-            padding_string = "#0{0}b".format(
-                bit_length + 2
-            )  # account for '0b' in the length
-            padded_bit_value = format(bit_value, padding_string)
-            if s is not None:
-                s += bitstring.pack("bin:{}={}".format(bit_length, padded_bit_value))
-            else:
-                s = bitstring.pack("bin:{}={}".format(bit_length, padded_bit_value))
+            r = r << bit_length
+            r += bit_value
 
-        return s
+        result = r.to_bytes(length // 8, byteorder='big')
+        return result
 
     def send(self, weather_data):
         """Send data to the connected SPI device.
@@ -98,21 +92,9 @@ class WeatherVaneInterface(object):
         weather_data -- a dictionary with the data
         """
         data_array = self.convert_data(weather_data)
-        logger.info(f'Sending data {data_array.tobytes()} to device')
-        self.gpio.send_data(data_array.tobytes())
-        self.old_bit_string, self.new_bit_string = self.new_bit_string, data_array
-
-    @property
-    def data(self):
-        """Return the data sent by the spi device.
-
-        This function returns the data that was sent by the connected SPI device. To get the data that was originally
-        sent to that device, use get_sent_data.
-
-        Returns:
-        array of bytes
-        """
-        return self.gpio.data
+        logger.info(f'Sending data {data_array} to device')
+        self.gpio.send_data(data_array)
+        self.old_byte_array, self.new_byte_array = self.new_byte_array, data_array
 
     @property
     def sent_data(self):
@@ -138,7 +120,7 @@ class WeatherVaneInterface(object):
             value = weather_data.get(measurement_name, 0)
             if measurement_name == "random":
                 length = int(data_point["length"])
-                value = randint(0, 2**length - 1)
+                value = randint(0, 2 ** length - 1)
 
             step_value = float(data_point.get("step", 1))
             min_value = float(data_point.get("min", 0))
@@ -171,7 +153,8 @@ class WeatherVaneInterface(object):
 
             return int(value)
 
-    def compensate_wind(self, result):
+    @staticmethod
+    def compensate_wind(result):
         windspeed = result.get("windspeed", 0)
         windgusts = result.get("windgusts", windspeed)
         if windspeed > windgusts:

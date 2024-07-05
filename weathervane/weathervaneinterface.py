@@ -5,6 +5,7 @@ from random import randint
 from typing import List
 
 import bitstring
+import gpiozero
 
 from weathervane.gpio import GPIO
 
@@ -185,14 +186,13 @@ class WeatherVaneInterface(object):
 
 
 class Display(object):
-    def __init__(self, interface, **kwargs):
-        self.wv_interface = interface
+    def __init__(self, **kwargs):
         self.auto_disable_display = kwargs.get("auto-turn-off", False)
         start_time = kwargs.get("start-time", "6:30")
         self.start_at_minutes = Display.convert_to_minutes(start_time)
         end_time = kwargs.get("end-time", "22:00")
         self.end_at_minutes = Display.convert_to_minutes(end_time)
-        self.pin = kwargs.get("pin", 4)
+        self.display = gpiozero.LED(kwargs.get("pin", 4))
 
     @staticmethod
     def convert_to_minutes(time_text):
@@ -213,6 +213,6 @@ class Display(object):
             time_text = time.strftime("%H:%M")
             current_minute = Display.convert_to_minutes(time_text)
             if self.is_active(current_minute):
-                self.wv_interface.gpio.write_pin(self.pin, 1)
+                self.display.on()
             else:
-                self.wv_interface.gpio.write_pin(self.pin, 0)
+                self.display.off()

@@ -36,7 +36,6 @@ git clone https://github.com/marcoplaisier/weathervane.git
 cd weathervane || exit
 apt install python3-venv -y
 python3 -m venv venv
-apt install python3-bitstring
 apt install python3-requests
 echo "Weathervane installed."
 

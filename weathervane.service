@@ -3,7 +3,7 @@ Description=Weathervane Service
 
 [Service]
 WorkingDirectory=/home/pi/weathervane
-ExecStart=/home/pi/weathervane/venv/bin/python3 -u main.py
+ExecStart=python3 main.py
 StandardOutput=inherit
 StandardError=inherit
 Restart=always

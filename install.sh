@@ -36,7 +36,7 @@ git clone https://github.com/marcoplaisier/weathervane.git
 cd weathervane || exit
 apt install python3-venv -y
 python3 -m venv venv
-apt install python3-requests
+apt install python3-httpx
 echo "Weathervane installed."
 
 echo "Installing weathervane as a service..."

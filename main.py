@@ -1,18 +1,18 @@
 #!/usr/bin/env python
 import argparse
+import asyncio
 import logging.handlers
-import multiprocessing
 import time
-from multiprocessing import Pipe, Process
+from unittest.mock import Mock
 
-from weathervane.datasources import fetch_weather_data
+from weathervane.datasources import BuienRadarDataSource
 from weathervane.parser import WeathervaneConfigParser
 from weathervane.weathervaneinterface import Display, WeatherVaneInterface
 
 NON_INTERPOLATABLE_VARIABLES = ["error", "winddirection", "winddirection", "rain", "barometric_trend"]
 SLEEP_INTERVAL = 0.1
 
-logger = multiprocessing.get_logger()
+logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 formatter = logging.Formatter("%(asctime)s:%(levelname)s:%(module)s:%(message)s")
 handler = logging.handlers.TimedRotatingFileHandler(
@@ -25,30 +25,38 @@ logger.addHandler(stream_handler)
 logger.addHandler(handler)
 
 
+class TestDisplay:
+    async def tick(self):
+        pass
+
+
 class WeatherVane(object):
     def __init__(self, *args, **configuration):
         self.old_weatherdata = None
+        self.stations = configuration.get('stations')
+        self.bits = configuration.get('bits')
         self.args = args
         self.configuration = configuration
         self.interface = WeatherVaneInterface(*args, **configuration)
-        self.display = Display(**configuration["display"])
+
+        if not configuration.get("test", False):
+            self.display = Display(**configuration["display"])
+        else:
+            self.display = TestDisplay()
         logger.info("Using " + str(self.interface))
         self.wd = None
         self.data_collection_interval = configuration["data_collection_interval"]
         self.data_display_interval = configuration["data_display_interval"]
         self.start_collection_time = time.monotonic()
         self.end_collection_time = time.monotonic()
+        self.queue = asyncio.Queue(maxsize=1)
+        self.data_source = BuienRadarDataSource(self.queue, self.stations, self.bits)
 
-    def start_data_collection(self, pipe_end):
-        arguments = [pipe_end]
-        arguments.extend(self.args)
-        p = Process(
-            target=fetch_weather_data, args=arguments, kwargs=self.configuration
-        )
-        p.start()
+    async def start_data_collection(self):
+        await asyncio.create_task(self.data_source.fetch_weather_data())
 
-    def retrieve_data(self, pipe_end):
-        wd = pipe_end.recv()
+    async def retrieve_data(self):
+        wd = self.queue.get_nowait()
         self.old_weatherdata, self.wd = self.wd, wd
         logger.info("weather data", extra=wd)
         return wd
@@ -79,21 +87,21 @@ class WeatherVane(object):
 
         return interpolated_wd
 
-    def main(self):
-        pipe_end_1, pipe_end_2 = Pipe()
+    async def loop(self):
         prev_data_collection_start_time = time.monotonic()
         prev_display_data_send_time = time.monotonic()
-        self.start_data_collection(pipe_end_1)
+        await self.start_data_collection()
         wd = None
 
         while True:
-            self.display.tick()
+            await self.display.tick()
 
             if time.monotonic() - prev_data_collection_start_time > self.data_collection_interval:
                 prev_data_collection_start_time = time.monotonic()
-                self.start_data_collection(pipe_end_1)
-            if pipe_end_2.poll(0):
-                wd = self.retrieve_data(pipe_end_2)
+                asyncio.create_task(self.data_source.fetch_weather_data())
+
+            while not self.queue.empty():
+                wd = await self.retrieve_data()
 
             display_time_elapsed = time.monotonic() - prev_display_data_send_time
             if wd and display_time_elapsed > self.data_display_interval:
@@ -102,7 +110,7 @@ class WeatherVane(object):
                 interpolated_wd = self.interpolate(self.old_weatherdata, wd, percentage)
                 self.interface.send(interpolated_wd)
 
-            time.sleep(SLEEP_INTERVAL)
+            await asyncio.sleep(SLEEP_INTERVAL)
 
 
 def get_configuration(args):
@@ -113,7 +121,7 @@ def get_configuration(args):
     return config
 
 
-def run():
+async def main():
     parser = argparse.ArgumentParser(
         description="Get weather data from a provider and send it through SPI"
     )
@@ -129,11 +137,11 @@ def run():
     wv_config = get_configuration(args)
     logger.info("Weathervane started with properties", extra=wv_config)
     wv = WeatherVane(**wv_config)
-    wv.main()
+    await wv.loop()
 
 
 if __name__ == "__main__":
     try:
-        run()
+        asyncio.run(main())
     finally:
         logger.info("Shutting down")

@@ -1,22 +1,20 @@
+import asyncio
 import os
-import time
-import unittest
-from multiprocessing import Pipe, Process
 
-from weathervane.datasources import fetch_weather_data
+from weathervane.datasources import BuienRadarDataSource
 from weathervane.parser import WeathervaneConfigParser
 
 
-class RecursionTest(unittest.TestCase):
-    def test_recursion(self):
-        p_end1, p_end2 = Pipe()
-        cp = WeathervaneConfigParser()
-        config_file = os.path.join(os.getcwd(), "tests", "config-test1.ini")
-        cp.read(config_file)
-        c = cp.parse_config()
-        p = Process(target=fetch_weather_data, args=[p_end1, "6308"], kwargs=c)
-        p.start()
-        while not p_end2.poll():
-            time.sleep(0.1)
+async def test_recursion():
+    q = asyncio.Queue(maxsize=1)
+    cp = WeathervaneConfigParser()
+    config_file = os.path.join(os.getcwd(), "tests", "config-test1.ini")
+    cp.read(config_file)
+    c = cp.parse_config()
+    data_source = BuienRadarDataSource(q, stations=c.get('stations'), bits=c.get('bits'))
+    await asyncio.create_task(data_source.fetch_weather_data())
 
-        p_end2.recv()
+    while q.empty():
+        await asyncio.sleep(0.1)
+
+    _ = await q.get()

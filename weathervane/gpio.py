@@ -1,9 +1,9 @@
-import multiprocessing
+import logging
 from unittest.mock import Mock
 
 import spidev
 
-logger = multiprocessing.get_logger()
+logger = logging.getLogger()
 
 
 class SPISetupException(Exception):

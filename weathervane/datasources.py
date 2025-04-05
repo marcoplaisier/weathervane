@@ -1,7 +1,6 @@
-import multiprocessing
-import time
+import logging
 
-import requests
+import httpx
 
 from weathervane.parser import BuienradarParser
 
@@ -23,34 +22,38 @@ DEFAULT_WEATHER_DATA = {
     "windspeedBft": 0,
 }
 
-logger = multiprocessing.get_logger()
-
-def get_weather_string_with_retries():
-    logger.info("Starting request to buienradar")
-    r = requests.get("https://data.buienradar.nl/2.0/feed/json", timeout=5)
-    logger.info("Request done")
-    if r.status_code == HTTP_OK:
-        logger.info(f"Weather data retrieved in {r.elapsed} ms")
-        return r.text
-    else:
-        logger.warning(f"Got response in {r.elapsed} ms, but unhandled status code {r.status_code}")
-        raise ConnectionError(f"Buienradar: {r.status_code}")
+logger = logging.getLogger()
 
 
-def fetch_weather_data(conn, *args, **kwargs):
-    start_collection_time = time.monotonic()
-    data = get_weather_string_with_retries()
+class BuienRadarDataSource:
 
-    if data:
-        bp = BuienradarParser(*args, **kwargs)
-        try:
-            wd = bp.parse(data)
-        except Exception as e:
-            logger.error("Data parsing failed. Cannot send good data. Setting error.")
+    def __init__(self, queue, stations, bits):
+        self.queue = queue
+        self.bp = BuienradarParser(stations=stations, bits=bits)
+
+    @staticmethod
+    async def __get_weather():
+        async with httpx.AsyncClient() as client:
+            r = await client.get("https://data.buienradar.nl/2.0/feed/json", timeout=5)
+
+        if r.status_code == HTTP_OK:
+            logger.info(f"Weather data retrieved in {r.elapsed} ms")
+            return r.text
+        else:
+            logger.warning(f"Got response in {r.elapsed} ms, but unexpected status code {r.status_code}")
+            raise ConnectionError(f"Buienradar: {r.status_code}")
+
+    async def fetch_weather_data(self):
+        data = await self.__get_weather()
+
+        if data:
+            try:
+                wd = self.bp.parse(data)
+            except ConnectionError as e:
+                logger.error("Data parsing failed. Cannot send good data. Setting error.")
+                wd = DEFAULT_WEATHER_DATA
+        else:
+            logger.error("Retrieving data failed several times. Setting error.")
             wd = DEFAULT_WEATHER_DATA
-    else:
-        logger.error("Retrieving data failed several times. Setting error.")
-        wd = DEFAULT_WEATHER_DATA
-    logger.info(f"Data retrieval including parsing took {time.monotonic() - start_collection_time}")
-    conn.send(wd)
-    conn.close()
+
+        await self.queue.put(wd)

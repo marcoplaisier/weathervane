@@ -1,4 +1,5 @@
-import multiprocessing
+import logging
+import math
 import time
 from random import randint
 from typing import List
@@ -7,7 +8,7 @@ import gpiozero
 
 from weathervane.gpio import GPIO
 
-logger = multiprocessing.get_logger()
+logger = logging.getLogger()
 
 
 class WeatherVaneInterface(object):
@@ -82,7 +83,7 @@ class WeatherVaneInterface(object):
             r = r << bit_length
             r += bit_value
 
-        result = r.to_bytes(length // 8, byteorder='big')
+        result = r.to_bytes(math.ceil(length / 8), byteorder='big')
         return result
 
     def send(self, weather_data):
@@ -191,7 +192,7 @@ class Display(object):
             return (self.convert_to_minutes("00:00") <= current_minute <= self.end_at_minutes &
                     self.start_at_minutes <= current_minute <= self.convert_to_minutes("23:59"))
 
-    def tick(self):
+    async def tick(self):
         if self.auto_disable_display:
             time_text = time.strftime("%H:%M")
             current_minute = Display.convert_to_minutes(time_text)

@@ -7,5 +7,6 @@ gpiozero
 
 # Testing related
 pytest
+pytest-aio
 hypothesis
 behave

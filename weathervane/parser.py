@@ -1,6 +1,6 @@
 import json
 import logging
-import multiprocessing
+
 from configparser import ConfigParser
 from datetime import datetime, timedelta
 from typing import List, Sequence
@@ -10,7 +10,7 @@ HOUR_ERROR_LIMIT = 2.0 * 60 * 60
 SIMPLE_CONFIG = 2
 EXTENDED_CONFIG = 5
 
-logger = multiprocessing.get_logger()
+logger = logging.getLogger()
 
 
 class InvalidConfigException(Exception):
@@ -122,10 +122,10 @@ class BuienradarParser(object):
     ]
     TREND_MAPPING = {'dropping': 2, 'stable': 4, 'rising': 1}
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, stations, bits):
         self.fallback_used = None
-        self.stations = kwargs.get("stations", None)
-        self.bits = kwargs.get("bits", None)
+        self.stations = stations
+        self.bits = bits
 
     def parse(self, data: str) -> dict:
         raw_weather_data = json.loads(data)

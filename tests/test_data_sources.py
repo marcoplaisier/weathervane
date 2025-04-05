@@ -1,10 +1,10 @@
-from multiprocessing import Pipe
+import asyncio
 
-from weathervane.datasources import fetch_weather_data
+from weathervane.datasources import BuienRadarDataSource
 
 
-def test_fetch():
-    p1, p2 = Pipe()
+async def test_fetch():
+    queue = asyncio.Queue(maxsize=1)
     bits = [
         {"key": "winddirection"},
         {"key": "windspeed"},
@@ -12,9 +12,9 @@ def test_fetch():
         {"key": "windspeedBft"},
         {"key": "airpressure"},
     ]
-    fetch_weather_data(p1, stations=[6260], bits=bits)
-    p2.poll(timeout=5)
-    data = p2.recv()
+    bp = BuienRadarDataSource(queue=queue, stations=[6260], bits=bits)
+    await bp.fetch_weather_data()
+    data = await queue.get()
     assert "winddirection" in data
     assert "windspeed" in data
     assert "windgusts" in data

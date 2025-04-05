@@ -1,4 +1,4 @@
 # Project core
-requests==2.32.2
+httpx
 spidev
 gpiozero

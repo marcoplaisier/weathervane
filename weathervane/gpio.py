@@ -32,6 +32,7 @@ class GPIO(object):
         if not kwargs.get("test", False):
             spi = spidev.SpiDev()
             spi.open(0, 0)
+            spi.max_speed_hz=100000
             self.spi = spi
         else:
             self.spi = Mock()

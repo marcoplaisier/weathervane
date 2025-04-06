@@ -150,10 +150,17 @@ class BuienradarParser(object):
             weather_data: dict, stations: list, required_fields: Sequence[dict]
     ) -> dict:
         primary_station = stations[0]
-        weather_data[primary_station]["data_from_fallback"] = False
+        try:
+            weather_data[primary_station]["data_from_fallback"] = False
+            secondary_stations = stations[1:]
+        except KeyError:
+            logger.error(f"Primary station {primary_station} not found in data")
+            primary_station = stations[1]
+            secondary_stations = stations[1:]
+            weather_data[primary_station]["data_from_fallback"] = True
+
         weather_data[primary_station]["error"] = False
-        assert primary_station
-        secondary_stations = stations[1:]
+
         if not secondary_stations:
             return weather_data[primary_station]
         for field_dict in required_fields:

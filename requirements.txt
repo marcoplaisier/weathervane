@@ -1,4 +1,0 @@
-# Project core
-httpx
-spidev
-gpiozero

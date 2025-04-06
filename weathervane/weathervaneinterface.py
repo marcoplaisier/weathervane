@@ -73,17 +73,13 @@ class WeatherVaneInterface(object):
         """
         t_data = self.transmittable_data(weather_data, self.bits)
 
-        r = 0b0
-        length = 0
+        r = "0b"
         for data in self.bits:
-            bit_length = int(data["length"])
-            length += bit_length
             bit_key = data["key"]
-            bit_value = t_data[bit_key]
-            r = r << bit_length
+            bit_value = f"{t_data[bit_key]:0{int(data['length'])}b}"
             r += bit_value
-
-        result = r.to_bytes(math.ceil(length / 8), byteorder='big')
+        logger.info(f"{r}")
+        result = int(r, base=0).to_bytes(len(r) // 8, byteorder="big")
         return result
 
     def send(self, weather_data):

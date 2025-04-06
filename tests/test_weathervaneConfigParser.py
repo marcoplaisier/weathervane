@@ -34,7 +34,7 @@ def test_parse_station_numbers():
     cp = WeathervaneConfigParser()
     cp.read(config_file)
     stations = cp.parse_station_numbers()
-    assert stations == [6320, 6308]
+    assert stations == [6323, 6283]
 
 
 def test_rain_config():

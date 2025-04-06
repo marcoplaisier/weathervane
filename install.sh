@@ -1,7 +1,5 @@
 #!/bin/bash
 
-home_dir="/home/pi"
-
 if [ "$EUID" -ne 0 ]
   then echo "Please run as root. Sudo !!"
   exit
@@ -34,8 +32,6 @@ echo "Installing weathervane..."
 cd /home/pi || exit
 git clone https://github.com/marcoplaisier/weathervane.git
 cd weathervane || exit
-apt install python3-venv -y
-python3 -m venv venv
 apt install python3-httpx -y
 echo "Weathervane installed."
 

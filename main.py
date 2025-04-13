@@ -2,8 +2,9 @@
 import argparse
 import asyncio
 import logging.handlers
+import signal
+import sys
 import time
-from unittest.mock import Mock
 
 from weathervane.datasources import BuienRadarDataSource
 from weathervane.parser import WeathervaneConfigParser
@@ -133,11 +134,17 @@ async def main():
         help="get the configuration from a specific configuration file",
     )
     args = parser.parse_args()
-
+    signal.signal(signal.SIGTERM, handle_exit)
+    signal.signal(signal.SIGINT, handle_exit)
     wv_config = get_configuration(args)
     logger.info("Weathervane started with properties", extra=wv_config)
     wv = WeatherVane(**wv_config)
     await wv.loop()
+
+
+def handle_exit(signum, frame):
+    logger.info("Received signal %s, exiting...", signum)
+    sys.exit(0)
 
 
 if __name__ == "__main__":

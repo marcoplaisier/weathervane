@@ -35,9 +35,6 @@ class WeatherVaneInterface(object):
         self.channel = kwargs["channel"]
         self.frequency = kwargs["frequency"]
         self.gpio = GPIO(**kwargs)
-        self.old_byte_array = None
-        self.new_byte_array = None
-        self.weather_data = {}
         self.bits: List[dict] = kwargs["bits"]
         self.stations = kwargs["stations"]
 
@@ -47,15 +44,7 @@ class WeatherVaneInterface(object):
             self.frequency,
         )
 
-    @property
-    def data_changed(self):
-        """Return whether or not the data was different the last time it was sent.
-
-        @return: a boolean indicating whether the data has changed
-        """
-        return self.old_byte_array != self.new_byte_array
-
-    def convert_data(self, weather_data):
+    def encode_weather_data(self, weather_data) -> bytes:
         """Converts the weather data into a string of bits
 
         The display is based on a relatively simple programmable interrupt controller (or PIC) when compared to a
@@ -71,17 +60,17 @@ class WeatherVaneInterface(object):
         @param weather_data: a dictionary containing the weatherdata
         @return: a byte array
         """
-        t_data = self.transmittable_data(weather_data, self.bits)
+        t_data = self._transmittable_data(weather_data, self.bits)
 
-        r = ""
+        binary_string = ""
         for data in self.bits:
             bit_key = data["key"]
             bit_value = f"{t_data[bit_key]:0{int(data['length'])}b}"
-            r += bit_value
-        data_length = math.ceil(len(r)/8)
-        result = [r[i * 8:(i * 8) + 8] for i in range(data_length)]
-        result = [int(b, base=2) for b in result]
-        return result
+            binary_string += bit_value
+        data_length = math.ceil(len(binary_string) / 8)
+        binary_string_list_in_bytes = [binary_string[i * 8:(i * 8) + 8] for i in range(data_length)]
+        data_bytes = bytearray([int(b, base=2) for b in binary_string_list_in_bytes])
+        return data_bytes
 
     def send(self, weather_data):
         """Send data to the connected SPI device.
@@ -89,28 +78,12 @@ class WeatherVaneInterface(object):
         Keyword arguments:
         weather_data -- a dictionary with the data
         """
-        data_array = self.convert_data(weather_data)
+        data_array = self.encode_weather_data(weather_data)
         logger.info(f'Sending data {data_array} to device')
         self.gpio.send_data(data_array)
-        self.old_byte_array, self.new_byte_array = self.new_byte_array, data_array
 
-    @property
-    def sent_data(self):
-        """Return the original data sent to the spi device.
 
-        This function returns the data that was sent to the connected SPI device. To get the data that was returned by
-        that device, use get_data().
-
-        Note that the data that actually reached the connected SPI device may have been altered due to all kinds of
-        transmission errors. This function does not actually return the data that reached the device.
-
-        Returns:
-        array of bytes
-        """
-
-        return self.weather_data
-
-    def transmittable_data(self, weather_data, requested_data: List[dict]):
+    def _transmittable_data(self, weather_data, requested_data: List[dict]):
         result = {}
 
         for data_point in requested_data:
@@ -123,14 +96,14 @@ class WeatherVaneInterface(object):
             step_value = float(data_point.get("step", 1))
             min_value = float(data_point.get("min", 0))
             max_value = float(data_point.get("max", 255))
-            result[measurement_name] = self.value_to_bits(
+            result[measurement_name] = self._value_to_bits(
                 measurement_name, value, step_value, min_value, max_value
             )
-            result = self.compensate_wind(result)
+            result = WeatherVaneInterface._compensate_wind(result)
 
         return result
 
-    def value_to_bits(self, measurement_name, value, step_value, min_value, max_value):
+    def _value_to_bits(self, measurement_name, value, step_value, min_value, max_value):
         if measurement_name == "winddirection":
             return self.wind_directions.get(value, 0)
         elif measurement_name == "precipitation":
@@ -152,7 +125,7 @@ class WeatherVaneInterface(object):
             return int(value)
 
     @staticmethod
-    def compensate_wind(result):
+    def _compensate_wind(result):
         windspeed = result.get("windspeed", 0)
         windgusts = result.get("windgusts", windspeed)
         if windspeed > windgusts:

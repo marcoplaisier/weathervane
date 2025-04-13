@@ -26,13 +26,14 @@ echo "SPI enabled."
 echo "Checking Git installation..."
 apt install git git-man -y
 echo "Git installed."
+echo "Checking HTTPX installation..."
+apt install python3-httpx -y
 echo "Validating requirements done."
 
 echo "Installing weathervane..."
 cd /home/pi || exit
 git clone https://github.com/marcoplaisier/weathervane.git
 cd weathervane || exit
-apt install python3-httpx -y
 echo "Weathervane installed."
 
 echo "Installing weathervane as a service..."

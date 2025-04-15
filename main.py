@@ -3,7 +3,8 @@ import argparse
 import asyncio
 import logging.handlers
 import time
-from unittest.mock import Mock
+
+import httpx
 
 from weathervane.datasources import BuienRadarDataSource
 from weathervane.parser import WeathervaneConfigParser
@@ -140,8 +141,23 @@ async def main():
     await wv.loop()
 
 
+def wait_for_connection():
+    connection = False
+    sleep_time = 1
+    while not connection:
+        try:
+            r = httpx.get("http://www.google.com")
+            logger.info(f"Connection established with status code: {r.status_code}")
+            connection = True
+        except httpx.ConnectError:
+            logger.error(f"No connection yet, waiting for {sleep_time} seconds")
+            time.sleep(sleep_time)
+            sleep_time = min(60, sleep_time * 2)
+
+
 if __name__ == "__main__":
     try:
+        wait_for_connection()
         asyncio.run(main())
     finally:
         logger.info("Shutting down")

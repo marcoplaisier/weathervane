@@ -98,6 +98,69 @@ class TestDisplayIsActive(unittest.TestCase):
         # Well outside the range - daytime
         self.assertFalse(display.is_active(display.convert_to_minutes("12:00")))  # Noon
         self.assertFalse(display.is_active(display.convert_to_minutes("18:00")))  # Evening
+        
+    def test_late_night_time_range(self, mock_led):
+        """Test a specific overnight time range from late night to early morning (23:00 - 06:00)"""
+        # Configure display to be active from 23:00 to 06:00
+        late_night_config = {
+            "auto-turn-off": True, 
+            "start-time": "23:00", 
+            "end-time": "06:00", 
+            "pin": 4
+        }
+        display = Display(**late_night_config)
+        
+        # Test each hour in the 24-hour cycle
+        active_hours = [23, 0, 1, 2, 3, 4, 5, 6]  # Include 6:00 as it's the end time
+        inactive_hours = [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]
+        
+        # Check all active hours
+        for hour in active_hours:
+            time_str = f"{hour:02d}:00"
+            self.assertTrue(
+                display.is_active(display.convert_to_minutes(time_str)),
+                f"Display should be active at {time_str}"
+            )
+            
+            # Also check 30 minutes past each hour
+            time_str = f"{hour:02d}:30"
+            # Only 6:30 should be inactive
+            if hour == 6:
+                self.assertFalse(
+                    display.is_active(display.convert_to_minutes(time_str)),
+                    f"Display should NOT be active at {time_str}"
+                )
+            else:
+                self.assertTrue(
+                    display.is_active(display.convert_to_minutes(time_str)),
+                    f"Display should be active at {time_str}"
+                )
+        
+        # Check all inactive hours
+        for hour in inactive_hours:
+            time_str = f"{hour:02d}:00"
+            self.assertFalse(
+                display.is_active(display.convert_to_minutes(time_str)),
+                f"Display should NOT be active at {time_str}"
+            )
+        
+        # Check boundary conditions
+        # Exactly at boundaries
+        self.assertTrue(display.is_active(display.convert_to_minutes("23:00")))  # Start time
+        self.assertTrue(display.is_active(display.convert_to_minutes("06:00")))  # End time
+        
+        # Just inside boundaries
+        self.assertTrue(display.is_active(display.convert_to_minutes("23:01")))
+        self.assertTrue(display.is_active(display.convert_to_minutes("05:59")))
+        
+        # Just outside boundaries
+        self.assertFalse(display.is_active(display.convert_to_minutes("22:59")))
+        self.assertFalse(display.is_active(display.convert_to_minutes("06:01")))
+        
+        # Test critical times
+        self.assertTrue(display.is_active(display.convert_to_minutes("00:00")))  # Midnight
+        self.assertTrue(display.is_active(display.convert_to_minutes("00:01")))  # Just after midnight
+        self.assertTrue(display.is_active(display.convert_to_minutes("23:59")))  # Just before midnight
 
     def test_edge_case_all_day(self, mock_led):
         """Test edge case: Display active all day (00:00 - 00:00)"""

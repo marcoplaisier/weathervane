@@ -1,9 +1,8 @@
 import json
 import logging
-
 from configparser import ConfigParser
 from datetime import datetime, timedelta
-from typing import List, Sequence
+from typing import List, Sequence, Dict, Any, Union, Optional
 
 HOUR_ERROR_LIMIT = 2.0 * 60 * 60
 
@@ -25,14 +24,14 @@ class WeathervaneConfigParser(ConfigParser):
     MAX_INDEX = 3
     STEP_INDEX = 4
 
-    def __init__(self):
+    def __init__(self) -> None:
         super(WeathervaneConfigParser, self).__init__()
 
-    def parse_bit_packing_section(self) -> List[dict]:
+    def parse_bit_packing_section(self) -> List[Dict[str, str]]:
         bit_numbers = self.options("Bit Packing")
         bit_numbers = sorted([int(n) for n in bit_numbers])
 
-        bits = []
+        bits: List[Dict[str, str]] = []
         for bit_number in bit_numbers:
             bit_config = self.get("Bit Packing", str(bit_number))
             bit_config = bit_config.split(",")
@@ -52,14 +51,14 @@ class WeathervaneConfigParser(ConfigParser):
                 raise InvalidConfigException("")
         return bits
 
-    def parse_station_numbers(self):
+    def parse_station_numbers(self) -> List[int]:
         try:
             station_numbers = self["Stations"]
         except KeyError:
             logger.error("Stations sections in config is formatted incorrectly. Using default stations")
             return self.DEFAULT_STATIONS
 
-        stations = []
+        stations: List[int] = []
         station_id = None
         for i in range(len(station_numbers)):
             try:
@@ -70,16 +69,16 @@ class WeathervaneConfigParser(ConfigParser):
                 stations.append(station_id)
         return stations
 
-    def parse_config(self):
+    def parse_config(self) -> Dict[str, Any]:
         """Takes a configuration parser and returns the configuration as a dictionary
 
         @return: configuration as dictionary
         """
         logger.info("Parsing configuration")
         station_config = self.parse_station_numbers()
-        bits: List[dict] = self.parse_bit_packing_section()
+        bits: List[Dict[str, str]] = self.parse_bit_packing_section()
 
-        configuration = {
+        configuration: Dict[str, Any] = {
             "channel": self.getint("SPI", "channel"),
             "frequency": self.getint("SPI", "frequency"),
             "library": self.get("SPI", "library"),
@@ -101,7 +100,7 @@ class WeathervaneConfigParser(ConfigParser):
         return configuration
 
 
-def is_weather_data_stale(timestamp, now):
+def is_weather_data_stale(timestamp: str, now: datetime) -> bool:
     weather_data_ts = datetime.fromisoformat(timestamp).timestamp()
     now_ts = now.timestamp()
     time_delta_in = now_ts - weather_data_ts
@@ -122,12 +121,12 @@ class BuienradarParser(object):
     ]
     TREND_MAPPING = {'dropping': 2, 'stable': 4, 'rising': 1}
 
-    def __init__(self, stations, bits):
-        self.fallback_used = None
-        self.stations = stations
-        self.bits = bits
+    def __init__(self, stations: List[int], bits: List[Dict[str, Any]]) -> None:
+        self.fallback_used: Optional[bool] = None
+        self.stations: List[int] = stations
+        self.bits: List[Dict[str, Any]] = bits
 
-    def parse(self, data: str) -> dict:
+    def parse(self, data: str) -> Dict[str, Any]:
         raw_weather_data = json.loads(data)
         raw_stations_weather_data = self._to_dict(
             raw_weather_data["actual"]["stationmeasurements"]
@@ -140,15 +139,17 @@ class BuienradarParser(object):
         return station_weather_data
 
     @staticmethod
-    def enrich(weather_data: dict) -> dict:
+    def enrich(weather_data: Dict[str, Any]) -> Dict[str, Any]:
         weather_data["barometric_trend"] = BuienradarParser.TREND_MAPPING['stable']
         weather_data["error"] = is_weather_data_stale(weather_data["timestamp"], datetime.now())
         return weather_data
 
     @staticmethod
     def merge(
-            weather_data: dict, stations: list, required_fields: Sequence[dict]
-    ) -> dict:
+            weather_data: Dict[int, Dict[str, Any]], 
+            stations: List[int], 
+            required_fields: Sequence[Dict[str, Any]]
+    ) -> Dict[str, Any]:
         primary_station = stations[0]
         try:
             weather_data[primary_station]["data_from_fallback"] = False
@@ -183,7 +184,7 @@ class BuienradarParser(object):
         return weather_data[primary_station]
 
     @staticmethod
-    def _to_dict(stations_weather_data: dict) -> dict:
+    def _to_dict(stations_weather_data: List[Dict[str, Any]]) -> Dict[int, Dict[str, Any]]:
         return {
             station_data["stationid"]: station_data
             for station_data in stations_weather_data

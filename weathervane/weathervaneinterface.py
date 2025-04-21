@@ -2,7 +2,7 @@ import logging
 import math
 import time
 from random import randint
-from typing import List
+from typing import List, Dict, Any, Union, Optional
 
 import gpiozero
 
@@ -12,7 +12,7 @@ logger = logging.getLogger()
 
 
 class WeatherVaneInterface(object):
-    wind_directions = {
+    wind_directions: Dict[str, int] = {
         "N": 0x00,
         "NNO": 0x01,
         "NO": 0x02,
@@ -31,20 +31,20 @@ class WeatherVaneInterface(object):
         "NNW": 0x0F,
     }
 
-    def __init__(self, *args, **kwargs):
-        self.channel = kwargs["channel"]
-        self.frequency = kwargs["frequency"]
-        self.gpio = GPIO(**kwargs)
-        self.bits: List[dict] = kwargs["bits"]
-        self.stations = kwargs["stations"]
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        self.channel: int = kwargs["channel"]
+        self.frequency: int = kwargs["frequency"]
+        self.gpio: GPIO = GPIO(**kwargs)
+        self.bits: List[Dict[str, Any]] = kwargs["bits"]
+        self.stations: List[int] = kwargs["stations"]
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "WeatherVaneInterface(channel=%d, frequency=%d)" % (
             self.channel,
             self.frequency,
         )
 
-    def encode_weather_data(self, weather_data) -> bytes:
+    def encode_weather_data(self, weather_data: Dict[str, Any]) -> bytes:
         """Converts the weather data into a string of bits
 
         The display is based on a relatively simple programmable interrupt controller (or PIC) when compared to a
@@ -72,7 +72,7 @@ class WeatherVaneInterface(object):
         data_bytes = bytearray([int(b, base=2) for b in binary_string_list_in_bytes])
         return data_bytes
 
-    def send(self, weather_data):
+    def send(self, weather_data: Dict[str, Any]) -> None:
         """Send data to the connected SPI device.
 
         Keyword arguments:
@@ -83,8 +83,8 @@ class WeatherVaneInterface(object):
         self.gpio.send_data(data_array)
 
 
-    def _transmittable_data(self, weather_data, requested_data: List[dict]):
-        result = {}
+    def _transmittable_data(self, weather_data: Dict[str, Any], requested_data: List[Dict[str, Any]]) -> Dict[str, int]:
+        result: Dict[str, int] = {}
 
         for data_point in requested_data:
             measurement_name = data_point["key"]
@@ -103,7 +103,7 @@ class WeatherVaneInterface(object):
 
         return result
 
-    def _value_to_bits(self, measurement_name, value, step_value, min_value, max_value):
+    def _value_to_bits(self, measurement_name: str, value: Any, step_value: float, min_value: float, max_value: float) -> int:
         if measurement_name == "winddirection":
             return self.wind_directions.get(value, 0)
         elif measurement_name == "precipitation":
@@ -125,7 +125,7 @@ class WeatherVaneInterface(object):
             return int(value)
 
     @staticmethod
-    def _compensate_wind(result):
+    def _compensate_wind(result: Dict[str, int]) -> Dict[str, int]:
         windspeed = result.get("windspeed", 0)
         windgusts = result.get("windgusts", windspeed)
         if windspeed > windgusts:
@@ -140,29 +140,29 @@ class WeatherVaneInterface(object):
 
 
 class Display(object):
-    def __init__(self, **kwargs):
-        self.auto_disable_display = kwargs.get("auto-turn-off", False)
-        start_time = kwargs.get("start-time", "6:30")
-        self.start_at_minutes = Display.convert_to_minutes(start_time)
-        end_time = kwargs.get("end-time", "22:00")
-        self.end_at_minutes = Display.convert_to_minutes(end_time)
-        self.display = gpiozero.LED(kwargs.get("pin", 4))
+    def __init__(self, **kwargs: Any) -> None:
+        self.auto_disable_display: bool = kwargs.get("auto-turn-off", False)
+        start_time: str = kwargs.get("start-time", "6:30")
+        self.start_at_minutes: int = Display.convert_to_minutes(start_time)
+        end_time: str = kwargs.get("end-time", "22:00")
+        self.end_at_minutes: int = Display.convert_to_minutes(end_time)
+        self.display: gpiozero.LED = gpiozero.LED(kwargs.get("pin", 4))
 
     @staticmethod
-    def convert_to_minutes(time_text):
+    def convert_to_minutes(time_text: str) -> int:
         time_array = [int(time_element) for time_element in time_text.split(":")]
         minutes = time_array[0] * 60
         minutes += time_array[1]
         return minutes
 
-    def is_active(self, current_minute):
+    def is_active(self, current_minute: int) -> bool:
         if self.start_at_minutes < self.end_at_minutes:
             return self.start_at_minutes <= current_minute <= self.end_at_minutes
         else:
             return (self.convert_to_minutes("00:00") <= current_minute <= self.end_at_minutes &
                     self.start_at_minutes <= current_minute <= self.convert_to_minutes("23:59"))
 
-    async def tick(self):
+    async def tick(self) -> None:
         if self.auto_disable_display:
             time_text = time.strftime("%H:%M")
             current_minute = Display.convert_to_minutes(time_text)

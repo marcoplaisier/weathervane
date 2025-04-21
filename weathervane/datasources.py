@@ -1,4 +1,6 @@
 import logging
+from asyncio import Queue
+from typing import Dict, Any, Optional, List
 
 import httpx
 
@@ -6,7 +8,7 @@ from weathervane.parser import BuienradarParser
 
 HTTP_OK = 200
 
-DEFAULT_WEATHER_DATA = {
+DEFAULT_WEATHER_DATA: Dict[str, Any] = {
     "error": True,
     "airpressure": 900,
     "humidity": 0,
@@ -27,12 +29,12 @@ logger = logging.getLogger()
 
 class BuienRadarDataSource:
 
-    def __init__(self, queue, stations, bits):
-        self.queue = queue
-        self.bp = BuienradarParser(stations=stations, bits=bits)
+    def __init__(self, queue: Queue, stations: List[int], bits: List[Dict[str, Any]]) -> None:
+        self.queue: Queue = queue
+        self.bp: BuienradarParser = BuienradarParser(stations=stations, bits=bits)
 
     @staticmethod
-    async def __get_weather():
+    async def __get_weather() -> str:
         async with httpx.AsyncClient() as client:
             r = await client.get("https://data.buienradar.nl/2.0/feed/json", timeout=5)
 
@@ -43,7 +45,7 @@ class BuienRadarDataSource:
             logger.warning(f"Got response in {r.elapsed} ms, but unexpected status code {r.status_code}")
             raise ConnectionError(f"Buienradar: {r.status_code}")
 
-    async def fetch_weather_data(self):
+    async def fetch_weather_data(self) -> None:
         data = await self.__get_weather()
 
         if data:

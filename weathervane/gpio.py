@@ -1,4 +1,5 @@
 import logging
+from typing import Any, Dict, List, Union, Optional
 from unittest.mock import Mock
 
 import spidev
@@ -7,7 +8,7 @@ logger = logging.getLogger()
 
 
 class GPIO:
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         """
         The constructor creates the SPI object which sends the data.
 
@@ -17,20 +18,20 @@ class GPIO:
         @param frequency: the amount of bits per second that are sent over the channel. See also:
         http://raspberrypi.stackexchange.com/questions/699/what-spi-frequencies-does-raspberry-pi-support
         """
-        self.test = kwargs.get("test", False)
-        self.bus = kwargs.get("bus", 0)
-        self.device = kwargs.get("device", 0)
-        self.frequency = kwargs.get("frequency", 100_000)
+        self.test: bool = kwargs.get("test", False)
+        self.bus: int = kwargs.get("bus", 0)
+        self.device: int = kwargs.get("device", 0)
+        self.frequency: int = kwargs.get("frequency", 100_000)
         if not self.test:
             spi = spidev.SpiDev()
             spi.open(self.bus, self.device)
             spi.max_speed_hz = self.frequency
-            self.spi = spi
+            self.spi: Union[spidev.SpiDev, Mock] = spi
         else:
             self.spi = Mock()
-            self.read_pin = Mock(return_value=[1, 1])
+            self.read_pin: Mock = Mock(return_value=[1, 1])
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"GPIO(channel={self.bus}, device={self.device}, frequency={self.frequency}), test mode={self.test}"
 
     def send_data(self, data: bytes) -> None:

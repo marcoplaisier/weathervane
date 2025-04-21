@@ -2,7 +2,7 @@ import unittest
 from unittest.mock import patch
 
 from tests import test_config
-from weathervane.weathervaneinterface import WeatherVaneInterface
+from weathervane.weathervaneinterface import WeatherVaneInterface, Display
 
 
 @patch("weathervane.weathervaneinterface.GPIO", autospec=True)
@@ -27,6 +27,39 @@ class WeatherVaneTest(unittest.TestCase):
     def test_transmittable_data_length(self, mock_class):
         weather_data = {"winddirection": "NO"}
         self.interface.send(weather_data)
+        
+    @patch("weathervane.weathervaneinterface.gpiozero.LED")
+    def test_display_is_active(self, mock_led, mock_class):
+        """Test that Display.is_active() correctly handles both normal and overnight times."""
+        # Normal time range (e.g., 6:30 to 22:00)
+        display = Display(
+            **{"auto-turn-off": True, "start-time": "06:30", "end-time": "22:00", "pin": 4}
+        )
+        
+        # Test times within normal range
+        self.assertTrue(display.is_active(display.convert_to_minutes("06:30")))  # Start time
+        self.assertTrue(display.is_active(display.convert_to_minutes("12:00")))  # Mid-day
+        self.assertTrue(display.is_active(display.convert_to_minutes("22:00")))  # End time
+        
+        # Test times outside normal range
+        self.assertFalse(display.is_active(display.convert_to_minutes("06:29")))  # Just before start
+        self.assertFalse(display.is_active(display.convert_to_minutes("22:01")))  # Just after end
+        self.assertFalse(display.is_active(display.convert_to_minutes("00:00")))  # Midnight
+        
+        # Overnight time range (e.g., 22:00 to 06:30)
+        overnight_display = Display(
+            **{"auto-turn-off": True, "start-time": "22:00", "end-time": "06:30", "pin": 4}
+        )
+        
+        # Test times within overnight range
+        self.assertTrue(overnight_display.is_active(overnight_display.convert_to_minutes("22:00")))  # Start time
+        self.assertTrue(overnight_display.is_active(overnight_display.convert_to_minutes("00:00")))  # Midnight
+        self.assertTrue(overnight_display.is_active(overnight_display.convert_to_minutes("06:30")))  # End time
+        
+        # Test times outside overnight range
+        self.assertFalse(overnight_display.is_active(overnight_display.convert_to_minutes("21:59")))  # Just before start
+        self.assertFalse(overnight_display.is_active(overnight_display.convert_to_minutes("06:31")))  # Just after end
+        self.assertFalse(overnight_display.is_active(overnight_display.convert_to_minutes("12:00")))  # Mid-day
 
     def test_transmittable_data_length_2(self, mock_class):
         weather_data = {

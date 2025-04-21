@@ -10,7 +10,7 @@ from weathervane.datasources import BuienRadarDataSource
 from weathervane.parser import WeathervaneConfigParser
 from weathervane.weathervaneinterface import Display, WeatherVaneInterface
 
-NON_INTERPOLATABLE_VARIABLES = ["error", "winddirection", "winddirection", "rain", "barometric_trend"]
+NON_INTERPOLATABLE_VARIABLES = ["error", "winddirection", "rain", "barometric_trend"]
 SLEEP_INTERVAL = 0.1
 
 logger = logging.getLogger()
@@ -54,7 +54,8 @@ class WeatherVane(object):
         self.data_source = BuienRadarDataSource(self.queue, self.stations, self.bits)
 
     async def start_data_collection(self):
-        await asyncio.create_task(self.data_source.fetch_weather_data())
+        # Directly await the fetch operation instead of creating and immediately awaiting a task
+        await self.data_source.fetch_weather_data()
 
     async def retrieve_data(self):
         wd = self.queue.get_nowait()

@@ -157,10 +157,12 @@ class Display(object):
 
     def is_active(self, current_minute: int) -> bool:
         if self.start_at_minutes < self.end_at_minutes:
+            # Normal case (e.g., 6:30 - 22:00)
             return self.start_at_minutes <= current_minute <= self.end_at_minutes
         else:
-            return (self.convert_to_minutes("00:00") <= current_minute <= self.end_at_minutes &
-                    self.start_at_minutes <= current_minute <= self.convert_to_minutes("23:59"))
+            # Overnight case (e.g., 22:00 - 6:30)
+            return ((self.convert_to_minutes("00:00") <= current_minute <= self.end_at_minutes) or
+                    (self.start_at_minutes <= current_minute <= self.convert_to_minutes("23:59")))
 
     async def tick(self) -> None:
         if self.auto_disable_display:

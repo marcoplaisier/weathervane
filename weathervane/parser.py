@@ -5,6 +5,8 @@ from configparser import ConfigParser
 from datetime import datetime, timedelta
 from typing import List, Sequence
 
+from weathervane.models import AppConfig, WeatherData
+
 HOUR_ERROR_LIMIT = 2.0 * 60 * 60
 
 SIMPLE_CONFIG = 2
@@ -70,10 +72,10 @@ class WeathervaneConfigParser(ConfigParser):
                 stations.append(station_id)
         return stations
 
-    def parse_config(self):
-        """Takes a configuration parser and returns the configuration as a dictionary
+    def parse_config(self) -> AppConfig:
+        """Takes a configuration parser and returns the configuration as an AppConfig object
 
-        @return: configuration as dictionary
+        @return: configuration as AppConfig object
         """
         logger.info("Parsing configuration")
         station_config = self.parse_station_numbers()
@@ -98,7 +100,7 @@ class WeathervaneConfigParser(ConfigParser):
             },
         }
         logger.info("Configuration successfully parsed")
-        return configuration
+        return AppConfig(**configuration)
 
 
 def is_weather_data_stale(timestamp, now):
@@ -127,7 +129,7 @@ class BuienradarParser(object):
         self.stations = stations
         self.bits = bits
 
-    def parse(self, data: str) -> dict:
+    def parse(self, data: str) -> WeatherData:
         raw_weather_data = json.loads(data)
         raw_stations_weather_data = self._to_dict(
             raw_weather_data["actual"]["stationmeasurements"]
@@ -137,7 +139,7 @@ class BuienradarParser(object):
         )
         station_weather_data = self.enrich(raw_primary_station_data)
 
-        return station_weather_data
+        return WeatherData(**station_weather_data)
 
     @staticmethod
     def enrich(weather_data: dict) -> dict:

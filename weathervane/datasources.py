@@ -3,24 +3,11 @@ import logging
 import httpx
 
 from weathervane.parser import BuienradarParser
+from weathervane.models import WeatherData
 
 HTTP_OK = 200
 
-DEFAULT_WEATHER_DATA = {
-    "error": True,
-    "airpressure": 900,
-    "humidity": 0,
-    "rain": True,
-    "random": 0,
-    "temperature": -39.9,
-    "groundtemperature": -39.9,
-    "feeltemperature": 0,
-    "winddirection": "N",
-    "winddirectiondegrees": 0,
-    "windspeed": 0,
-    "windgusts": 0,
-    "windspeedBft": 0,
-}
+DEFAULT_WEATHER_DATA = WeatherData()
 
 logger = logging.getLogger()
 

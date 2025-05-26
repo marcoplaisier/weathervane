@@ -7,6 +7,7 @@ from typing import List
 import gpiozero
 
 from weathervane.gpio import GPIO
+from weathervane.models import AppConfig, WeatherData
 
 logger = logging.getLogger()
 
@@ -31,12 +32,15 @@ class WeatherVaneInterface(object):
         "NNW": 0x0F,
     }
 
-    def __init__(self, *args, **kwargs):
-        self.channel = kwargs["channel"]
-        self.frequency = kwargs["frequency"]
-        self.gpio = GPIO(**kwargs)
-        self.bits: List[dict] = kwargs["bits"]
-        self.stations = kwargs["stations"]
+    def __init__(self, config: AppConfig):
+        self.channel = config.channel
+        self.frequency = config.frequency
+        # Assuming GPIO needs these specific attributes.
+        # If GPIO needs more from AppConfig, its own __init__ would need to be adapted,
+        # or we pass more specific parts of AppConfig here.
+        self.gpio = GPIO(library=config.library, channel=config.channel, frequency=config.frequency)
+        self.bits: List[dict] = config.bits
+        self.stations = config.stations # Retained as per instruction, usage not in this class
 
     def __repr__(self):
         return "WeatherVaneInterface(channel=%d, frequency=%d)" % (
@@ -44,7 +48,7 @@ class WeatherVaneInterface(object):
             self.frequency,
         )
 
-    def encode_weather_data(self, weather_data) -> bytes:
+    def encode_weather_data(self, weather_data: WeatherData) -> bytes:
         """Converts the weather data into a string of bits
 
         The display is based on a relatively simple programmable interrupt controller (or PIC) when compared to a
@@ -72,26 +76,31 @@ class WeatherVaneInterface(object):
         data_bytes = bytearray([int(b, base=2) for b in binary_string_list_in_bytes])
         return data_bytes
 
-    def send(self, weather_data):
+    def send(self, weather_data: WeatherData):
         """Send data to the connected SPI device.
 
         Keyword arguments:
-        weather_data -- a dictionary with the data
+        weather_data -- a WeatherData object with the data
         """
         data_array = self.encode_weather_data(weather_data)
         logger.info(f'Sending data {data_array} to device')
         self.gpio.send_data(data_array)
 
 
-    def _transmittable_data(self, weather_data, requested_data: List[dict]):
+    def _transmittable_data(self, weather_data: WeatherData, requested_data: List[dict]) -> dict:
         result = {}
+        # weather_data_dict = weather_data.model_dump() # Option if direct iteration is preferred
 
         for data_point in requested_data:
             measurement_name = data_point["key"]
-            value = weather_data.get(measurement_name, 0)
+            # Use getattr for Pydantic model. Default to 0 if not present or for non-numeric.
+            # Specific handling for 'random' or non-numeric types like 'winddirection' is below.
+            value = getattr(weather_data, measurement_name, 0)
+
             if measurement_name == "random":
                 length = int(data_point["length"])
                 value = randint(0, 2 ** length - 1)
+            # Winddirection is handled in _value_to_bits, getattr will fetch the string value (e.g. "N")
 
             step_value = float(data_point.get("step", 1))
             min_value = float(data_point.get("min", 0))

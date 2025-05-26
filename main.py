@@ -3,14 +3,16 @@ import argparse
 import asyncio
 import logging.handlers
 import time
+from typing import Optional
 
 import httpx
 
 from weathervane.datasources import BuienRadarDataSource
 from weathervane.parser import WeathervaneConfigParser
 from weathervane.weathervaneinterface import Display, WeatherVaneInterface
+from weathervane.models import AppConfig, WeatherData
 
-NON_INTERPOLATABLE_VARIABLES = ["error", "winddirection", "winddirection", "rain", "barometric_trend"]
+NON_INTERPOLATABLE_VARIABLES = ["error", "winddirection", "rain", "barometric_trend"] # Removed duplicate "winddirection"
 SLEEP_INTERVAL = 0.1
 
 logger = logging.getLogger()
@@ -32,61 +34,66 @@ class TestDisplay:
 
 
 class WeatherVane(object):
-    def __init__(self, *args, **configuration):
-        self.old_weatherdata = None
-        self.stations = configuration.get('stations')
-        self.bits = configuration.get('bits')
-        self.args = args
-        self.configuration = configuration
-        self.interface = WeatherVaneInterface(*args, **configuration)
+    def __init__(self, config: AppConfig):
+        self.old_weatherdata: Optional[WeatherData] = None
+        self.wd: Optional[WeatherData] = None
+        self.config = config
+        self.interface = WeatherVaneInterface(config) # Pass AppConfig instance
 
-        if not configuration.get("test", False):
-            self.display = Display(**configuration["display"])
+        if not config.test:
+            self.display = Display(**config.display.model_dump())
         else:
             self.display = TestDisplay()
         logger.info("Using " + str(self.interface))
-        self.wd = None
-        self.data_collection_interval = configuration["data_collection_interval"]
-        self.data_display_interval = configuration["data_display_interval"]
-        self.start_collection_time = time.monotonic()
-        self.end_collection_time = time.monotonic()
+        self.data_collection_interval = config.data_collection_interval
+        self.data_display_interval = config.data_display_interval
+        self.start_collection_time = time.monotonic() # This seems unused, but retained for now
+        self.end_collection_time = time.monotonic()   # This seems unused, but retained for now
         self.queue = asyncio.Queue(maxsize=1)
-        self.data_source = BuienRadarDataSource(self.queue, self.stations, self.bits)
+        self.data_source = BuienRadarDataSource(self.queue, config.stations, config.bits)
 
     async def start_data_collection(self):
         await asyncio.create_task(self.data_source.fetch_weather_data())
 
-    async def retrieve_data(self):
-        wd = self.queue.get_nowait()
+    async def retrieve_data(self) -> WeatherData:
+        wd: WeatherData = self.queue.get_nowait() # Data from queue is WeatherData
         self.old_weatherdata, self.wd = self.wd, wd
-        logger.info("weather data", extra=wd)
+        logger.info("weather data", extra=wd.model_dump())
         return wd
 
     @staticmethod
-    def interpolate(old_weatherdata, new_weatherdata, percentage):
-        percentage = min(percentage, 1)
-        if new_weatherdata["error"]:
+    def interpolate(old_weatherdata: Optional[WeatherData], new_weatherdata: WeatherData, percentage: float) -> WeatherData:
+        percentage = min(percentage, 1.0) # Ensure percentage is float and capped at 1.0
+        
+        if new_weatherdata.error:
             return new_weatherdata
         if not old_weatherdata:
             return new_weatherdata
 
-        interpolated_wd = {}
+        # Start with a copy of new_weatherdata values
+        interpolated_values = new_weatherdata.model_dump()
+        old_dict = old_weatherdata.model_dump()
 
-        for key, old_value in old_weatherdata.items():
-            new_value = new_weatherdata.get(key, None)
-            if not new_value:
-                interpolated_wd[key] = old_value
-            elif key in NON_INTERPOLATABLE_VARIABLES:
-                interpolated_wd[key] = new_value
+        for key, new_value in interpolated_values.items():
+            old_value = old_dict.get(key)
+
+            if old_value is None: # Should not happen if old_weatherdata is WeatherData
+                continue # Use new_value already in interpolated_values
+
+            if key in NON_INTERPOLATABLE_VARIABLES:
+                # Already set from new_weatherdata, so continue
+                continue
             else:
                 try:
-                    interpolated_wd[key] = float(old_value) + (percentage * (float(new_value) - float(old_value)))
-                except ValueError:
-                    interpolated_wd[key] = new_value
-                except TypeError:
-                    interpolated_wd[key] = new_value
+                    # Ensure both values are numeric for interpolation
+                    if isinstance(old_value, (int, float)) and isinstance(new_value, (int, float)):
+                        interpolated_values[key] = float(old_value) + (percentage * (float(new_value) - float(old_value)))
+                    # else, keep the new_value (non-numeric types, or type mismatch)
+                except (ValueError, TypeError):
+                    # In case of error, keep the new_value
+                    pass # interpolated_values[key] is already new_value
 
-        return interpolated_wd
+        return WeatherData(**interpolated_values)
 
     async def loop(self):
         prev_data_collection_start_time = time.monotonic()
@@ -135,9 +142,11 @@ async def main():
     )
     args = parser.parse_args()
 
-    wv_config = get_configuration(args)
-    logger.info("Weathervane started with properties", extra=wv_config)
-    wv = WeatherVane(**wv_config)
+    wv_app_config: AppConfig = get_configuration(args) # wv_config is now AppConfig
+    # For logging, Pydantic models have a nice string representation.
+    # Using .model_dump() for the 'extra' parameter to provide a dictionary.
+    logger.info("Weathervane started with properties", extra=wv_app_config.model_dump())
+    wv = WeatherVane(wv_app_config) # Pass the AppConfig instance directly
     await wv.loop()
 
 

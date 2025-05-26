@@ -1,0 +1,163 @@
+import asyncio
+import unittest
+from unittest.mock import patch, AsyncMock, MagicMock, call
+
+import httpx # Required for httpx.RequestError
+
+# Assuming BuienRadarDataSource and HTTP_OK are in weathervane.datasources
+# Adjust the import path if your project structure is different.
+from weathervane.datasources import BuienRadarDataSource, HTTP_OK
+
+# Patch logger at the module level where BuienRadarDataSource is defined
+@patch('weathervane.datasources.logger', new_callable=MagicMock)
+class TestBuienRadarDataSourceResilience(unittest.IsolatedAsyncioTestCase):
+
+    async def asyncSetUp(self):
+        # The class-level patch injects mock_logger_class_level. Reset it for each test.
+        # This is good practice if you are asserting specific call orders or counts per test.
+        # Accessing the mock via the argument passed to each test method by the class decorator.
+        # However, the decorator passes it as the last argument, so method signatures need to be updated.
+        # Or, we can access it via self.mock_logger_class_level if we assign it in each test.
+        # For simplicity, the example has it as an arg. Let's ensure it's reset.
+        # The mock object `mock_logger_class_level` passed to each test is specific to that test run due to `new_callable`.
+        # If not, we would do: weathervane.datasources.logger.reset_mock()
+        pass
+
+    @patch('asyncio.sleep', new_callable=AsyncMock)
+    @patch('httpx.AsyncClient', new_callable=AsyncMock) # Mocks the AsyncClient class
+    async def test_get_weather_success_first_try(self, mock_async_client_class, mock_sleep, mock_logger_class_level):
+        mock_client_instance = mock_async_client_class.return_value.__aenter__.return_value
+        mock_response = AsyncMock()
+        mock_response.status_code = HTTP_OK
+        mock_response.text = '{"actual":{"actual": "data"}}'
+        mock_response.elapsed = MagicMock()
+        mock_response.elapsed.total_seconds.return_value = 0.1 # 100 ms
+        mock_client_instance.get.return_value = mock_response
+
+        data_source = BuienRadarDataSource(queue=None, stations=[], bits=[]) 
+        
+        result = await data_source._BuienRadarDataSource__get_weather()
+
+        self.assertEqual(result, '{"actual":{"actual": "data"}}')
+        mock_client_instance.get.assert_called_once_with("https.data.buienradar.nl/2.0/feed/json", timeout=5)
+        mock_sleep.assert_not_called()
+        mock_logger_class_level.info.assert_any_call("Weather data retrieved in 100 ms on attempt 1")
+
+    @patch('asyncio.sleep', new_callable=AsyncMock)
+    @patch('httpx.AsyncClient', new_callable=AsyncMock)
+    async def test_get_weather_success_after_retries_req_error(self, mock_async_client_class, mock_sleep, mock_logger_class_level):
+        mock_client_instance = mock_async_client_class.return_value.__aenter__.return_value
+        
+        mock_failure_exception = httpx.RequestError("Simulated network error", request=MagicMock()) # Add request object
+        mock_successful_response = AsyncMock()
+        mock_successful_response.status_code = HTTP_OK
+        mock_successful_response.text = '{"success":true}'
+        mock_successful_response.elapsed = MagicMock()
+        mock_successful_response.elapsed.total_seconds.return_value = 0.1 # 100 ms
+
+        mock_client_instance.get.side_effect = [
+            mock_failure_exception,
+            mock_failure_exception,
+            mock_successful_response
+        ]
+
+        data_source = BuienRadarDataSource(queue=None, stations=[], bits=[])
+        result = await data_source._BuienRadarDataSource__get_weather()
+
+        self.assertEqual(result, '{"success":true}')
+        self.assertEqual(mock_client_instance.get.call_count, 3)
+        mock_sleep.assert_has_calls([call(10), call(10)])
+        self.assertEqual(mock_sleep.call_count, 2)
+        
+        # Check log calls
+        mock_logger_class_level.warning.assert_any_call("Attempt 1/4: RequestError connecting to Buienradar: Simulated network error")
+        mock_logger_class_level.warning.assert_any_call("Attempt 2/4: RequestError connecting to Buienradar: Simulated network error")
+        mock_logger_class_level.info.assert_any_call("Weather data retrieved in 100 ms on attempt 3")
+
+    @patch('asyncio.sleep', new_callable=AsyncMock)
+    @patch('httpx.AsyncClient', new_callable=AsyncMock)
+    async def test_get_weather_success_after_retries_status_code(self, mock_async_client_class, mock_sleep, mock_logger_class_level):
+        mock_client_instance = mock_async_client_class.return_value.__aenter__.return_value
+
+        mock_failure_response = AsyncMock()
+        mock_failure_response.status_code = 500
+        mock_failure_response.text = '{"error":"server_error"}'
+        mock_failure_response.elapsed = MagicMock()
+        mock_failure_response.elapsed.total_seconds.return_value = 0.05 # 50ms
+
+        mock_successful_response = AsyncMock()
+        mock_successful_response.status_code = HTTP_OK
+        mock_successful_response.text = '{"success":true}'
+        mock_successful_response.elapsed = MagicMock()
+        mock_successful_response.elapsed.total_seconds.return_value = 0.1 # 100ms
+        
+        mock_client_instance.get.side_effect = [
+            mock_failure_response, 
+            mock_failure_response, 
+            mock_successful_response
+        ]
+
+        data_source = BuienRadarDataSource(queue=None, stations=[], bits=[])
+        result = await data_source._BuienRadarDataSource__get_weather()
+
+        self.assertEqual(result, '{"success":true}')
+        self.assertEqual(mock_client_instance.get.call_count, 3)
+        mock_sleep.assert_has_calls([call(10), call(10)])
+        self.assertEqual(mock_sleep.call_count, 2)
+
+        mock_logger_class_level.warning.assert_any_call("Attempt 1/4: Got response in 50 ms, but unexpected status code 500")
+        mock_logger_class_level.warning.assert_any_call("Attempt 2/4: Got response in 50 ms, but unexpected status code 500")
+        mock_logger_class_level.info.assert_any_call("Weather data retrieved in 100 ms on attempt 3")
+
+    @patch('asyncio.sleep', new_callable=AsyncMock)
+    @patch('httpx.AsyncClient', new_callable=AsyncMock)
+    async def test_get_weather_failure_all_retries_request_error(self, mock_async_client_class, mock_sleep, mock_logger_class_level):
+        mock_client_instance = mock_async_client_class.return_value.__aenter__.return_value
+        mock_failure_exception = httpx.RequestError("Simulated persistent network error", request=MagicMock()) # Add request
+        # max_retries = 3, so 4 attempts total
+        mock_client_instance.get.side_effect = [mock_failure_exception] * 4 
+
+        data_source = BuienRadarDataSource(queue=None, stations=[], bits=[])
+        
+        with self.assertRaises(httpx.RequestError):
+            await data_source._BuienRadarDataSource__get_weather()
+
+        self.assertEqual(mock_client_instance.get.call_count, 4)
+        self.assertEqual(mock_sleep.call_count, 3) # Sleeps between 4 attempts
+        mock_sleep.assert_has_calls([call(10)] * 3)
+        mock_logger_class_level.error.assert_any_call("All 4 attempts to connect to Buienradar failed.")
+        # Check that specific warnings for each attempt were logged
+        for i in range(1, 5): # Attempts 1 through 4
+            mock_logger_class_level.warning.assert_any_call(f"Attempt {i}/4: RequestError connecting to Buienradar: Simulated persistent network error")
+
+
+    @patch('asyncio.sleep', new_callable=AsyncMock)
+    @patch('httpx.AsyncClient', new_callable=AsyncMock)
+    async def test_get_weather_failure_all_retries_status_code(self, mock_async_client_class, mock_sleep, mock_logger_class_level):
+        mock_client_instance = mock_async_client_class.return_value.__aenter__.return_value
+        
+        mock_failure_response = AsyncMock()
+        mock_failure_response.status_code = 503 # Service Unavailable
+        mock_failure_response.text = '{"error":"unavailable"}'
+        mock_failure_response.elapsed = MagicMock()
+        mock_failure_response.elapsed.total_seconds.return_value = 0.05
+
+        # max_retries = 3, so 4 attempts total
+        mock_client_instance.get.side_effect = [mock_failure_response] * 4
+
+        data_source = BuienRadarDataSource(queue=None, stations=[], bits=[])
+        
+        with self.assertRaises(ConnectionError) as cm:
+            await data_source._BuienRadarDataSource__get_weather()
+        
+        self.assertEqual(str(cm.exception), "Buienradar: 503")
+        self.assertEqual(mock_client_instance.get.call_count, 4)
+        self.assertEqual(mock_sleep.call_count, 3)
+        mock_sleep.assert_has_calls([call(10)] * 3)
+        mock_logger_class_level.error.assert_any_call("All 4 attempts to connect to Buienradar failed.")
+        # Check that specific warnings for each attempt were logged
+        for i in range(1, 5): # Attempts 1 through 4
+            mock_logger_class_level.warning.assert_any_call(f"Attempt {i}/4: Got response in 50 ms, but unexpected status code 503")
+
+# if __name__ == '__main__':
+#    unittest.main()

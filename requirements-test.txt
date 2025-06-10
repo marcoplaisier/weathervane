@@ -1,5 +1,5 @@
 # Project core
-requests==2.32.2
+requests==2.32.4
 python-json-logger==2.0.7
 tenacity==8.2.3
 spidev

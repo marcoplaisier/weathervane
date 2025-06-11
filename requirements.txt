@@ -1,3 +1,10 @@
 httpx
 spidev
 gpiozero
+
+# Testing related
+pytest
+pytest-aio
+pytest-asyncio
+hypothesis
+behave

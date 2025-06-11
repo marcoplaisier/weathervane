@@ -1,8 +1,7 @@
-import json
 import logging
 
 from configparser import ConfigParser
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import List, Sequence
 
 HOUR_ERROR_LIMIT = 2.0 * 60 * 60

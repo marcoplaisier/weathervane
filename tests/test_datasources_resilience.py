@@ -1,13 +1,13 @@
-import asyncio
 import unittest
 from unittest.mock import patch, AsyncMock, MagicMock, call, Mock
 
-import httpx # Required for httpx.RequestError
+import httpx  # Required for httpx.RequestError
 import pytest
 
 # Assuming BuienRadarDataSource and HTTP_OK are in weathervane.datasources
 # Adjust the import path if your project structure is different.
 from weathervane.datasources import BuienRadarDataSource, HTTP_OK
+
 
 # Patch logger at the module level where BuienRadarDataSource is defined
 @patch('weathervane.datasources.logger', new_callable=MagicMock)

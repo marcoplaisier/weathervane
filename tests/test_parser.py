@@ -1,3 +1,4 @@
+import json
 import os
 
 import pytest
@@ -31,6 +32,7 @@ def load_test_data(stations):
     file_path = os.path.join(os.getcwd(), "tests", "buienradar.json")
     with open(file_path, "r", encoding="UTF-8") as f:
         data = f.read()
+        data = json.loads(data)
         config = {
             "stations": stations,
             "bits": bits,

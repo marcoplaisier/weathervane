@@ -1,0 +1,12 @@
+[project]
+name = "weathervane"
+version = "0.1.0"
+description = "Add your description here"
+requires-python = ">=3.13"
+dependencies = [
+    "gpiozero>=2.0.1",
+    "httpx>=0.28.1",
+    "pytest>=8.3.5",
+    "pytest-asyncio>=1.0.0",
+    "spidev>=3.6",
+]

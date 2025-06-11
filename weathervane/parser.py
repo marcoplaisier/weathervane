@@ -127,10 +127,9 @@ class BuienradarParser(object):
         self.stations = stations
         self.bits = bits
 
-    def parse(self, data: str) -> dict:
-        raw_weather_data = json.loads(data)
+    def parse(self, data: dict) -> dict:
         raw_stations_weather_data = self._to_dict(
-            raw_weather_data["actual"]["stationmeasurements"]
+            data["actual"]["stationmeasurements"]
         )
         raw_primary_station_data = self.merge(
             raw_stations_weather_data, self.stations, self.bits

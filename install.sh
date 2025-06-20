@@ -135,21 +135,35 @@ fi
 
 echo -e "\n${BLUE}Starting installation...${NC}"
 
-# Step 1: Create weathervane user
+# Step 1: Create weathervane user and group
 if [ "$INSTALL_ALL" = true ] || [ "$INSTALL_BASIC" = true ] || [ "$INSTALL_CLONE" = true ]; then
-    show_progress "Creating weathervane system user"
+    show_progress "Creating weathervane system user and group"
+    
+    # Create weathervane group if it doesn't exist
+    if ! getent group "$WEATHERVANE_USER" >/dev/null 2>&1; then
+        execute_cmd "groupadd --system $WEATHERVANE_USER" "creating weathervane group"
+    fi
+    
+    # Create weathervane user if it doesn't exist
     if ! id "$WEATHERVANE_USER" &>/dev/null; then
-        execute_cmd "useradd --system --create-home --home-dir $WEATHERVANE_HOME --shell /bin/false --comment 'Weathervane Service User' $WEATHERVANE_USER" "creating weathervane user"
+        execute_cmd "useradd --system --create-home --home-dir $WEATHERVANE_HOME --shell /bin/false --gid $WEATHERVANE_USER --comment 'Weathervane Service User' $WEATHERVANE_USER" "creating weathervane user"
         execute_cmd "usermod -a -G gpio,spi $WEATHERVANE_USER" "adding user to gpio and spi groups"
+    fi
+    
+    # Add pi user to weathervane group for service management
+    if id "pi" &>/dev/null; then
+        execute_cmd "usermod -a -G $WEATHERVANE_USER pi" "adding pi user to weathervane group"
         if [ "$VERBOSE" = true ]; then
-            echo "  Created system user: $WEATHERVANE_USER"
-            echo "  Home directory: $WEATHERVANE_HOME"
-            echo "  Added to groups: gpio, spi"
+            echo "  Added pi user to weathervane group for service management"
         fi
-    else
-        if [ "$VERBOSE" = true ]; then
-            echo "  User $WEATHERVANE_USER already exists"
-        fi
+    fi
+    
+    if [ "$VERBOSE" = true ]; then
+        echo "  Created system user: $WEATHERVANE_USER"
+        echo "  Created system group: $WEATHERVANE_USER"
+        echo "  Home directory: $WEATHERVANE_HOME"
+        echo "  Added $WEATHERVANE_USER to groups: gpio, spi"
+        echo "  Added pi to group: $WEATHERVANE_USER"
     fi
 fi
 
@@ -203,8 +217,11 @@ if [ "$INSTALL_CLONE" = true ] || [ "$INSTALL_ALL" = true ]; then
     execute_cmd "chown -R $WEATHERVANE_USER:$WEATHERVANE_USER $WEATHERVANE_HOME/weathervane" "setting repository ownership"
     execute_cmd "chmod -R 750 $WEATHERVANE_HOME/weathervane" "setting secure permissions"
     execute_cmd "find $WEATHERVANE_HOME/weathervane -name '*.py' -exec chmod 640 {} \;" "setting script permissions"
+    execute_cmd "find $WEATHERVANE_HOME/weathervane -name '*.ini' -exec chmod 640 {} \;" "setting config file permissions"
+    execute_cmd "chmod 750 $WEATHERVANE_HOME" "setting home directory permissions"
     if [ "$VERBOSE" = true ]; then
-        echo "  Set secure permissions: 750 for directories, 640 for Python files"
+        echo "  Set secure permissions: 750 for directories, 640 for Python/config files"
+        echo "  Weathervane group can read files but not modify them"
     fi
 fi
 
@@ -212,7 +229,32 @@ fi
 if [ "$INSTALL_SERVICE" = true ] || [ "$INSTALL_ALL" = true ]; then
     show_progress "Installing systemd service"
     execute_cmd "cp $WEATHERVANE_HOME/weathervane/weathervane.service /etc/systemd/system/weathervane.service" "copying service file"
+    
+    # Create polkit rule for weathervane group to manage the service
+    execute_cmd 'cat > /etc/polkit-1/rules.d/10-weathervane.rules << EOF
+// Allow members of weathervane group to manage weathervane.service
+polkit.addRule(function(action, subject) {
+    if (action.id == "org.freedesktop.systemd1.manage-units" &&
+        action.lookup("unit") == "weathervane.service" &&
+        subject.isInGroup("weathervane")) {
+        return polkit.Result.YES;
+    }
+});
+
+// Allow members of weathervane group to view weathervane service logs
+polkit.addRule(function(action, subject) {
+    if (action.id == "org.freedesktop.login1.read-system-logs" &&
+        subject.isInGroup("weathervane")) {
+        return polkit.Result.YES;
+    }
+});
+EOF' "creating polkit rules for weathervane group"
+    
     execute_cmd "systemctl daemon-reload" "reloading systemd daemon"
+    
+    if [ "$VERBOSE" = true ]; then
+        echo "  Created polkit rules for weathervane group service management"
+    fi
 fi
 
 # Step 9: Enable and start service
@@ -233,3 +275,5 @@ echo "• Check service status: systemctl status weathervane.service"
 echo "• View logs: journalctl -u weathervane.service -f"
 echo "• Configuration file: $WEATHERVANE_HOME/weathervane/weathervane.ini"
 echo "• Service runs as user: $WEATHERVANE_USER (minimal privileges)"
+echo "• Pi user can manage service via weathervane group membership"
+echo "• Note: Pi user may need to log out/in for group changes to take effect"

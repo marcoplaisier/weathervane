@@ -1,13 +1,35 @@
 [Unit]
 Description=Weathervane Service
+After=network.target
 
 [Service]
-WorkingDirectory=/home/pi/weathervane
-ExecStart=python3 main.py
-StandardOutput=inherit
-StandardError=inherit
+Type=simple
+User=weathervane
+Group=weathervane
+WorkingDirectory=/home/weathervane/weathervane
+ExecStart=/usr/bin/python3 main.py
+StandardOutput=journal
+StandardError=journal
 Restart=always
 RestartSec=300
+RestartPreventExitStatus=23
+
+# Security settings
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/home/weathervane
+PrivateTmp=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+RemoveIPC=yes
+RestrictNamespaces=yes
+
+# Allow access to GPIO and SPI
+SupplementaryGroups=gpio spi
 
 [Install]
 WantedBy=multi-user.target

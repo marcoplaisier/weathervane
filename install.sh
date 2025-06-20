@@ -7,8 +7,10 @@ set -e
 
 # Configuration
 VERBOSE=false
-TOTAL_STEPS=8
+TOTAL_STEPS=9
 CURRENT_STEP=0
+WEATHERVANE_USER="weathervane"
+WEATHERVANE_HOME="/home/weathervane"
 
 # Colors for output
 RED='\033[0;31m'
@@ -133,14 +135,32 @@ fi
 
 echo -e "\n${BLUE}Starting installation...${NC}"
 
-# Step 1: System configuration
+# Step 1: Create weathervane user
+if [ "$INSTALL_ALL" = true ] || [ "$INSTALL_BASIC" = true ] || [ "$INSTALL_CLONE" = true ]; then
+    show_progress "Creating weathervane system user"
+    if ! id "$WEATHERVANE_USER" &>/dev/null; then
+        execute_cmd "useradd --system --create-home --home-dir $WEATHERVANE_HOME --shell /bin/false --comment 'Weathervane Service User' $WEATHERVANE_USER" "creating weathervane user"
+        execute_cmd "usermod -a -G gpio,spi $WEATHERVANE_USER" "adding user to gpio and spi groups"
+        if [ "$VERBOSE" = true ]; then
+            echo "  Created system user: $WEATHERVANE_USER"
+            echo "  Home directory: $WEATHERVANE_HOME"
+            echo "  Added to groups: gpio, spi"
+        fi
+    else
+        if [ "$VERBOSE" = true ]; then
+            echo "  User $WEATHERVANE_USER already exists"
+        fi
+    fi
+fi
+
+# Step 2: System configuration
 if [ "$INSTALL_SYSCONFIG" = true ] || [ "$INSTALL_ALL" = true ]; then
     show_progress "Configuring system timezone and NTP"
     execute_cmd "timedatectl set-timezone Europe/Amsterdam" "timezone configuration"
     execute_cmd "timedatectl set-ntp True" "NTP configuration"
 fi
 
-# Step 2: Python version check
+# Step 3: Python version check
 show_progress "Checking Python installation"
 if ! python3 --version >/dev/null 2>&1; then
     echo -e "${RED}Error: No valid Python interpreter found${NC}"
@@ -151,45 +171,51 @@ if [ "$VERBOSE" = true ]; then
     echo "  Python version: $(python3 --version)"
 fi
 
-# Step 3: Enable SPI
+# Step 4: Enable SPI
 if [ "$INSTALL_SYSCONFIG" = true ] || [ "$INSTALL_ALL" = true ]; then
     show_progress "Enabling SPI interface"
     execute_cmd "raspi-config nonint do_spi 0" "SPI configuration"
 fi
 
-# Step 4: Install Git
+# Step 5: Install Git
 if [ "$INSTALL_DEPS" = true ] || [ "$INSTALL_ALL" = true ]; then
     show_progress "Installing Git"
     execute_cmd "apt update" "package list update"
     execute_cmd "apt install git git-man -y" "Git installation"
 fi
 
-# Step 5: Install Python packages
+# Step 6: Install Python packages
 if [ "$INSTALL_DEPS" = true ] || [ "$INSTALL_ALL" = true ]; then
     show_progress "Installing Python dependencies"
     execute_cmd "apt install python3-httpx -y" "HTTPX installation"
 fi
 
-# Step 6: Clone repository
+# Step 7: Clone repository
 if [ "$INSTALL_CLONE" = true ] || [ "$INSTALL_ALL" = true ]; then
     show_progress "Cloning Weathervane repository"
-    execute_cmd "cd /home/pi" "changing to pi home directory"
-    if [ -d "/home/pi/weathervane" ]; then
+    execute_cmd "cd $WEATHERVANE_HOME" "changing to weathervane home directory"
+    if [ -d "$WEATHERVANE_HOME/weathervane" ]; then
         echo "  Repository already exists, updating..."
-        execute_cmd "cd /home/pi/weathervane && git pull" "updating repository"
+        execute_cmd "cd $WEATHERVANE_HOME/weathervane && sudo -u $WEATHERVANE_USER git pull" "updating repository"
     else
-        execute_cmd "git clone https://github.com/marcoplaisier/weathervane.git" "cloning repository"
+        execute_cmd "sudo -u $WEATHERVANE_USER git clone https://github.com/marcoplaisier/weathervane.git $WEATHERVANE_HOME/weathervane" "cloning repository"
+    fi
+    execute_cmd "chown -R $WEATHERVANE_USER:$WEATHERVANE_USER $WEATHERVANE_HOME/weathervane" "setting repository ownership"
+    execute_cmd "chmod -R 750 $WEATHERVANE_HOME/weathervane" "setting secure permissions"
+    execute_cmd "find $WEATHERVANE_HOME/weathervane -name '*.py' -exec chmod 640 {} \;" "setting script permissions"
+    if [ "$VERBOSE" = true ]; then
+        echo "  Set secure permissions: 750 for directories, 640 for Python files"
     fi
 fi
 
-# Step 7: Install service
+# Step 8: Install service
 if [ "$INSTALL_SERVICE" = true ] || [ "$INSTALL_ALL" = true ]; then
     show_progress "Installing systemd service"
-    execute_cmd "cp /home/pi/weathervane/weathervane.service /etc/systemd/system/weathervane.service" "copying service file"
+    execute_cmd "cp $WEATHERVANE_HOME/weathervane/weathervane.service /etc/systemd/system/weathervane.service" "copying service file"
     execute_cmd "systemctl daemon-reload" "reloading systemd daemon"
 fi
 
-# Step 8: Enable and start service
+# Step 9: Enable and start service
 if [ "$INSTALL_SERVICE" = true ] || [ "$INSTALL_ALL" = true ]; then
     show_progress "Starting Weathervane service"
     execute_cmd "systemctl enable weathervane.service --now" "enabling and starting service"
@@ -205,4 +231,5 @@ fi
 echo -e "\n${YELLOW}Next steps:${NC}"
 echo "• Check service status: systemctl status weathervane.service"
 echo "• View logs: journalctl -u weathervane.service -f"
-echo "• Configuration file: /home/pi/weathervane/weathervane.ini"
+echo "• Configuration file: $WEATHERVANE_HOME/weathervane/weathervane.ini"
+echo "• Service runs as user: $WEATHERVANE_USER (minimal privileges)"

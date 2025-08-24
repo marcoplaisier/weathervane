@@ -1,45 +1,335 @@
 #!/bin/bash
 
-if [ "$EUID" -ne 0 ]
-  then echo "Please run as root. Sudo !!"
-  exit
+# Weathervane Installation Script
+# Usage: curl -s https://raw.githubusercontent.com/marcoplaisier/weathervane/master/install.sh | sudo bash [-v]
+
+set -e
+
+# Configuration
+VERBOSE=false
+TOTAL_STEPS=9
+CURRENT_STEP=0
+WEATHERVANE_USER="weathervane"
+WEATHERVANE_HOME="/home/weathervane"
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Parse command line arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -v|--verbose)
+            VERBOSE=true
+            shift
+            ;;
+        *)
+            echo "Unknown option: $1"
+            echo "Usage: $0 [-v|--verbose]"
+            exit 1
+            ;;
+    esac
+done
+
+# Progress indicator function
+show_progress() {
+    CURRENT_STEP=$((CURRENT_STEP + 1))
+    local message="$1"
+    local percentage=$((CURRENT_STEP * 100 / TOTAL_STEPS))
+    
+    printf "${BLUE}[%d/%d]${NC} ${GREEN}%3d%%${NC} %s\n" "$CURRENT_STEP" "$TOTAL_STEPS" "$percentage" "$message"
+}
+
+# Execute command with optional output suppression
+execute_cmd() {
+    local cmd="$1"
+    local description="$2"
+    
+    if [ "$VERBOSE" = true ]; then
+        echo "  Running: $cmd"
+        eval "$cmd"
+    else
+        if ! eval "$cmd" >/dev/null 2>&1; then
+            echo -e "${RED}Error executing: $description${NC}"
+            echo "Run with -v flag for detailed output"
+            exit 1
+        fi
+    fi
+}
+
+# User selection menu
+show_menu() {
+    echo -e "\n${YELLOW}Weathervane Installation Options${NC}"
+    echo "Please select the installation components you want:"
+    echo
+    echo "A) Full installation (recommended)"
+    echo "B) Basic installation (no service setup)"
+    echo "C) Service setup only"
+    echo "D) System configuration only"
+    echo "E) Dependencies only"
+    echo "F) Custom selection"
+    echo
+    read -p "Enter your choice (A-F): " choice
+    
+    case ${choice^^} in
+        A) INSTALL_ALL=true ;;
+        B) INSTALL_BASIC=true ;;
+        C) INSTALL_SERVICE=true ;;
+        D) INSTALL_SYSCONFIG=true ;;
+        E) INSTALL_DEPS=true ;;
+        F) custom_selection ;;
+        *) echo -e "${RED}Invalid choice. Using full installation.${NC}"; INSTALL_ALL=true ;;
+    esac
+}
+
+# Custom selection submenu
+custom_selection() {
+    echo -e "\n${YELLOW}Custom Installation Components${NC}"
+    echo "Select components to install (press Enter after each selection):"
+    
+    read -p "Install system configuration (timezone, SPI)? (y/N): " sys_config
+    read -p "Install dependencies (Git, Python packages)? (y/N): " deps
+    read -p "Clone weathervane repository? (y/N): " clone_repo
+    read -p "Setup systemd service? (y/N): " setup_service
+    
+    [[ ${sys_config^^} == "Y" ]] && INSTALL_SYSCONFIG=true
+    [[ ${deps^^} == "Y" ]] && INSTALL_DEPS=true
+    [[ ${clone_repo^^} == "Y" ]] && INSTALL_CLONE=true
+    [[ ${setup_service^^} == "Y" ]] && INSTALL_SERVICE=true
+}
+
+# Root check
+if [ "$EUID" -ne 0 ]; then
+    echo -e "${RED}Please run as root. Use sudo!${NC}"
+    exit 1
 fi
 
-echo "Making sure time and timezones are set correctly..."
-sudo timedatectl set-timezone Europe/Amsterdam
-sudo timedatectl set-ntp True
+echo -e "${GREEN}🌦️  Weathervane Installation Script${NC}"
+echo "=================================="
 
-echo "Checking python version..."
-py_version=$(python3 --version) >/dev/null 2>&1
-if [  "$py_version"  ]; then
-  echo "Python 3 found."
-else
-  echo "Error: No valid Python interpreter found"
-  echo "Install with 'sudo apt install python3'"
-  exit 1
+# Show menu
+show_menu
+
+# Initialize installation flags
+INSTALL_ALL=${INSTALL_ALL:-false}
+INSTALL_BASIC=${INSTALL_BASIC:-false}
+INSTALL_SYSCONFIG=${INSTALL_SYSCONFIG:-false}
+INSTALL_DEPS=${INSTALL_DEPS:-false}
+INSTALL_CLONE=${INSTALL_CLONE:-false}
+INSTALL_SERVICE=${INSTALL_SERVICE:-false}
+
+# Set flags based on selection
+if [ "$INSTALL_ALL" = true ]; then
+    INSTALL_SYSCONFIG=true
+    INSTALL_DEPS=true
+    INSTALL_CLONE=true
+    INSTALL_SERVICE=true
+elif [ "$INSTALL_BASIC" = true ]; then
+    INSTALL_SYSCONFIG=true
+    INSTALL_DEPS=true
+    INSTALL_CLONE=true
 fi
 
-echo "Enabling SPI..."
-raspi-config nonint do_spi 0
-echo "SPI enabled."
+echo -e "\n${BLUE}Starting installation...${NC}"
 
-echo "Checking Git installation..."
-apt install git git-man -y
-echo "Git installed."
-echo "Checking HTTPX installation..."
-apt install python3-httpx -y
-echo "Validating requirements done."
+# Step 1: Create weathervane user and group
+if [ "$INSTALL_ALL" = true ] || [ "$INSTALL_BASIC" = true ] || [ "$INSTALL_CLONE" = true ]; then
+    show_progress "Creating weathervane system user and group"
+    
+    # Create weathervane group if it doesn't exist
+    if ! getent group "$WEATHERVANE_USER" >/dev/null 2>&1; then
+        execute_cmd "groupadd --system $WEATHERVANE_USER" "creating weathervane group"
+    fi
+    
+    # Create weathervane user if it doesn't exist
+    if ! id "$WEATHERVANE_USER" &>/dev/null; then
+        execute_cmd "useradd --system --create-home --home-dir $WEATHERVANE_HOME --shell /bin/false --gid $WEATHERVANE_USER --comment 'Weathervane Service User' $WEATHERVANE_USER" "creating weathervane user"
+        execute_cmd "usermod -a -G gpio,spi $WEATHERVANE_USER" "adding user to gpio and spi groups"
+    fi
+    
+    # Add pi user to weathervane group for service management
+    if id "pi" &>/dev/null; then
+        execute_cmd "usermod -a -G $WEATHERVANE_USER pi" "adding pi user to weathervane group"
+        if [ "$VERBOSE" = true ]; then
+            echo "  Added pi user to weathervane group for service management"
+        fi
+    fi
+    
+    if [ "$VERBOSE" = true ]; then
+        echo "  Created system user: $WEATHERVANE_USER"
+        echo "  Created system group: $WEATHERVANE_USER"
+        echo "  Home directory: $WEATHERVANE_HOME"
+        echo "  Added $WEATHERVANE_USER to groups: gpio, spi"
+        echo "  Added pi to group: $WEATHERVANE_USER"
+    fi
+fi
 
-echo "Installing weathervane..."
-cd /home/pi || exit
-git clone https://github.com/marcoplaisier/weathervane.git
-cd weathervane || exit
-echo "Weathervane installed."
+# Step 2: System configuration
+if [ "$INSTALL_SYSCONFIG" = true ] || [ "$INSTALL_ALL" = true ]; then
+    show_progress "Configuring system timezone and NTP"
+    execute_cmd "timedatectl set-timezone Europe/Amsterdam" "timezone configuration"
+    execute_cmd "timedatectl set-ntp True" "NTP configuration"
+fi
 
-echo "Installing weathervane as a service..."
-cp /home/pi/weathervane/weathervane.service /etc/systemd/system/weathervane.service
-echo "Reloading systemd daemon (this may take a while)"
-systemctl daemon-reload
-echo "Enabling and starting Weathervane service (this may take a while)"
-systemctl enable weathervane.service --now
-echo "Weathervane configured and started. It should be running now!"
+# Step 3: Python version check
+show_progress "Checking Python installation"
+if ! python3 --version >/dev/null 2>&1; then
+    echo -e "${RED}Error: No valid Python interpreter found${NC}"
+    echo "Install with 'sudo apt install python3'"
+    exit 1
+fi
+if [ "$VERBOSE" = true ]; then
+    echo "  Python version: $(python3 --version)"
+fi
+
+# Step 4: Enable SPI
+if [ "$INSTALL_SYSCONFIG" = true ] || [ "$INSTALL_ALL" = true ]; then
+    show_progress "Enabling SPI interface"
+    execute_cmd "raspi-config nonint do_spi 0" "SPI configuration"
+fi
+
+# Step 5: Install Git
+if [ "$INSTALL_DEPS" = true ] || [ "$INSTALL_ALL" = true ]; then
+    show_progress "Installing Git"
+    execute_cmd "apt update" "package list update"
+    execute_cmd "apt install git git-man -y" "Git installation"
+fi
+
+# Step 6: Install Python packages
+if [ "$INSTALL_DEPS" = true ] || [ "$INSTALL_ALL" = true ]; then
+    show_progress "Installing Python dependencies"
+    execute_cmd "apt install python3-httpx -y" "HTTPX installation"
+fi
+
+# Step 7: Clone repository
+if [ "$INSTALL_CLONE" = true ] || [ "$INSTALL_ALL" = true ]; then
+    show_progress "Cloning Weathervane repository"
+    execute_cmd "cd $WEATHERVANE_HOME" "changing to weathervane home directory"
+    if [ -d "$WEATHERVANE_HOME/weathervane" ]; then
+        echo "  Repository already exists, updating..."
+        execute_cmd "cd $WEATHERVANE_HOME/weathervane && sudo -u $WEATHERVANE_USER git pull" "updating repository"
+    else
+        execute_cmd "sudo -u $WEATHERVANE_USER git clone https://github.com/marcoplaisier/weathervane.git $WEATHERVANE_HOME/weathervane" "cloning repository"
+    fi
+    execute_cmd "chown -R $WEATHERVANE_USER:$WEATHERVANE_USER $WEATHERVANE_HOME/weathervane" "setting repository ownership"
+    execute_cmd "chmod -R 750 $WEATHERVANE_HOME/weathervane" "setting secure permissions"
+    execute_cmd "find $WEATHERVANE_HOME/weathervane -name '*.py' -exec chmod 640 {} \;" "setting script permissions"
+    execute_cmd "find $WEATHERVANE_HOME/weathervane -name '*.ini' -exec chmod 640 {} \;" "setting config file permissions"
+    execute_cmd "chmod 750 $WEATHERVANE_HOME" "setting home directory permissions"
+    if [ "$VERBOSE" = true ]; then
+        echo "  Set secure permissions: 750 for directories, 640 for Python/config files"
+        echo "  Weathervane group can read files but not modify them"
+    fi
+fi
+
+# Step 8: Install service
+if [ "$INSTALL_SERVICE" = true ] || [ "$INSTALL_ALL" = true ]; then
+    show_progress "Installing systemd service"
+    
+    # Check for existing service conflicts
+    if systemctl is-enabled --quiet weathervane.service 2>/dev/null; then
+        echo -e "${YELLOW}  Service already installed. Updating...${NC}"
+        execute_cmd "systemctl stop weathervane.service" "stopping existing service"
+        execute_cmd "systemctl disable weathervane.service" "disabling existing service"
+    fi
+    
+    execute_cmd "cp $WEATHERVANE_HOME/weathervane/weathervane.service /etc/systemd/system/weathervane.service" "copying service file"
+    
+    # Create polkit rule for weathervane group to manage the service
+    execute_cmd 'cat > /etc/polkit-1/rules.d/10-weathervane.rules << EOF
+// Allow members of weathervane group to manage weathervane.service
+polkit.addRule(function(action, subject) {
+    if (action.id == "org.freedesktop.systemd1.manage-units" &&
+        action.lookup("unit") == "weathervane.service" &&
+        subject.isInGroup("weathervane")) {
+        return polkit.Result.YES;
+    }
+});
+
+// Allow members of weathervane group to view weathervane service logs
+polkit.addRule(function(action, subject) {
+    if (action.id == "org.freedesktop.login1.read-system-logs" &&
+        subject.isInGroup("weathervane")) {
+        return polkit.Result.YES;
+    }
+});
+EOF' "creating polkit rules for weathervane group"
+    
+    execute_cmd "systemctl daemon-reload" "reloading systemd daemon"
+    
+    if [ "$VERBOSE" = true ]; then
+        echo "  Created polkit rules for weathervane group service management"
+    fi
+fi
+
+# Step 9: Enable and start service
+if [ "$INSTALL_SERVICE" = true ] || [ "$INSTALL_ALL" = true ]; then
+    show_progress "Starting Weathervane service"
+    
+    # Check if service is already running
+    if systemctl is-active --quiet weathervane.service; then
+        echo -e "${YELLOW}  Service is already running. Restarting...${NC}"
+        execute_cmd "systemctl stop weathervane.service" "stopping existing service"
+        sleep 2  # Give service time to fully stop
+        execute_cmd "systemctl start weathervane.service" "starting service"
+    else
+        # Enable service first (without starting)
+        execute_cmd "systemctl enable weathervane.service" "enabling service"
+        
+        # Check for common issues before starting
+        if [ "$VERBOSE" = true ]; then
+            echo "  Checking for potential issues..."
+            # Check if SPI is enabled
+            if ! ls /dev/spidev* >/dev/null 2>&1; then
+                echo -e "${YELLOW}  Warning: SPI devices not found. Service may fail.${NC}"
+            fi
+            # Check if service file exists and is valid
+            if ! systemd-analyze verify weathervane.service >/dev/null 2>&1; then
+                echo -e "${YELLOW}  Warning: Service file validation failed${NC}"
+            fi
+        fi
+        
+        # Start service with timeout
+        echo "  Starting service (timeout: 30s)..."
+        if timeout 30 systemctl start weathervane.service 2>&1; then
+            if [ "$VERBOSE" = true ]; then
+                echo -e "${GREEN}  Service started successfully${NC}"
+            fi
+        else
+            EXIT_CODE=$?
+            if [ $EXIT_CODE -eq 124 ]; then
+                echo -e "${RED}  Error: Service start timed out after 30 seconds${NC}"
+                echo "  The service is taking too long to start. This could mean:"
+                echo "  • The service is waiting for user input"
+                echo "  • There's a deadlock or infinite loop"
+                echo "  • Resource conflicts (SPI/GPIO already in use)"
+            else
+                echo -e "${RED}  Error: Service failed to start (exit code: $EXIT_CODE)${NC}"
+            fi
+            echo -e "${YELLOW}  Debugging steps:${NC}"
+            echo "  1. Check service status: sudo systemctl status weathervane.service"
+            echo "  2. View recent logs: sudo journalctl -u weathervane.service -n 50"
+            echo "  3. Check for running processes: ps aux | grep weathervane"
+            echo "  4. Try manual start: sudo systemctl start weathervane.service"
+            echo "  5. Run in foreground: sudo -u weathervane python3 $WEATHERVANE_HOME/weathervane/weathervane.py"
+        fi
+    fi
+fi
+
+echo -e "\n${GREEN}✅ Installation completed successfully!${NC}"
+
+if [ "$INSTALL_SERVICE" = true ] || [ "$INSTALL_ALL" = true ]; then
+    echo -e "${BLUE}Service Status:${NC}"
+    systemctl status weathervane.service --no-pager -l
+fi
+
+echo -e "\n${YELLOW}Next steps:${NC}"
+echo "• Check service status: systemctl status weathervane.service"
+echo "• View logs: journalctl -u weathervane.service -f"
+echo "• Configuration file: $WEATHERVANE_HOME/weathervane/weathervane.ini"
+echo "• Service runs as user: $WEATHERVANE_USER (minimal privileges)"
+echo "• Pi user can manage service via weathervane group membership"
+echo "• Note: Pi user may need to log out/in for group changes to take effect"

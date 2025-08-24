@@ -228,6 +228,14 @@ fi
 # Step 8: Install service
 if [ "$INSTALL_SERVICE" = true ] || [ "$INSTALL_ALL" = true ]; then
     show_progress "Installing systemd service"
+    
+    # Check for existing service conflicts
+    if systemctl is-enabled --quiet weathervane.service 2>/dev/null; then
+        echo -e "${YELLOW}  Service already installed. Updating...${NC}"
+        execute_cmd "systemctl stop weathervane.service" "stopping existing service"
+        execute_cmd "systemctl disable weathervane.service" "disabling existing service"
+    fi
+    
     execute_cmd "cp $WEATHERVANE_HOME/weathervane/weathervane.service /etc/systemd/system/weathervane.service" "copying service file"
     
     # Create polkit rule for weathervane group to manage the service
@@ -260,7 +268,55 @@ fi
 # Step 9: Enable and start service
 if [ "$INSTALL_SERVICE" = true ] || [ "$INSTALL_ALL" = true ]; then
     show_progress "Starting Weathervane service"
-    execute_cmd "systemctl enable weathervane.service --now" "enabling and starting service"
+    
+    # Check if service is already running
+    if systemctl is-active --quiet weathervane.service; then
+        echo -e "${YELLOW}  Service is already running. Restarting...${NC}"
+        execute_cmd "systemctl stop weathervane.service" "stopping existing service"
+        sleep 2  # Give service time to fully stop
+        execute_cmd "systemctl start weathervane.service" "starting service"
+    else
+        # Enable service first (without starting)
+        execute_cmd "systemctl enable weathervane.service" "enabling service"
+        
+        # Check for common issues before starting
+        if [ "$VERBOSE" = true ]; then
+            echo "  Checking for potential issues..."
+            # Check if SPI is enabled
+            if ! ls /dev/spidev* >/dev/null 2>&1; then
+                echo -e "${YELLOW}  Warning: SPI devices not found. Service may fail.${NC}"
+            fi
+            # Check if service file exists and is valid
+            if ! systemd-analyze verify weathervane.service >/dev/null 2>&1; then
+                echo -e "${YELLOW}  Warning: Service file validation failed${NC}"
+            fi
+        fi
+        
+        # Start service with timeout
+        echo "  Starting service (timeout: 30s)..."
+        if timeout 30 systemctl start weathervane.service 2>&1; then
+            if [ "$VERBOSE" = true ]; then
+                echo -e "${GREEN}  Service started successfully${NC}"
+            fi
+        else
+            EXIT_CODE=$?
+            if [ $EXIT_CODE -eq 124 ]; then
+                echo -e "${RED}  Error: Service start timed out after 30 seconds${NC}"
+                echo "  The service is taking too long to start. This could mean:"
+                echo "  • The service is waiting for user input"
+                echo "  • There's a deadlock or infinite loop"
+                echo "  • Resource conflicts (SPI/GPIO already in use)"
+            else
+                echo -e "${RED}  Error: Service failed to start (exit code: $EXIT_CODE)${NC}"
+            fi
+            echo -e "${YELLOW}  Debugging steps:${NC}"
+            echo "  1. Check service status: sudo systemctl status weathervane.service"
+            echo "  2. View recent logs: sudo journalctl -u weathervane.service -n 50"
+            echo "  3. Check for running processes: ps aux | grep weathervane"
+            echo "  4. Try manual start: sudo systemctl start weathervane.service"
+            echo "  5. Run in foreground: sudo -u weathervane python3 $WEATHERVANE_HOME/weathervane/weathervane.py"
+        fi
+    fi
 fi
 
 echo -e "\n${GREEN}✅ Installation completed successfully!${NC}"

@@ -1,7 +1,6 @@
 httpx
 spidev
 gpiozero
-RPi.GPIO
 
 # Testing related
 pytest

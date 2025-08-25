@@ -229,7 +229,7 @@ fi
 if [ "$INSTALL_DEPS" = true ] || [ "$INSTALL_ALL" = true ]; then
     show_progress "Installing system dependencies"
     execute_cmd "apt-get update" "package list update"
-    execute_cmd "apt-get install -y git python3-pip python3-venv python3-dev build-essential python3-rpi.gpio" "system dependencies installation"
+    execute_cmd "apt-get install -y git python3-pip python3-venv python3-dev build-essential" "system dependencies installation"
     
     # Immediate systemd refresh after system package installation to prevent conflicts
     execute_cmd "systemctl daemon-reload" "reloading systemd after package installation"
@@ -253,7 +253,7 @@ if [ "$INSTALL_DEPS" = true ] || [ "$INSTALL_ALL" = true ]; then
     
     # Create virtual environment as weathervane user
     if [ ! -d "$VENV_PATH" ]; then
-        execute_cmd "sudo -u $WEATHERVANE_USER python3 -m venv $VENV_PATH" "creating virtual environment"
+        execute_cmd "sudo -u $WEATHERVANE_USER python3 -m venv $VENV_PATH --system-site-packages" "creating virtual environment with system packages"
         execute_cmd "chown -R $WEATHERVANE_USER:$WEATHERVANE_USER $VENV_PATH" "setting venv ownership"
     fi
     
@@ -262,6 +262,7 @@ if [ "$INSTALL_DEPS" = true ] || [ "$INSTALL_ALL" = true ]; then
     
     if [ "$VERBOSE" = true ]; then
         echo "  Created virtual environment at: $VENV_PATH"
+        echo "  Virtual environment has access to system GPIO packages"
     fi
 fi
 
@@ -310,7 +311,7 @@ if ([ "$INSTALL_CLONE" = true ] || [ "$INSTALL_ALL" = true ]) && ([ "$INSTALL_DE
         execute_cmd "sudo -u $WEATHERVANE_USER $VENV_PATH/bin/python -c 'import httpx; print(f\"httpx version: {httpx.__version__}\")'" "verifying httpx installation"
         execute_cmd "sudo -u $WEATHERVANE_USER $VENV_PATH/bin/python -c 'import spidev; print(\"spidev available\")'" "verifying spidev installation"
         execute_cmd "sudo -u $WEATHERVANE_USER $VENV_PATH/bin/python -c 'import gpiozero; print(\"gpiozero available\")'" "verifying gpiozero installation"
-        execute_cmd "sudo -u $WEATHERVANE_USER $VENV_PATH/bin/python -c 'import RPi.GPIO; print(\"RPi.GPIO available\")'" "verifying RPi.GPIO installation"
+        execute_cmd "sudo -u $WEATHERVANE_USER $VENV_PATH/bin/python -c 'import RPi.GPIO; print(\"RPi.GPIO available from system packages\")'" "verifying RPi.GPIO system package access"
         
         # Test virtual environment can access system GPIO groups
         execute_cmd "sudo -u $WEATHERVANE_USER $VENV_PATH/bin/python -c 'import os; print(f\"User groups: {os.getgroups()}\")'" "verifying group access in venv"

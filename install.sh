@@ -441,7 +441,6 @@ systemctl status weathervane.service --no-pager -l
 echo -e "\n${YELLOW}Installation Log:${NC}"
 echo "• Full installation log: $LOG_FILE"
 echo "• Log file size: $(du -h "$LOG_FILE" | cut -f1)"
-echo "• To email log file: mail -s 'Weathervane Install Log' your-email@example.com < $LOG_FILE"
 
 echo -e "\n${YELLOW}Next steps:${NC}"
 echo "• Check service status: systemctl status weathervane.service"

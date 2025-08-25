@@ -228,8 +228,8 @@ fi
 # Step 5: Install system dependencies
 if [ "$INSTALL_DEPS" = true ] || [ "$INSTALL_ALL" = true ]; then
     show_progress "Installing system dependencies"
-    execute_cmd "apt update" "package list update"
-    execute_cmd "apt install git python3-pip python3-venv python3-dev build-essential -y" "system dependencies installation"
+    execute_cmd "apt-get update" "package list update"
+    execute_cmd "apt-get install -y git python3-pip python3-venv python3-dev build-essential" "system dependencies installation"
     
     # Immediate systemd refresh after system package installation to prevent conflicts
     execute_cmd "systemctl daemon-reload" "reloading systemd after package installation"

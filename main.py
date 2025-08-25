@@ -14,13 +14,19 @@ NON_INTERPOLATABLE_VARIABLES = ["error", "winddirection", "winddirection", "rain
 SLEEP_INTERVAL = 0.1
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
 formatter = logging.Formatter("%(asctime)s:%(levelname)s:%(module)s:%(message)s")
 
-# Configure logging - systemd will handle log rotation via journald
-handler = logging.StreamHandler()
-handler.setFormatter(formatter)
-logger.addHandler(handler)
+# Configure logging to both file and stdout
+# File logging for detailed application logs (systemd handles rotation)
+file_handler = logging.FileHandler("/var/log/weathervane.log")
+file_handler.setFormatter(formatter)
+logger.addHandler(file_handler)
+
+# Stream logging for systemd journal
+stream_handler = logging.StreamHandler()
+stream_handler.setFormatter(formatter)
+logger.addHandler(stream_handler)
 
 
 class TestDisplay:
@@ -96,6 +102,7 @@ class WeatherVane(object):
 
             if time.monotonic() - prev_data_collection_start_time > self.data_collection_interval:
                 prev_data_collection_start_time = time.monotonic()
+                logger.debug("Starting weather data collection from BuienRadar")
                 asyncio.create_task(self.data_source.fetch_weather_data())
 
             while not self.queue.empty():
@@ -106,7 +113,9 @@ class WeatherVane(object):
                 prev_display_data_send_time = time.monotonic()
                 percentage = display_time_elapsed / self.data_collection_interval
                 interpolated_wd = self.interpolate(self.old_weatherdata, wd, percentage)
+                logger.debug(f"Sending interpolated weather data to interface: {interpolated_wd}")
                 self.interface.send(interpolated_wd)
+                logger.debug("Weather data sent successfully")
 
             await asyncio.sleep(SLEEP_INTERVAL)
 

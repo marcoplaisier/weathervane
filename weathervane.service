@@ -31,6 +31,9 @@ RestrictNamespaces=yes
 
 # Allow access to GPIO and SPI
 SupplementaryGroups=gpio spi
+DeviceAllow=/dev/gpiomem rw
+DeviceAllow=/dev/spidev0.0 rw
+DeviceAllow=/dev/spidev0.1 rw
 
 [Install]
 WantedBy=multi-user.target

@@ -7,7 +7,7 @@ Type=simple
 User=weathervane
 Group=weathervane
 WorkingDirectory=/home/weathervane/weathervane
-ExecStart=/usr/bin/python3 main.py
+ExecStart=/home/weathervane/venv/bin/python /home/weathervane/weathervane/main.py -c /home/weathervane/weathervane/config.ini
 StandardOutput=journal
 StandardError=journal
 Restart=always
@@ -17,8 +17,9 @@ RestartPreventExitStatus=23
 # Security settings
 NoNewPrivileges=yes
 ProtectSystem=strict
-ProtectHome=yes
-ReadWritePaths=/home/weathervane
+# Allow access to weathervane home directory
+ProtectHome=read-only
+ReadWritePaths=/home/weathervane/weathervane
 PrivateTmp=yes
 ProtectKernelTunables=yes
 ProtectKernelModules=yes

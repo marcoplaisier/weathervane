@@ -309,7 +309,7 @@ if ([ "$INSTALL_CLONE" = true ] || [ "$INSTALL_ALL" = true ]) && ([ "$INSTALL_DE
         # Verify critical packages are installed and functional
         execute_cmd "sudo -u $WEATHERVANE_USER $VENV_PATH/bin/python -c 'import httpx; print(f\"httpx version: {httpx.__version__}\")'" "verifying httpx installation"
         execute_cmd "sudo -u $WEATHERVANE_USER $VENV_PATH/bin/python -c 'import spidev; print(\"spidev available\")'" "verifying spidev installation"
-        execute_cmd "sudo -u $WEATHERVANE_USER $VENV_PATH/bin/python -c 'import gpiozero; print(f\"gpiozero version: {gpiozero.__version__}\")'" "verifying gpiozero installation"
+        execute_cmd "sudo -u $WEATHERVANE_USER $VENV_PATH/bin/python -c 'import gpiozero; print(\"gpiozero available\")'" "verifying gpiozero installation"
         
         # Test virtual environment can access system GPIO groups
         execute_cmd "sudo -u $WEATHERVANE_USER $VENV_PATH/bin/python -c 'import os; print(f\"User groups: {os.getgroups()}\")'" "verifying group access in venv"

@@ -312,7 +312,7 @@ if ([ "$INSTALL_CLONE" = true ] || [ "$INSTALL_ALL" = true ]) && ([ "$INSTALL_DE
         execute_cmd "sudo -u $WEATHERVANE_USER $VENV_PATH/bin/python -c 'import spidev; print(\"spidev available\")'" "verifying spidev installation"
         execute_cmd "sudo -u $WEATHERVANE_USER $VENV_PATH/bin/python -c 'import gpiozero; print(\"gpiozero available\")'" "verifying gpiozero installation"
         # Try to verify RPi.GPIO - may not be available on all systems
-        local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+        timestamp=$(date '+%Y-%m-%d %H:%M:%S')
         if sudo -u "$WEATHERVANE_USER" "$VENV_PATH/bin/python" -c 'import RPi.GPIO; print("RPi.GPIO available from system packages")' >> "$LOG_FILE" 2>&1; then
             echo "[$timestamp] SUCCESS: RPi.GPIO system package access verified" >> "$LOG_FILE"
             if [ "$VERBOSE" = true ]; then

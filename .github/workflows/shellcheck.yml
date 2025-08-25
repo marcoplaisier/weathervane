@@ -1,0 +1,35 @@
+name: ShellCheck
+
+on:
+  push:
+    branches: [ master, main ]
+    paths: 
+      - '**/*.sh'
+  pull_request:
+    branches: [ master, main ]
+    paths:
+      - '**/*.sh'
+
+jobs:
+  shellcheck:
+    name: ShellCheck
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Run ShellCheck
+      uses: ludeeus/action-shellcheck@master
+      with:
+        scandir: '.'
+        format: gcc
+        severity: error
+        
+    - name: Run ShellCheck with warnings
+      uses: ludeeus/action-shellcheck@master
+      with:
+        scandir: '.'
+        format: tty
+        severity: warning
+      continue-on-error: true

@@ -49,7 +49,8 @@ show_progress() {
 execute_cmd() {
     local cmd="$1"
     local description="$2"
-    local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+    local timestamp
+    timestamp=$(date '+%Y-%m-%d %H:%M:%S')
     
     echo "[$timestamp] Executing: $description" >> "$LOG_FILE"
     echo "[$timestamp] Command: $cmd" >> "$LOG_FILE"
@@ -90,7 +91,7 @@ show_menu() {
     echo "E) Dependencies only"
     echo "F) Custom selection"
     echo
-    read -p "Enter your choice (A-F): " choice
+    read -r -p "Enter your choice (A-F): " choice
     
     case ${choice^^} in
         A) INSTALL_ALL=true ;;
@@ -108,10 +109,10 @@ custom_selection() {
     echo -e "\n${YELLOW}Custom Installation Components${NC}"
     echo "Select components to install (press Enter after each selection):"
     
-    read -p "Install system configuration (timezone, SPI)? (y/N): " sys_config
-    read -p "Install dependencies (Git, Python packages)? (y/N): " deps
-    read -p "Clone weathervane repository? (y/N): " clone_repo
-    read -p "Setup systemd service? (y/N): " setup_service
+    read -r -p "Install system configuration (timezone, SPI)? (y/N): " sys_config
+    read -r -p "Install dependencies (Git, Python packages)? (y/N): " deps
+    read -r -p "Clone weathervane repository? (y/N): " clone_repo
+    read -r -p "Setup systemd service? (y/N): " setup_service
     
     [[ ${sys_config^^} == "Y" ]] && INSTALL_SYSCONFIG=true
     [[ ${deps^^} == "Y" ]] && INSTALL_DEPS=true
@@ -301,7 +302,7 @@ if [ "$INSTALL_CLONE" = true ] || [ "$INSTALL_ALL" = true ]; then
 fi
 
 # Step 8: Install Python requirements
-if ([ "$INSTALL_CLONE" = true ] || [ "$INSTALL_ALL" = true ]) && ([ "$INSTALL_DEPS" = true ] || [ "$INSTALL_ALL" = true ]); then
+if { [ "$INSTALL_CLONE" = true ] || [ "$INSTALL_ALL" = true ]; } && { [ "$INSTALL_DEPS" = true ] || [ "$INSTALL_ALL" = true ]; }; then
     show_progress "Installing Python requirements"
     
     if [ -f "$WEATHERVANE_HOME/weathervane/requirements.txt" ]; then
@@ -484,19 +485,21 @@ fi
 show_progress "Finalizing installation"
 
 # Add summary to log
-echo "Installation completed at $(date)" >> "$LOG_FILE"
-echo "=== INSTALLATION SUMMARY ===" >> "$LOG_FILE"
-echo "Weathervane user: $WEATHERVANE_USER" >> "$LOG_FILE"
-echo "Home directory: $WEATHERVANE_HOME" >> "$LOG_FILE"
-echo "Virtual environment: $VENV_PATH" >> "$LOG_FILE"
-echo "Python version: $(sudo -u "$WEATHERVANE_USER" "$VENV_PATH/bin/python" --version 2>/dev/null || echo 'Not available')" >> "$LOG_FILE"
-
-if [ "$INSTALL_SERVICE" = true ] || [ "$INSTALL_ALL" = true ]; then
-    echo "Service status: $(systemctl is-active weathervane.service 2>/dev/null || echo 'inactive')" >> "$LOG_FILE"
-    echo "Service enabled: $(systemctl is-enabled weathervane.service 2>/dev/null || echo 'disabled')" >> "$LOG_FILE"
-fi
-
-echo "=== END SUMMARY ===" >> "$LOG_FILE"
+{
+    echo "Installation completed at $(date)"
+    echo "=== INSTALLATION SUMMARY ==="
+    echo "Weathervane user: $WEATHERVANE_USER"
+    echo "Home directory: $WEATHERVANE_HOME"
+    echo "Virtual environment: $VENV_PATH"
+    echo "Python version: $(sudo -u "$WEATHERVANE_USER" "$VENV_PATH/bin/python" --version 2>/dev/null || echo 'Not available')"
+    
+    if [ "$INSTALL_SERVICE" = true ] || [ "$INSTALL_ALL" = true ]; then
+        echo "Service status: $(systemctl is-active weathervane.service 2>/dev/null || echo 'inactive')"
+        echo "Service enabled: $(systemctl is-enabled weathervane.service 2>/dev/null || echo 'disabled')"
+    fi
+    
+    echo "=== END SUMMARY ==="
+} >> "$LOG_FILE"
 echo -e "\n${GREEN}✅ Installation completed successfully!${NC}"
 
 if [ "$INSTALL_SERVICE" = true ] || [ "$INSTALL_ALL" = true ]; then

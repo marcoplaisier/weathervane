@@ -229,7 +229,7 @@ fi
 if [ "$INSTALL_DEPS" = true ] || [ "$INSTALL_ALL" = true ]; then
     show_progress "Installing system dependencies"
     execute_cmd "apt-get update" "package list update"
-    execute_cmd "apt-get install -y git python3-pip python3-venv python3-dev build-essential" "system dependencies installation"
+    execute_cmd "apt-get install -y git python3-pip python3-venv python3-dev build-essential python3-rpi.gpio" "system dependencies installation"
     
     # Immediate systemd refresh after system package installation to prevent conflicts
     execute_cmd "systemctl daemon-reload" "reloading systemd after package installation"
@@ -311,7 +311,19 @@ if ([ "$INSTALL_CLONE" = true ] || [ "$INSTALL_ALL" = true ]) && ([ "$INSTALL_DE
         execute_cmd "sudo -u $WEATHERVANE_USER $VENV_PATH/bin/python -c 'import httpx; print(f\"httpx version: {httpx.__version__}\")'" "verifying httpx installation"
         execute_cmd "sudo -u $WEATHERVANE_USER $VENV_PATH/bin/python -c 'import spidev; print(\"spidev available\")'" "verifying spidev installation"
         execute_cmd "sudo -u $WEATHERVANE_USER $VENV_PATH/bin/python -c 'import gpiozero; print(\"gpiozero available\")'" "verifying gpiozero installation"
-        execute_cmd "sudo -u $WEATHERVANE_USER $VENV_PATH/bin/python -c 'import RPi.GPIO; print(\"RPi.GPIO available from system packages\")'" "verifying RPi.GPIO system package access"
+        # Try to verify RPi.GPIO - may not be available on all systems
+        local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+        if sudo -u "$WEATHERVANE_USER" "$VENV_PATH/bin/python" -c 'import RPi.GPIO; print("RPi.GPIO available from system packages")' >> "$LOG_FILE" 2>&1; then
+            echo "[$timestamp] SUCCESS: RPi.GPIO system package access verified" >> "$LOG_FILE"
+            if [ "$VERBOSE" = true ]; then
+                echo "  RPi.GPIO available from system packages"
+            fi
+        else
+            echo "[$timestamp] WARNING: RPi.GPIO not available - gpiozero will use fallback backends" >> "$LOG_FILE"
+            if [ "$VERBOSE" = true ]; then
+                echo "  Warning: RPi.GPIO not available, using fallback GPIO backends"
+            fi
+        fi
         
         # Test virtual environment can access system GPIO groups
         execute_cmd "sudo -u $WEATHERVANE_USER $VENV_PATH/bin/python -c 'import os; print(f\"User groups: {os.getgroups()}\")'" "verifying group access in venv"

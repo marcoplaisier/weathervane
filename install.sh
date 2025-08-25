@@ -79,45 +79,15 @@ execute_cmd() {
     fi
 }
 
-# User selection menu
-show_menu() {
-    echo -e "\n${YELLOW}Weathervane Installation Options${NC}"
-    echo "Please select the installation components you want:"
-    echo
-    echo "A) Full installation (recommended)"
-    echo "B) Basic installation (no service setup)"
-    echo "C) Service setup only"
-    echo "D) System configuration only"
-    echo "E) Dependencies only"
-    echo "F) Custom selection"
-    echo
-    read -r -p "Enter your choice (A-F): " choice
+# Always do full installation
+setup_full_installation() {
+    INSTALL_ALL=true
+    INSTALL_SYSCONFIG=true
+    INSTALL_DEPS=true
+    INSTALL_CLONE=true
+    INSTALL_SERVICE=true
     
-    case ${choice^^} in
-        A) INSTALL_ALL=true ;;
-        B) INSTALL_BASIC=true ;;
-        C) INSTALL_SERVICE=true ;;
-        D) INSTALL_SYSCONFIG=true ;;
-        E) INSTALL_DEPS=true ;;
-        F) custom_selection ;;
-        *) echo -e "${RED}Invalid choice. Using full installation.${NC}"; INSTALL_ALL=true ;;
-    esac
-}
-
-# Custom selection submenu
-custom_selection() {
-    echo -e "\n${YELLOW}Custom Installation Components${NC}"
-    echo "Select components to install (press Enter after each selection):"
-    
-    read -r -p "Install system configuration (timezone, SPI)? (y/N): " sys_config
-    read -r -p "Install dependencies (Git, Python packages)? (y/N): " deps
-    read -r -p "Clone weathervane repository? (y/N): " clone_repo
-    read -r -p "Setup systemd service? (y/N): " setup_service
-    
-    [[ ${sys_config^^} == "Y" ]] && INSTALL_SYSCONFIG=true
-    [[ ${deps^^} == "Y" ]] && INSTALL_DEPS=true
-    [[ ${clone_repo^^} == "Y" ]] && INSTALL_CLONE=true
-    [[ ${setup_service^^} == "Y" ]] && INSTALL_SERVICE=true
+    echo -e "${GREEN}Performing full Weathervane installation${NC}"
 }
 
 # Root check
@@ -137,76 +107,52 @@ chmod 644 "$LOG_FILE"
 echo "Installation started at $(date)" > "$LOG_FILE"
 echo "Log file: $LOG_FILE"
 
-# Show menu
-show_menu
-
-# Initialize installation flags
-INSTALL_ALL=${INSTALL_ALL:-false}
-INSTALL_BASIC=${INSTALL_BASIC:-false}
-INSTALL_SYSCONFIG=${INSTALL_SYSCONFIG:-false}
-INSTALL_DEPS=${INSTALL_DEPS:-false}
-INSTALL_CLONE=${INSTALL_CLONE:-false}
-INSTALL_SERVICE=${INSTALL_SERVICE:-false}
-
-# Set flags based on selection
-if [ "$INSTALL_ALL" = true ]; then
-    INSTALL_SYSCONFIG=true
-    INSTALL_DEPS=true
-    INSTALL_CLONE=true
-    INSTALL_SERVICE=true
-elif [ "$INSTALL_BASIC" = true ]; then
-    INSTALL_SYSCONFIG=true
-    INSTALL_DEPS=true
-    INSTALL_CLONE=true
-fi
+# Setup full installation
+setup_full_installation
 
 echo -e "\n${BLUE}Starting installation...${NC}"
 
 # Step 1: Create weathervane user and group
-if [ "$INSTALL_ALL" = true ] || [ "$INSTALL_BASIC" = true ] || [ "$INSTALL_CLONE" = true ]; then
-    show_progress "Creating weathervane system user and group"
-    
-    # Create weathervane group if it doesn't exist
-    if ! getent group "$WEATHERVANE_USER" >/dev/null 2>&1; then
-        execute_cmd "groupadd --system $WEATHERVANE_USER" "creating weathervane group"
-    fi
-    
-    # Create weathervane user if it doesn't exist
-    if ! id "$WEATHERVANE_USER" &>/dev/null; then
-        execute_cmd "useradd --system --create-home --home-dir $WEATHERVANE_HOME --shell /bin/false --gid $WEATHERVANE_USER --comment 'Weathervane Service User' $WEATHERVANE_USER" "creating weathervane user"
-        execute_cmd "usermod -a -G gpio,spi $WEATHERVANE_USER" "adding user to gpio and spi groups"
-    else
-        # Ensure existing user has correct groups
-        execute_cmd "usermod -a -G gpio,spi $WEATHERVANE_USER" "ensuring user has gpio and spi group access"
-    fi
-    
-    # Ensure weathervane user owns their home directory
-    execute_cmd "chown $WEATHERVANE_USER:$WEATHERVANE_USER $WEATHERVANE_HOME" "setting home directory ownership"
-    execute_cmd "chmod 755 $WEATHERVANE_HOME" "setting home directory permissions"
-    
-    # Add pi user to weathervane group for service management
-    if id "pi" &>/dev/null; then
-        execute_cmd "usermod -a -G $WEATHERVANE_USER pi" "adding pi user to weathervane group"
-        if [ "$VERBOSE" = true ]; then
-            echo "  Added pi user to weathervane group for service management"
-        fi
-    fi
-    
+show_progress "Creating weathervane system user and group"
+
+# Create weathervane group if it doesn't exist
+if ! getent group "$WEATHERVANE_USER" >/dev/null 2>&1; then
+    execute_cmd "groupadd --system $WEATHERVANE_USER" "creating weathervane group"
+fi
+
+# Create weathervane user if it doesn't exist
+if ! id "$WEATHERVANE_USER" &>/dev/null; then
+    execute_cmd "useradd --system --create-home --home-dir $WEATHERVANE_HOME --shell /bin/false --gid $WEATHERVANE_USER --comment 'Weathervane Service User' $WEATHERVANE_USER" "creating weathervane user"
+    execute_cmd "usermod -a -G gpio,spi $WEATHERVANE_USER" "adding user to gpio and spi groups"
+else
+    # Ensure existing user has correct groups
+    execute_cmd "usermod -a -G gpio,spi $WEATHERVANE_USER" "ensuring user has gpio and spi group access"
+fi
+
+# Ensure weathervane user owns their home directory
+execute_cmd "chown $WEATHERVANE_USER:$WEATHERVANE_USER $WEATHERVANE_HOME" "setting home directory ownership"
+execute_cmd "chmod 755 $WEATHERVANE_HOME" "setting home directory permissions"
+
+# Add pi user to weathervane group for service management
+if id "pi" &>/dev/null; then
+    execute_cmd "usermod -a -G $WEATHERVANE_USER pi" "adding pi user to weathervane group"
     if [ "$VERBOSE" = true ]; then
-        echo "  Created system user: $WEATHERVANE_USER"
-        echo "  Created system group: $WEATHERVANE_USER"
-        echo "  Home directory: $WEATHERVANE_HOME"
-        echo "  Added $WEATHERVANE_USER to groups: gpio, spi"
-        echo "  Added pi to group: $WEATHERVANE_USER"
+        echo "  Added pi user to weathervane group for service management"
     fi
 fi
 
-# Step 2: System configuration
-if [ "$INSTALL_SYSCONFIG" = true ] || [ "$INSTALL_ALL" = true ]; then
-    show_progress "Configuring system timezone and NTP"
-    execute_cmd "timedatectl set-timezone Europe/Amsterdam" "timezone configuration"
-    execute_cmd "timedatectl set-ntp True" "NTP configuration"
+if [ "$VERBOSE" = true ]; then
+    echo "  Created system user: $WEATHERVANE_USER"
+    echo "  Created system group: $WEATHERVANE_USER"
+    echo "  Home directory: $WEATHERVANE_HOME"
+    echo "  Added $WEATHERVANE_USER to groups: gpio, spi"
+    echo "  Added pi to group: $WEATHERVANE_USER"
 fi
+
+# Step 2: System configuration
+show_progress "Configuring system timezone and NTP"
+execute_cmd "timedatectl set-timezone Europe/Amsterdam" "timezone configuration"
+execute_cmd "timedatectl set-ntp True" "NTP configuration"
 
 # Step 3: Python version check
 show_progress "Checking Python installation"
@@ -220,28 +166,23 @@ if [ "$VERBOSE" = true ]; then
 fi
 
 # Step 4: Enable SPI
-if [ "$INSTALL_SYSCONFIG" = true ] || [ "$INSTALL_ALL" = true ]; then
-    show_progress "Enabling SPI interface"
-    execute_cmd "raspi-config nonint do_spi 0" "SPI configuration"
-fi
+show_progress "Enabling SPI interface"
+execute_cmd "raspi-config nonint do_spi 0" "SPI configuration"
 
 
 # Step 5: Install system dependencies
-if [ "$INSTALL_DEPS" = true ] || [ "$INSTALL_ALL" = true ]; then
-    show_progress "Installing system dependencies"
-    execute_cmd "apt-get update" "package list update"
-    execute_cmd "apt-get install -y git python3-pip python3-venv python3-dev build-essential python3-rpi.gpio" "system dependencies installation"
-    
-    # Immediate systemd refresh after system package installation to prevent conflicts
-    execute_cmd "systemctl daemon-reload" "reloading systemd after package installation"
-    
-    if [ "$VERBOSE" = true ]; then
-        echo "  System packages installed and systemd refreshed"
-    fi
+show_progress "Installing system dependencies"
+execute_cmd "apt-get update" "package list update"
+execute_cmd "apt-get install -y git python3-pip python3-venv python3-dev build-essential python3-rpi.gpio" "system dependencies installation"
+
+# Immediate systemd refresh after system package installation to prevent conflicts
+execute_cmd "systemctl daemon-reload" "reloading systemd after package installation"
+
+if [ "$VERBOSE" = true ]; then
+    echo "  System packages installed and systemd refreshed"
 fi
 
 # Step 6: Create virtual environment
-if [ "$INSTALL_DEPS" = true ] || [ "$INSTALL_ALL" = true ]; then
     show_progress "Creating Python virtual environment"
     
     # Remove existing venv if it exists and is corrupted

@@ -19,7 +19,7 @@ formatter = logging.Formatter("%(asctime)s:%(levelname)s:%(module)s:%(message)s"
 
 # Configure logging to both file and stdout
 # File logging for detailed application logs (systemd handles rotation)
-file_handler = logging.FileHandler("/var/log/weathervane.log")
+file_handler = logging.FileHandler("/home/weathervane/weathervane.log")
 file_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
 

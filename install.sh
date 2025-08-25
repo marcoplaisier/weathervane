@@ -7,10 +7,12 @@ set -e
 
 # Configuration
 VERBOSE=false
-TOTAL_STEPS=9
+TOTAL_STEPS=12
 CURRENT_STEP=0
 WEATHERVANE_USER="weathervane"
 WEATHERVANE_HOME="/home/weathervane"
+VENV_PATH="$WEATHERVANE_HOME/venv"
+LOG_FILE="/var/log/weathervane-install.log"
 
 # Colors for output
 RED='\033[0;31m'
@@ -43,18 +45,34 @@ show_progress() {
     printf "${BLUE}[%d/%d]${NC} ${GREEN}%3d%%${NC} %s\n" "$CURRENT_STEP" "$TOTAL_STEPS" "$percentage" "$message"
 }
 
-# Execute command with optional output suppression
+# Execute command with logging and optional output suppression
 execute_cmd() {
     local cmd="$1"
     local description="$2"
+    local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+    
+    echo "[$timestamp] Executing: $description" >> "$LOG_FILE"
+    echo "[$timestamp] Command: $cmd" >> "$LOG_FILE"
     
     if [ "$VERBOSE" = true ]; then
         echo "  Running: $cmd"
-        eval "$cmd"
-    else
-        if ! eval "$cmd" >/dev/null 2>&1; then
+        if eval "$cmd" 2>&1 | tee -a "$LOG_FILE"; then
+            echo "[$timestamp] SUCCESS: $description" >> "$LOG_FILE"
+        else
+            local exit_code=$?
+            echo "[$timestamp] FAILED: $description (exit code: $exit_code)" >> "$LOG_FILE"
             echo -e "${RED}Error executing: $description${NC}"
-            echo "Run with -v flag for detailed output"
+            echo "Full log available at: $LOG_FILE"
+            exit 1
+        fi
+    else
+        if eval "$cmd" >> "$LOG_FILE" 2>&1; then
+            echo "[$timestamp] SUCCESS: $description" >> "$LOG_FILE"
+        else
+            local exit_code=$?
+            echo "[$timestamp] FAILED: $description (exit code: $exit_code)" >> "$LOG_FILE"
+            echo -e "${RED}Error executing: $description${NC}"
+            echo "Run with -v flag for detailed output or check: $LOG_FILE"
             exit 1
         fi
     fi
@@ -110,6 +128,13 @@ fi
 echo -e "${GREEN}🌦️  Weathervane Installation Script${NC}"
 echo "=================================="
 
+# Initialize log file
+mkdir -p "$(dirname "$LOG_FILE")"
+touch "$LOG_FILE"
+chmod 644 "$LOG_FILE"
+echo "Installation started at $(date)" > "$LOG_FILE"
+echo "Log file: $LOG_FILE"
+
 # Show menu
 show_menu
 
@@ -148,7 +173,14 @@ if [ "$INSTALL_ALL" = true ] || [ "$INSTALL_BASIC" = true ] || [ "$INSTALL_CLONE
     if ! id "$WEATHERVANE_USER" &>/dev/null; then
         execute_cmd "useradd --system --create-home --home-dir $WEATHERVANE_HOME --shell /bin/false --gid $WEATHERVANE_USER --comment 'Weathervane Service User' $WEATHERVANE_USER" "creating weathervane user"
         execute_cmd "usermod -a -G gpio,spi $WEATHERVANE_USER" "adding user to gpio and spi groups"
+    else
+        # Ensure existing user has correct groups
+        execute_cmd "usermod -a -G gpio,spi $WEATHERVANE_USER" "ensuring user has gpio and spi group access"
     fi
+    
+    # Ensure weathervane user owns their home directory
+    execute_cmd "chown $WEATHERVANE_USER:$WEATHERVANE_USER $WEATHERVANE_HOME" "setting home directory ownership"
+    execute_cmd "chmod 755 $WEATHERVANE_HOME" "setting home directory permissions"
     
     # Add pi user to weathervane group for service management
     if id "pi" &>/dev/null; then
@@ -191,41 +223,104 @@ if [ "$INSTALL_SYSCONFIG" = true ] || [ "$INSTALL_ALL" = true ]; then
     execute_cmd "raspi-config nonint do_spi 0" "SPI configuration"
 fi
 
-# Step 5: Install Git
+# Step 5: Install system dependencies
 if [ "$INSTALL_DEPS" = true ] || [ "$INSTALL_ALL" = true ]; then
-    show_progress "Installing Git"
+    show_progress "Installing system dependencies"
     execute_cmd "apt update" "package list update"
-    execute_cmd "apt install git git-man -y" "Git installation"
+    execute_cmd "apt install git python3-pip python3-venv python3-dev build-essential -y" "system dependencies installation"
+    
+    # Immediate systemd refresh after system package installation to prevent conflicts
+    execute_cmd "systemctl daemon-reload" "reloading systemd after package installation"
+    
+    if [ "$VERBOSE" = true ]; then
+        echo "  System packages installed and systemd refreshed"
+    fi
 fi
 
-# Step 6: Install Python packages
+# Step 6: Create virtual environment
 if [ "$INSTALL_DEPS" = true ] || [ "$INSTALL_ALL" = true ]; then
-    show_progress "Installing Python dependencies"
-    execute_cmd "apt install python3-httpx -y" "HTTPX installation"
+    show_progress "Creating Python virtual environment"
+    
+    # Remove existing venv if it exists and is corrupted
+    if [ -d "$VENV_PATH" ]; then
+        if ! sudo -u "$WEATHERVANE_USER" "$VENV_PATH/bin/python" --version >/dev/null 2>&1; then
+            echo "  Removing corrupted virtual environment..."
+            execute_cmd "rm -rf $VENV_PATH" "removing corrupted virtual environment"
+        fi
+    fi
+    
+    # Create virtual environment as weathervane user
+    if [ ! -d "$VENV_PATH" ]; then
+        execute_cmd "sudo -u $WEATHERVANE_USER python3 -m venv $VENV_PATH" "creating virtual environment"
+        execute_cmd "chown -R $WEATHERVANE_USER:$WEATHERVANE_USER $VENV_PATH" "setting venv ownership"
+    fi
+    
+    # Upgrade pip in virtual environment
+    execute_cmd "sudo -u $WEATHERVANE_USER $VENV_PATH/bin/pip install --upgrade pip" "upgrading pip in virtual environment"
+    
+    if [ "$VERBOSE" = true ]; then
+        echo "  Created virtual environment at: $VENV_PATH"
+    fi
 fi
 
 # Step 7: Clone repository
 if [ "$INSTALL_CLONE" = true ] || [ "$INSTALL_ALL" = true ]; then
     show_progress "Cloning Weathervane repository"
     execute_cmd "cd $WEATHERVANE_HOME" "changing to weathervane home directory"
+    
+    # Configure Git to prevent hook execution during clone to avoid conflicts
+    execute_cmd "sudo -u $WEATHERVANE_USER git config --global core.hooksPath /dev/null" "disabling git hooks for safety"
+    
     if [ -d "$WEATHERVANE_HOME/weathervane" ]; then
         echo "  Repository already exists, updating..."
         execute_cmd "cd $WEATHERVANE_HOME/weathervane && sudo -u $WEATHERVANE_USER git pull" "updating repository"
     else
-        execute_cmd "sudo -u $WEATHERVANE_USER git clone https://github.com/marcoplaisier/weathervane.git $WEATHERVANE_HOME/weathervane" "cloning repository"
+        execute_cmd "sudo -u $WEATHERVANE_USER git clone --no-hardlinks https://github.com/marcoplaisier/weathervane.git $WEATHERVANE_HOME/weathervane" "cloning repository safely"
     fi
+    
+    # Reset Git hooks configuration after clone
+    execute_cmd "sudo -u $WEATHERVANE_USER git config --global --unset core.hooksPath" "re-enabling git hooks"
     execute_cmd "chown -R $WEATHERVANE_USER:$WEATHERVANE_USER $WEATHERVANE_HOME/weathervane" "setting repository ownership"
     execute_cmd "chmod -R 750 $WEATHERVANE_HOME/weathervane" "setting secure permissions"
     execute_cmd "find $WEATHERVANE_HOME/weathervane -name '*.py' -exec chmod 640 {} \;" "setting script permissions"
     execute_cmd "find $WEATHERVANE_HOME/weathervane -name '*.ini' -exec chmod 640 {} \;" "setting config file permissions"
-    execute_cmd "chmod 750 $WEATHERVANE_HOME" "setting home directory permissions"
+    # Ensure the home directory and weathervane subdirectory are accessible
+    execute_cmd "chmod 755 $WEATHERVANE_HOME" "setting home directory permissions"
+    execute_cmd "chmod 755 $WEATHERVANE_HOME/weathervane" "setting weathervane directory permissions"
     if [ "$VERBOSE" = true ]; then
         echo "  Set secure permissions: 750 for directories, 640 for Python/config files"
         echo "  Weathervane group can read files but not modify them"
     fi
 fi
 
-# Step 8: Install service
+# Step 8: Install Python requirements
+if ([ "$INSTALL_CLONE" = true ] || [ "$INSTALL_ALL" = true ]) && ([ "$INSTALL_DEPS" = true ] || [ "$INSTALL_ALL" = true ]); then
+    show_progress "Installing Python requirements"
+    
+    if [ -f "$WEATHERVANE_HOME/weathervane/requirements.txt" ]; then
+        execute_cmd "sudo -u $WEATHERVANE_USER $VENV_PATH/bin/pip install -r $WEATHERVANE_HOME/weathervane/requirements.txt" "installing requirements.txt"
+        
+        # Verify critical packages are installed and functional
+        execute_cmd "sudo -u $WEATHERVANE_USER $VENV_PATH/bin/python -c 'import httpx; print(f\"httpx version: {httpx.__version__}\")'" "verifying httpx installation"
+        execute_cmd "sudo -u $WEATHERVANE_USER $VENV_PATH/bin/python -c 'import spidev; print(\"spidev available\")'" "verifying spidev installation"
+        execute_cmd "sudo -u $WEATHERVANE_USER $VENV_PATH/bin/python -c 'import gpiozero; print(f\"gpiozero version: {gpiozero.__version__}\")'" "verifying gpiozero installation"
+        
+        # Test virtual environment can access system GPIO groups
+        execute_cmd "sudo -u $WEATHERVANE_USER $VENV_PATH/bin/python -c 'import os; print(f\"User groups: {os.getgroups()}\")'" "verifying group access in venv"
+        
+        # Verify the virtual environment python path is correct for systemd
+        execute_cmd "test -x $VENV_PATH/bin/python" "verifying venv python executable"
+        
+        if [ "$VERBOSE" = true ]; then
+            echo "  All requirements installed successfully"
+            sudo -u "$WEATHERVANE_USER" "$VENV_PATH/bin/pip" list
+        fi
+    else
+        echo -e "${YELLOW}  Warning: requirements.txt not found, skipping Python package installation${NC}"
+    fi
+fi
+
+# Step 9: Install service
 if [ "$INSTALL_SERVICE" = true ] || [ "$INSTALL_ALL" = true ]; then
     show_progress "Installing systemd service"
     
@@ -237,6 +332,8 @@ if [ "$INSTALL_SERVICE" = true ] || [ "$INSTALL_ALL" = true ]; then
     fi
     
     execute_cmd "cp $WEATHERVANE_HOME/weathervane/weathervane.service /etc/systemd/system/weathervane.service" "copying service file"
+    execute_cmd "chmod 644 /etc/systemd/system/weathervane.service" "setting service file permissions"
+    execute_cmd "chown root:root /etc/systemd/system/weathervane.service" "setting service file ownership"
     
     # Create polkit rule for weathervane group to manage the service
     execute_cmd 'cat > /etc/polkit-1/rules.d/10-weathervane.rules << EOF
@@ -258,14 +355,54 @@ polkit.addRule(function(action, subject) {
 });
 EOF' "creating polkit rules for weathervane group"
     
-    execute_cmd "systemctl daemon-reload" "reloading systemd daemon"
+    # Reload systemd configuration after service file and polkit changes
+    execute_cmd "systemctl daemon-reload" "reloading systemd daemon after service installation"
+    
+    # Verify service file is properly recognized by systemd
+    execute_cmd "systemctl cat weathervane.service" "verifying service file is loaded"
     
     if [ "$VERBOSE" = true ]; then
         echo "  Created polkit rules for weathervane group service management"
+        echo "  Service file verified and systemd configuration reloaded"
     fi
 fi
 
-# Step 9: Enable and start service
+# Step 10: Add service unmask verification and log rotation
+if [ "$INSTALL_SERVICE" = true ] || [ "$INSTALL_ALL" = true ]; then
+    show_progress "Configuring service and log rotation"
+    
+    # Ensure service is not masked
+    execute_cmd "systemctl unmask weathervane.service" "ensuring service is not masked"
+    
+    # Setup log rotation for weathervane logs
+    execute_cmd 'cat > /etc/logrotate.d/weathervane << EOF
+/var/log/weathervane.log {
+    daily
+    missingok
+    rotate 30
+    compress
+    notifempty
+    create 644 weathervane weathervane
+    su weathervane weathervane
+}
+
+/var/log/weathervane-install.log {
+    monthly
+    missingok
+    rotate 12
+    compress
+    notifempty
+    create 644 root root
+}
+EOF' "creating log rotation configuration"
+    
+    if [ "$VERBOSE" = true ]; then
+        echo "  Service unmask verified"
+        echo "  Log rotation configured for /var/log/weathervane.log"
+    fi
+fi
+
+# Step 11: Enable and start service
 if [ "$INSTALL_SERVICE" = true ] || [ "$INSTALL_ALL" = true ]; then
     show_progress "Starting Weathervane service"
     
@@ -291,6 +428,9 @@ if [ "$INSTALL_SERVICE" = true ] || [ "$INSTALL_ALL" = true ]; then
                 echo -e "${YELLOW}  Warning: Service file validation failed${NC}"
             fi
         fi
+        
+        # Final systemd reload before starting service to ensure all changes are recognized
+        execute_cmd "systemctl daemon-reload" "final systemd reload before service start"
         
         # Start service with timeout
         echo "  Starting service (timeout: 30s)..."
@@ -319,6 +459,24 @@ if [ "$INSTALL_SERVICE" = true ] || [ "$INSTALL_ALL" = true ]; then
     fi
 fi
 
+# Step 12: Installation summary and log management
+show_progress "Finalizing installation"
+
+# Add summary to log
+echo "Installation completed at $(date)" >> "$LOG_FILE"
+echo "=== INSTALLATION SUMMARY ===" >> "$LOG_FILE"
+echo "Weathervane user: $WEATHERVANE_USER" >> "$LOG_FILE"
+echo "Home directory: $WEATHERVANE_HOME" >> "$LOG_FILE"
+echo "Virtual environment: $VENV_PATH" >> "$LOG_FILE"
+echo "Python version: $(sudo -u "$WEATHERVANE_USER" "$VENV_PATH/bin/python" --version 2>/dev/null || echo 'Not available')" >> "$LOG_FILE"
+
+if [ "$INSTALL_SERVICE" = true ] || [ "$INSTALL_ALL" = true ]; then
+    echo "Service status: $(systemctl is-active weathervane.service 2>/dev/null || echo 'inactive')" >> "$LOG_FILE"
+    echo "Service enabled: $(systemctl is-enabled weathervane.service 2>/dev/null || echo 'disabled')" >> "$LOG_FILE"
+fi
+
+echo "=== END SUMMARY ===" >> "$LOG_FILE"
+
 echo -e "\n${GREEN}✅ Installation completed successfully!${NC}"
 
 if [ "$INSTALL_SERVICE" = true ] || [ "$INSTALL_ALL" = true ]; then
@@ -326,10 +484,16 @@ if [ "$INSTALL_SERVICE" = true ] || [ "$INSTALL_ALL" = true ]; then
     systemctl status weathervane.service --no-pager -l
 fi
 
+echo -e "\n${YELLOW}Installation Log:${NC}"
+echo "• Full installation log: $LOG_FILE"
+echo "• Log file size: $(du -h "$LOG_FILE" | cut -f1)"
+echo "• To email log file: mail -s 'Weathervane Install Log' your-email@example.com < $LOG_FILE"
+
 echo -e "\n${YELLOW}Next steps:${NC}"
 echo "• Check service status: systemctl status weathervane.service"
-echo "• View logs: journalctl -u weathervane.service -f"
-echo "• Configuration file: $WEATHERVANE_HOME/weathervane/weathervane.ini"
+echo "• View service logs: journalctl -u weathervane.service -f"
+echo "• Configuration file: $WEATHERVANE_HOME/weathervane/config.ini"
 echo "• Service runs as user: $WEATHERVANE_USER (minimal privileges)"
+echo "• Virtual environment: $VENV_PATH"
 echo "• Pi user can manage service via weathervane group membership"
 echo "• Note: Pi user may need to log out/in for group changes to take effect"

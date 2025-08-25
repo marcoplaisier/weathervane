@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import argparse
 import asyncio
-import logging.handlers
+import logging
 import time
 
 import httpx
@@ -13,16 +13,13 @@ from weathervane.weathervaneinterface import Display, WeatherVaneInterface
 NON_INTERPOLATABLE_VARIABLES = ["error", "winddirection", "winddirection", "rain", "barometric_trend"]
 SLEEP_INTERVAL = 0.1
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 formatter = logging.Formatter("%(asctime)s:%(levelname)s:%(module)s:%(message)s")
-handler = logging.handlers.TimedRotatingFileHandler(
-    filename="weathervane.log", when="midnight", interval=1, backupCount=1
-)
+
+# Configure logging - systemd will handle log rotation via journald
+handler = logging.StreamHandler()
 handler.setFormatter(formatter)
-stream_handler = logging.StreamHandler()
-stream_handler.setFormatter(formatter)
-logger.addHandler(stream_handler)
 logger.addHandler(handler)
 
 

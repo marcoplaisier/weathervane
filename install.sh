@@ -128,6 +128,7 @@ fi
 echo -e "${GREEN}🌦️  Weathervane Installation Script${NC}"
 echo "=================================="
 
+
 # Initialize log file
 mkdir -p "$(dirname "$LOG_FILE")"
 touch "$LOG_FILE"
@@ -223,6 +224,7 @@ if [ "$INSTALL_SYSCONFIG" = true ] || [ "$INSTALL_ALL" = true ]; then
     execute_cmd "raspi-config nonint do_spi 0" "SPI configuration"
 fi
 
+
 # Step 5: Install system dependencies
 if [ "$INSTALL_DEPS" = true ] || [ "$INSTALL_ALL" = true ]; then
     show_progress "Installing system dependencies"
@@ -275,18 +277,22 @@ if [ "$INSTALL_CLONE" = true ] || [ "$INSTALL_ALL" = true ]; then
         echo "  Repository already exists, updating..."
         execute_cmd "cd $WEATHERVANE_HOME/weathervane && sudo -u $WEATHERVANE_USER git pull" "updating repository"
     else
+
         execute_cmd "sudo -u $WEATHERVANE_USER git clone --no-hardlinks https://github.com/marcoplaisier/weathervane.git $WEATHERVANE_HOME/weathervane" "cloning repository safely"
     fi
     
     # Reset Git hooks configuration after clone
     execute_cmd "sudo -u $WEATHERVANE_USER git config --global --unset core.hooksPath" "re-enabling git hooks"
+
     execute_cmd "chown -R $WEATHERVANE_USER:$WEATHERVANE_USER $WEATHERVANE_HOME/weathervane" "setting repository ownership"
     execute_cmd "chmod -R 750 $WEATHERVANE_HOME/weathervane" "setting secure permissions"
     execute_cmd "find $WEATHERVANE_HOME/weathervane -name '*.py' -exec chmod 640 {} \;" "setting script permissions"
     execute_cmd "find $WEATHERVANE_HOME/weathervane -name '*.ini' -exec chmod 640 {} \;" "setting config file permissions"
+
     # Ensure the home directory and weathervane subdirectory are accessible
     execute_cmd "chmod 755 $WEATHERVANE_HOME" "setting home directory permissions"
     execute_cmd "chmod 755 $WEATHERVANE_HOME/weathervane" "setting weathervane directory permissions"
+
     if [ "$VERBOSE" = true ]; then
         echo "  Set secure permissions: 750 for directories, 640 for Python/config files"
         echo "  Weathervane group can read files but not modify them"
@@ -431,7 +437,7 @@ if [ "$INSTALL_SERVICE" = true ] || [ "$INSTALL_ALL" = true ]; then
         
         # Final systemd reload before starting service to ensure all changes are recognized
         execute_cmd "systemctl daemon-reload" "final systemd reload before service start"
-        
+
         # Start service with timeout
         echo "  Starting service (timeout: 30s)..."
         if timeout 30 systemctl start weathervane.service 2>&1; then
@@ -476,13 +482,13 @@ if [ "$INSTALL_SERVICE" = true ] || [ "$INSTALL_ALL" = true ]; then
 fi
 
 echo "=== END SUMMARY ===" >> "$LOG_FILE"
-
 echo -e "\n${GREEN}✅ Installation completed successfully!${NC}"
 
 if [ "$INSTALL_SERVICE" = true ] || [ "$INSTALL_ALL" = true ]; then
     echo -e "${BLUE}Service Status:${NC}"
     systemctl status weathervane.service --no-pager -l
 fi
+
 
 echo -e "\n${YELLOW}Installation Log:${NC}"
 echo "• Full installation log: $LOG_FILE"

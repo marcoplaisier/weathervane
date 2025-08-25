@@ -17,13 +17,8 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 formatter = logging.Formatter("%(asctime)s:%(levelname)s:%(module)s:%(message)s")
 
-# Configure logging to both file and stdout
-# File logging for detailed application logs (systemd handles rotation)
-file_handler = logging.FileHandler("/home/weathervane/weathervane.log")
-file_handler.setFormatter(formatter)
-logger.addHandler(file_handler)
-
-# Stream logging for systemd journal
+# Configure logging for systemd journal
+# systemd captures stdout/stderr and handles log rotation automatically
 stream_handler = logging.StreamHandler()
 stream_handler.setFormatter(formatter)
 logger.addHandler(stream_handler)

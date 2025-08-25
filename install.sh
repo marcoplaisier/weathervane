@@ -45,6 +45,22 @@ local percentage=$((CURRENT_STEP * 100 / TOTAL_STEPS))
 printf "${BLUE}[%d/%d]${NC} ${GREEN}%3d%%${NC} %s\n" "$CURRENT_STEP" "$TOTAL_STEPS" "$percentage" "$message"
 }
 
+# Spinner function for long-running commands
+show_spinner() {
+    local pid=$1
+    local description="$2"
+    local spin='⣾⣽⣻⢿⡿⣟⣯⣷'
+    local i=0
+    
+    echo -n "  $description "
+    while kill -0 "$pid" 2>/dev/null; do
+        printf "\b%s" "${spin:$i%${#spin}:1}"
+        i=$((i + 1))
+        sleep 0.1
+    done
+    printf "\b✓\n"
+}
+
 # Execute command with logging and optional output suppression
 execute_cmd() {
 local cmd="$1"
@@ -67,10 +83,16 @@ if [ "$VERBOSE" = true ]; then
         exit 1
     fi
 else
-    if eval "$cmd" >> "$LOG_FILE" 2>&1; then
+    # Run command in background and show spinner
+    eval "$cmd" >> "$LOG_FILE" 2>&1 &
+    local cmd_pid=$!
+    show_spinner $cmd_pid "$description"
+    wait $cmd_pid
+    local exit_code=$?
+    
+    if [ $exit_code -eq 0 ]; then
         echo "[$timestamp] SUCCESS: $description" >> "$LOG_FILE"
     else
-        local exit_code=$?
         echo "[$timestamp] FAILED: $description (exit code: $exit_code)" >> "$LOG_FILE"
         echo -e "${RED}Error executing: $description${NC}"
         echo "Run with -v flag for detailed output or check: $LOG_FILE"

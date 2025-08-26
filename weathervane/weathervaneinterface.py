@@ -5,6 +5,12 @@ from random import randint
 from typing import List
 
 import gpiozero
+from gpiozero import Device
+
+try:
+    from gpiozero.pins.lgpio import LGPIOFactory
+except ImportError:
+    LGPIOFactory = None
 
 from weathervane.gpio import GPIO
 
@@ -146,7 +152,21 @@ class Display(object):
         self.start_at_minutes = Display.convert_to_minutes(start_time)
         end_time = kwargs.get("end-time", "22:00")
         self.end_at_minutes = Display.convert_to_minutes(end_time)
-        self.display = gpiozero.LED(kwargs.get("pin", 4))
+        
+        # Try to use LGPIOFactory for Raspberry Pi 5 compatibility first
+        pin = kwargs.get("pin", 4)
+        if Device.pin_factory is None and LGPIOFactory is not None:
+            try:
+                Device.pin_factory = LGPIOFactory()
+                logger.info("Using LGPIOFactory for GPIO operations (Pi 5 compatible)")
+                self.display = gpiozero.LED(pin)
+            except Exception as e:
+                logger.warning(f"Failed to initialize GPIO with LGPIOFactory: {e}, falling back to default")
+                Device.pin_factory = None
+                self.display = gpiozero.LED(pin)
+        else:
+            # Use default pin factory (for older Pi models or when LGPIOFactory not available)
+            self.display = gpiozero.LED(pin)
 
     @staticmethod
     def convert_to_minutes(time_text):

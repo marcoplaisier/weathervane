@@ -5,7 +5,6 @@ from random import randint
 from typing import List
 
 import gpiozero
-from gpiozero import Device
 
 from weathervane.gpio import GPIO
 

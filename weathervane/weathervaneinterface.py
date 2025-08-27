@@ -146,7 +146,6 @@ class Display(object):
         self.start_at_minutes = Display.convert_to_minutes(start_time)
         end_time = kwargs.get("end-time", "22:00")
         self.end_at_minutes = Display.convert_to_minutes(end_time)
-        
         # Initialize GPIO LED
         pin = kwargs.get("pin", 4)
         self.display = gpiozero.LED(pin)

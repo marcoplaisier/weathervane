@@ -7,11 +7,6 @@ from typing import List
 import gpiozero
 from gpiozero import Device
 
-try:
-    from gpiozero.pins.lgpio import LGPIOFactory
-except ImportError:
-    LGPIOFactory = None
-
 from weathervane.gpio import GPIO
 
 logger = logging.getLogger()
@@ -153,20 +148,31 @@ class Display(object):
         end_time = kwargs.get("end-time", "22:00")
         self.end_at_minutes = Display.convert_to_minutes(end_time)
         
-        # Try to use LGPIOFactory for Raspberry Pi 5 compatibility first
+        # Initialize GPIO with appropriate pin factory
         pin = kwargs.get("pin", 4)
-        if Device.pin_factory is None and LGPIOFactory is not None:
+        if Device.pin_factory is None:
+            # Try LGPIOFactory first for Pi 5 compatibility
             try:
-                Device.pin_factory = LGPIOFactory()
+                from gpiozero.pins.lgpio import LGPIOFactory
+                Device.pin_factory = LGPIOFactory(chip=0)
                 logger.info("Using LGPIOFactory for GPIO operations (Pi 5 compatible)")
-                self.display = gpiozero.LED(pin)
             except Exception as e:
-                logger.warning(f"Failed to initialize GPIO with LGPIOFactory: {e}, falling back to default")
-                Device.pin_factory = None
-                self.display = gpiozero.LED(pin)
-        else:
-            # Use default pin factory (for older Pi models or when LGPIOFactory not available)
+                logger.warning(f"Failed to initialize LGPIOFactory: {e}")
+                # Try native factory next
+                try:
+                    from gpiozero.pins.native import NativeFactory
+                    Device.pin_factory = NativeFactory()
+                    logger.info("Using NativeFactory for GPIO operations")
+                except Exception as e2:
+                    logger.warning(f"Failed to initialize NativeFactory: {e2}")
+                    # Let gpiozero choose the default factory
+                    logger.info("Using default pin factory")
+        
+        try:
             self.display = gpiozero.LED(pin)
+        except Exception as e:
+            logger.error(f"Failed to initialize LED on pin {pin}: {e}")
+            raise
 
     @staticmethod
     def convert_to_minutes(time_text):

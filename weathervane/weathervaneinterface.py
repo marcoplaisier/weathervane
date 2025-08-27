@@ -148,31 +148,9 @@ class Display(object):
         end_time = kwargs.get("end-time", "22:00")
         self.end_at_minutes = Display.convert_to_minutes(end_time)
         
-        # Initialize GPIO with appropriate pin factory
+        # Initialize GPIO LED
         pin = kwargs.get("pin", 4)
-        if Device.pin_factory is None:
-            # Try LGPIOFactory first for Pi 5 compatibility
-            try:
-                from gpiozero.pins.lgpio import LGPIOFactory
-                Device.pin_factory = LGPIOFactory(chip=0)
-                logger.info("Using LGPIOFactory for GPIO operations (Pi 5 compatible)")
-            except Exception as e:
-                logger.warning(f"Failed to initialize LGPIOFactory: {e}")
-                # Try native factory next
-                try:
-                    from gpiozero.pins.native import NativeFactory
-                    Device.pin_factory = NativeFactory()
-                    logger.info("Using NativeFactory for GPIO operations")
-                except Exception as e2:
-                    logger.warning(f"Failed to initialize NativeFactory: {e2}")
-                    # Let gpiozero choose the default factory
-                    logger.info("Using default pin factory")
-        
-        try:
-            self.display = gpiozero.LED(pin)
-        except Exception as e:
-            logger.error(f"Failed to initialize LED on pin {pin}: {e}")
-            raise
+        self.display = gpiozero.LED(pin)
 
     @staticmethod
     def convert_to_minutes(time_text):

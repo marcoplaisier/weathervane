@@ -9,8 +9,6 @@ Group=weathervane
 WorkingDirectory=/home/weathervane/weathervane
 # Force gpiozero to use lgpio for Raspberry Pi 5 compatibility
 Environment="GPIOZERO_PIN_FACTORY=lgpio"
-# Clean up stale lgpio notification pipes before starting
-ExecStartPre=/bin/rm -f /home/weathervane/weathervane/.lgd-nfy*
 ExecStart=/home/weathervane/venv/bin/python /home/weathervane/weathervane/main.py -c /home/weathervane/weathervane/config.ini
 StandardOutput=journal
 StandardError=journal

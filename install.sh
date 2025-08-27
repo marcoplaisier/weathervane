@@ -250,6 +250,11 @@ execute_cmd "find $WEATHERVANE_HOME/weathervane -name '*.ini' -exec chmod 640 {}
 execute_cmd "chmod 755 $WEATHERVANE_HOME" "setting home directory permissions"
 execute_cmd "chmod 755 $WEATHERVANE_HOME/weathervane" "setting weathervane directory permissions"
 
+# Fix for Pi 5 lgpio notification pipes - ensure weathervane user can write to working directory
+execute_cmd "chmod u+w $WEATHERVANE_HOME/weathervane" "ensuring write permissions for lgpio notification pipes"
+# Clean up any stale lgpio notification pipes from previous runs
+execute_cmd "rm -f $WEATHERVANE_HOME/weathervane/.lgd-nfy*" "cleaning stale lgpio pipes"
+
 if [ "$VERBOSE" = true ]; then
     echo "  Set secure permissions: 750 for directories, 640 for Python/config files"
     echo "  Weathervane group can read files but not modify them"

@@ -7,6 +7,8 @@ Type=simple
 User=weathervane
 Group=weathervane
 WorkingDirectory=/home/weathervane/weathervane
+# Clean up stale lgpio notification pipes before starting
+ExecStartPre=/bin/rm -f /home/weathervane/weathervane/.lgd-nfy*
 ExecStart=/home/weathervane/venv/bin/python /home/weathervane/weathervane/main.py -c /home/weathervane/weathervane/config.ini
 StandardOutput=journal
 StandardError=journal
@@ -32,6 +34,7 @@ RestrictNamespaces=yes
 # Allow access to GPIO and SPI
 SupplementaryGroups=gpio spi
 DeviceAllow=/dev/gpiomem rw
+DeviceAllow=/dev/gpiochip* rw
 DeviceAllow=/dev/spidev0.0 rw
 DeviceAllow=/dev/spidev0.1 rw
 

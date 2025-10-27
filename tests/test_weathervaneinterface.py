@@ -20,8 +20,7 @@ class WeatherVaneTest(unittest.TestCase):
         self.assertEqual(
             expected,
             str(result),
-            "Weather Vane Interface failed to be setup correctly - %s, %s"
-            % (expected, result),
+            f"Weather Vane Interface failed to be setup correctly - {expected}, {result}",
         )
 
     def test_transmittable_data_length(self, mock_class):

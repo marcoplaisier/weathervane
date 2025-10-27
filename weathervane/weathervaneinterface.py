@@ -8,7 +8,7 @@ import gpiozero
 
 from weathervane.gpio import GPIO
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 
 class WeatherVaneInterface(object):
@@ -163,3 +163,4 @@ class Display(object):
                 self.display.on()
             else:
                 self.display.off()
+

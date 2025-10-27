@@ -5,11 +5,9 @@ Monitors WiFi connectivity and reboots the system if connection is lost.
 """
 import argparse
 import logging
-import os
 import subprocess
 import time
 from datetime import datetime
-from pathlib import Path
 
 # Configuration
 DEFAULT_CHECK_INTERVAL = 60  # seconds between connectivity checks

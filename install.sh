@@ -7,7 +7,7 @@ set -e
 
 # Configuration
 VERBOSE=false
-TOTAL_STEPS=12
+TOTAL_STEPS=13
 CURRENT_STEP=0
 WEATHERVANE_USER="weathervane"
 WEATHERVANE_HOME="/home/weathervane"
@@ -438,7 +438,39 @@ else
     fi
 fi
 
-# Step 12: Installation summary and log management
+# Step 12: Install WiFi watchdog service
+show_progress "Installing WiFi watchdog service"
+
+# Copy WiFi watchdog script
+execute_cmd "cp $WEATHERVANE_HOME/weathervane/wifi_watchdog.py $WEATHERVANE_HOME/weathervane/wifi_watchdog.py" "copying WiFi watchdog script"
+execute_cmd "chmod 755 $WEATHERVANE_HOME/weathervane/wifi_watchdog.py" "setting WiFi watchdog script permissions"
+execute_cmd "chown root:root $WEATHERVANE_HOME/weathervane/wifi_watchdog.py" "setting WiFi watchdog script ownership"
+
+# Copy and install service file
+execute_cmd "cp $WEATHERVANE_HOME/weathervane/wifi-watchdog.service /etc/systemd/system/wifi-watchdog.service" "copying WiFi watchdog service file"
+execute_cmd "chmod 644 /etc/systemd/system/wifi-watchdog.service" "setting WiFi watchdog service file permissions"
+execute_cmd "chown root:root /etc/systemd/system/wifi-watchdog.service" "setting WiFi watchdog service file ownership"
+
+# Reload systemd and enable WiFi watchdog service
+execute_cmd "systemctl daemon-reload" "reloading systemd daemon"
+execute_cmd "systemctl enable wifi-watchdog.service" "enabling WiFi watchdog service"
+
+# Start WiFi watchdog service
+if systemctl is-active --quiet wifi-watchdog.service; then
+    echo "  WiFi watchdog already running. Restarting..."
+    execute_cmd "systemctl restart wifi-watchdog.service" "restarting WiFi watchdog service"
+else
+    execute_cmd "systemctl start wifi-watchdog.service" "starting WiFi watchdog service"
+fi
+
+if [ "$VERBOSE" = true ]; then
+    echo "  WiFi watchdog installed and started"
+    echo "  The watchdog will monitor WiFi connectivity and reboot if connection is lost"
+    echo "  Configuration: Check every 60s, reboot after 3 consecutive failures"
+    systemctl status wifi-watchdog.service --no-pager -l || true
+fi
+
+# Step 13: Installation summary and log management
 show_progress "Finalizing installation"
 
 # Add summary to log
@@ -452,6 +484,8 @@ echo "Python version: $(sudo -u "$WEATHERVANE_USER" "$VENV_PATH/bin/python" --ve
 
 echo "Service status: $(systemctl is-active weathervane.service 2>/dev/null || echo 'inactive')"
 echo "Service enabled: $(systemctl is-enabled weathervane.service 2>/dev/null || echo 'disabled')"
+echo "WiFi watchdog status: $(systemctl is-active wifi-watchdog.service 2>/dev/null || echo 'inactive')"
+echo "WiFi watchdog enabled: $(systemctl is-enabled wifi-watchdog.service 2>/dev/null || echo 'disabled')"
 
 echo "=== END SUMMARY ==="
 } >> "$LOG_FILE"
@@ -476,3 +510,9 @@ echo "• Virtual environment: $VENV_PATH"
 echo "• Pi user can manage service via weathervane group membership"
 echo "• Note: Pi user may need to log out/in for group changes to take effect"
 echo "• GPIO access: weathervane service will have proper GPIO permissions when started by systemd"
+echo ""
+echo -e "${YELLOW}WiFi Watchdog:${NC}"
+echo "• Check WiFi watchdog status: systemctl status wifi-watchdog.service"
+echo "• View WiFi watchdog logs: journalctl -u wifi-watchdog.service -f"
+echo "• The watchdog monitors WiFi every 60s and reboots after 3 consecutive failures"
+echo "• To disable WiFi watchdog: sudo systemctl disable --now wifi-watchdog.service"

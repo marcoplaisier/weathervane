@@ -1,0 +1,23 @@
+[Unit]
+Description=WiFi Watchdog Service
+Documentation=https://github.com/marcoplaisier/weathervane
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+WorkingDirectory=/home/weathervane/weathervane
+ExecStart=/home/weathervane/venv/bin/python /home/weathervane/weathervane/wifi_watchdog.py --interval 60 --threshold 3 --ping-timeout 10
+StandardOutput=journal
+StandardError=journal
+Restart=always
+RestartSec=10
+
+# Security settings
+NoNewPrivileges=yes
+PrivateTmp=yes
+
+[Install]
+WantedBy=multi-user.target

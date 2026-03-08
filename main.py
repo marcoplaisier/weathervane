@@ -42,7 +42,7 @@ class WeatherVane(object):
             self.display = Display(**configuration["display"])
         else:
             self.display = TestDisplay()
-        logger.info("Using " + str(self.interface))
+        logger.info(f"Using {self.interface}")
         self.wd = None
         self.data_collection_interval = configuration["data_collection_interval"]
         self.data_display_interval = configuration["data_display_interval"]

@@ -3,7 +3,7 @@ from unittest.mock import Mock
 
 import spidev
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 
 class GPIO:
@@ -40,3 +40,4 @@ class GPIO:
         """
         self.spi.xfer(data)
         logger.debug("Sent data via SPI")
+

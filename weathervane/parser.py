@@ -9,7 +9,7 @@ HOUR_ERROR_LIMIT = 2.0 * 60 * 60
 SIMPLE_CONFIG = 2
 EXTENDED_CONFIG = 5
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 
 class InvalidConfigException(Exception):

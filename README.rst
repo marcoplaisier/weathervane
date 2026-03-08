@@ -3,7 +3,9 @@ Weathervane for the Raspberry Pi
 
 Requirements
 -----------
-* requests
+* httpx
+* spidev
+* gpiozero
 
 
 Installation

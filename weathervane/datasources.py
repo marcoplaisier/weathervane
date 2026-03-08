@@ -26,7 +26,7 @@ DEFAULT_WEATHER_DATA = {
     "windspeedBft": 0,
 }
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 
 class BuienRadarDataSource:
@@ -184,3 +184,4 @@ class BuienRadarDataSource:
             wd = DEFAULT_WEATHER_DATA
 
         await self.queue.put(wd)
+

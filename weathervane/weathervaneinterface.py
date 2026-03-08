@@ -8,7 +8,7 @@ import gpiozero
 
 from weathervane.gpio import GPIO
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 
 class WeatherVaneInterface(object):
@@ -39,10 +39,7 @@ class WeatherVaneInterface(object):
         self.stations = kwargs["stations"]
 
     def __repr__(self):
-        return "WeatherVaneInterface(channel=%d, frequency=%d)" % (
-            self.channel,
-            self.frequency,
-        )
+        return f"WeatherVaneInterface(channel={self.channel}, frequency={self.frequency})"
 
     def encode_weather_data(self, weather_data) -> bytes:
         """Converts the weather data into a string of bits
@@ -110,16 +107,14 @@ class WeatherVaneInterface(object):
             return 1 if value and value > 0 else 0
         else:
             if not value:
-                logger.debug("Value {} is missing. Setting to min-value".format(value))
+                logger.debug(f"Value {value} is missing. Setting to min-value")
             value = min(max(value, min_value), max_value)
 
             try:
                 value -= min_value
                 value /= float(step_value)
             except TypeError:
-                logger.debug(
-                    "Value {} for {} is not a number".format(value, measurement_name)
-                )
+                logger.debug(f"Value {value} for {measurement_name} is not a number")
                 return 0
 
             return int(value)
@@ -130,11 +125,7 @@ class WeatherVaneInterface(object):
         windgusts = result.get("windgusts", windspeed)
         if windspeed > windgusts:
             result["windspeed"] = windgusts
-            logger.debug(
-                "Wind speed {} should not exceed maximum wind speed {}".format(
-                    windspeed, windgusts
-                )
-            )
+            logger.debug(f"Wind speed {windspeed} should not exceed maximum wind speed {windgusts}")
 
         return result
 
@@ -171,3 +162,4 @@ class Display(object):
                 self.display.on()
             else:
                 self.display.off()
+

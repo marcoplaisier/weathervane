@@ -1,7 +1,5 @@
 from datetime import datetime, timedelta
 
-import pytest
-
 from weathervane.parser import is_weather_data_stale
 
 
